@@ -1,5 +1,6 @@
 const utill = require("../utils/packages");
 import { Request, Response, NextFunction } from "express";
+const db = require("../database/mysql");
 
 const signTokens = (user: any, token: string) => {
   var token: string = utill.jwt.sign(
@@ -17,7 +18,7 @@ const signTokens = (user: any, token: string) => {
     }
   );
   var decoded = utill.jwt_decode(token);
-  utill.db.Oauth.create(decoded);
+  db.dbs.Oauth.create(decoded);
   return token;
 };
 
@@ -42,7 +43,7 @@ module.exports = {
 
     const { email, password, type } = req.body;
 
-    let user = await utill.db.Users.findOne({ where: { email, type } });
+    let user = await db.dbs.Users.findOne({ where: { email, type } });
 
     if (!user) {
       return res
@@ -99,16 +100,16 @@ module.exports = {
 
   removeTest: async (req: Request, res: Response, next: NextFunction) => {
     let email = req.query.email;
-    let user = await utill.db.Users.findOne({ where: { email } });
-    let quotes = await utill.db.Quotes.findOne({
+    let user = await db.dbs.Users.findOne({ where: { email } });
+    let quotes = await db.dbs.Quotes.findOne({
       where: { user_id: user.uuid },
     });
 
-    let mail = await utill.db.Mailing.findOne({
+    let mail = await db.dbs.Mailing.findOne({
       where: { email: "kaluabel76@gmail.com" },
     });
 
-    let company_info = await utill.db.CompanyInfo.findOne({
+    let company_info = await db.dbs.CompanyInfo.findOne({
       where: { user_id: user.uuid },
     });
 

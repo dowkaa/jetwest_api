@@ -10,6 +10,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 const utill = require("../utils/packages");
+const db = require("../database/mysql");
 const signTokens = (user, token) => {
     var token = utill.jwt.sign({
         id: user.id,
@@ -22,7 +23,7 @@ const signTokens = (user, token) => {
         expiresIn: 1800,
     });
     var decoded = utill.jwt_decode(token);
-    utill.db.Oauth.create(decoded);
+    db.dbs.Oauth.create(decoded);
     return token;
 };
 module.exports = {
@@ -42,7 +43,7 @@ module.exports = {
             return res.status(400).json(utill.helpers.sendError(errorMessage));
         }
         const { email, password, type } = req.body;
-        let user = yield utill.db.Users.findOne({ where: { email, type } });
+        let user = yield db.dbs.Users.findOne({ where: { email, type } });
         if (!user) {
             return res
                 .status(400)
@@ -86,14 +87,14 @@ module.exports = {
     }),
     removeTest: (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
         let email = req.query.email;
-        let user = yield utill.db.Users.findOne({ where: { email } });
-        let quotes = yield utill.db.Quotes.findOne({
+        let user = yield db.dbs.Users.findOne({ where: { email } });
+        let quotes = yield db.dbs.Quotes.findOne({
             where: { user_id: user.uuid },
         });
-        let mail = yield utill.db.Mailing.findOne({
+        let mail = yield db.dbs.Mailing.findOne({
             where: { email: "kaluabel76@gmail.com" },
         });
-        let company_info = yield utill.db.CompanyInfo.findOne({
+        let company_info = yield db.dbs.CompanyInfo.findOne({
             where: { user_id: user.uuid },
         });
         yield company_info.destroy();

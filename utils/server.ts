@@ -25,7 +25,7 @@ function createServer() {
   app.use("/api/jetwest/public/", packages.publicRoute);
   app.use("/api/jetwest/auth/", packages.authRouth);
 
-  app.use(packages.passports.initialize());
+  app.use(packages.passport.initialize());
 
   app.use((req: any, res: any, next: any) => {
     res.header("Acces-Control-Allow-Origin", "*");

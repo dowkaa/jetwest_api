@@ -9,6 +9,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 const utilities = require("../utils/packages");
+const db = require("../database/mysql");
 const sendError = (message) => {
     var error = {
         status: "ERROR",
@@ -17,7 +18,7 @@ const sendError = (message) => {
     return error;
 };
 const checkMail = (req) => __awaiter(void 0, void 0, void 0, function* () {
-    return yield utilities.db.Users.findOne({ where: { email: req.body.email } });
+    return yield db.dbs.Users.findOne({ where: { email: req.body.email } });
 });
 const timestamp = (async) => {
     return (Date.now() / 1000) | 0;
@@ -30,7 +31,7 @@ const sendSuccess = (message) => {
     return success;
 };
 const checkPromo = (code) => __awaiter(void 0, void 0, void 0, function* () {
-    let checker = yield utilities.db.Promotions.findOne({
+    let checker = yield db.Promotions.findOne({
         where: { code: code },
     });
     if (!checker) {

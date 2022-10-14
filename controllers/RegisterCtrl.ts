@@ -1,6 +1,7 @@
 require("dotenv").config();
 import { Request, Response, NextFunction } from "express";
 const utills = require("../utils/packages");
+const db = require("../database/mysql");
 
 const signToken = (user: any, token: string) => {
   var token: string = utills.jwt.sign(
@@ -18,7 +19,7 @@ const signToken = (user: any, token: string) => {
     }
   );
   var decoded = utills.jwt_decode(token);
-  utills.db.Oauth.create(decoded);
+  db.dbs.Oauth.create(decoded);
   return token;
 };
 
@@ -64,7 +65,7 @@ module.exports = {
     var code = utills.helpers.generateClientId(6);
     var customer_id = utills.helpers.generateClientId(10);
 
-    const createUser = await utills.db.Users.create({
+    const createUser = await db.dbs.Users.create({
       customer_id,
       uuid: utills.uuid(),
       otp: req.body.otp ? req.body.otp : code,
@@ -109,7 +110,7 @@ module.exports = {
 
     const { otp } = req.body;
 
-    let user = await utills.db.Users.findOne({ where: { otp } });
+    let user = await db.dbs.Users.findOne({ where: { otp } });
 
     if (!user) {
       return res.status(400).json(utills.helpers.sendError("User not found"));
@@ -162,7 +163,7 @@ module.exports = {
 
     const { otp } = req.body;
 
-    let user = await utills.db.Users.findOne({ where: { otp } });
+    let user = await db.dbs.Users.findOne({ where: { otp } });
 
     if (!user) {
       return res.status(400).json(utills.helpers.sendError("Invalid otp"));
@@ -174,7 +175,7 @@ module.exports = {
         .json(utills.helpers.sendError("Details added already"));
     }
 
-    // const createUser = await utills.db.Users.create({
+    // const createUser = await db.dbs.Users.create({
     user.customer_id = customer_id;
     user.company_name = req.body.company_name;
     user.company_address = req.body.company_address;
@@ -200,6 +201,7 @@ module.exports = {
     const itemSchema = utills.Joi.object()
       .keys({
         dataArray: utills.Joi.array().required(),
+        otp: utills.Joi.string().required(),
       })
       .unknown();
 
@@ -225,7 +227,6 @@ module.exports = {
         state: utills.Joi.string().required(),
         zip: utills.Joi.string().required(),
         mobile_number: utills.Joi.string().required(),
-        otp: utills.Joi.string().required(),
       })
       .unknown();
 
@@ -238,57 +239,61 @@ module.exports = {
       return res.status(400).json(utills.helpers.sendError(errorMessage));
     }
 
-    const {
-      first_name,
-      lastname_name,
-      title,
-      dob,
-      email,
-      id_number,
-      address,
-      country,
-      state,
-      zip,
-      mobile_number,
-      otp,
-    } = req.body;
+    const { dataArray, otp } = req.body;
 
-    const user = await utills.db.Users.findOne({ where: { otp } });
+    const user = await db.dbs.Users.findOne({ where: { otp } });
 
-    if (!user) {
-      return res
-        .status(400)
-        .json(utills.helpers.sendError("Invalid user credential"));
-    }
+    for (const items of dataArray) {
+      const {
+        first_name,
+        lastname_name,
+        title,
+        dob,
+        email,
+        id_number,
+        address,
+        country,
+        state,
+        zip,
+        mobile_number,
+        otp,
+      } = items;
 
-    const createCompany = await utills.db.Directors.create({
-      uuid: utills.uuid(),
-      user_id: user.uuid,
-      first_name,
-      lastname_name,
-      title,
-      dob,
-      email,
-      id_number,
-      address,
-      country,
-      state,
-      zip,
-      mobile_number,
-    });
+      if (!user) {
+        return res
+          .status(400)
+          .json(utills.helpers.sendError("Invalid user credential"));
+      }
 
-    if (createCompany) {
-      let random = utills.uuid();
-
-      const token = signToken(user, random);
-
-      return res.status(200).json({
-        success: {
-          status: "SUCCESS",
-          token,
-          message: "Your account was created successfully",
-        },
+      const createCompany = await db.dbs.Directors.create({
+        uuid: utills.uuid(),
+        user_id: user.uuid,
+        first_name,
+        lastname_name,
+        title,
+        dob,
+        email,
+        id_number,
+        address,
+        country,
+        state,
+        zip,
+        mobile_number,
       });
+
+      if (createCompany) {
+        let random = utills.uuid();
+
+        const token = signToken(user, random);
+
+        return res.status(200).json({
+          success: {
+            status: "SUCCESS",
+            token,
+            message: "Your account was created successfully",
+          },
+        });
+      }
     }
   },
 };

@@ -11,7 +11,7 @@ var Directors = (sequelize: any, type: any) => {
     uuid: Sequelize.STRING,
     user_id: Sequelize.STRING,
     first_name: Sequelize.STRING,
-    lastname_name: Sequelize.STRING,
+    last_name: Sequelize.STRING,
     title: Sequelize.STRING,
     dob: Sequelize.STRING,
     email: Sequelize.STRING,

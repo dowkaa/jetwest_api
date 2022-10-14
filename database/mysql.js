@@ -1,8 +1,9 @@
 "use strict";
 require("dotenv").config();
 const tools = require("../utils/packages");
-const db = {};
-var sequelize = new tools.Sequelize(process.env.DB_NAME, process.env.DB_USER, process.env.DB_PASS, {
+const Sequelizes = require("sequelize");
+const dbs = {};
+var sequelize = new Sequelizes(process.env.DB_NAME, process.env.DB_USER, process.env.DB_PASS, {
     host: process.env.DB_HOST,
     port: process.env.DB_PORT,
     dialect: "mysql",
@@ -23,18 +24,18 @@ sequelize
     .catch((error) => {
     console.error("Unable to connect to mysql database: ", error);
 });
-db.sequelize = sequelize;
-db.Users = require("../models/users")(sequelize, tools.Sequelize);
-db.CorperateProfile = require("../models/corperate_profile")(sequelize, tools.Sequelize);
-db.Oauth = require("../models/oauth")(sequelize, tools.Sequelize);
-db.CompanyInfo = require("../models/company_info")(sequelize, tools.Sequelize);
-db.Faqs = require("../models/faqs")(sequelize, tools.Sequelize);
-db.Testimonials = require("../models/testimonials")(sequelize, tools.Sequelize);
-db.Quotes = require("../models/quotes")(sequelize, tools.Sequelize);
-db.Promotions = require("../models/promotions")(sequelize, tools.Sequelize);
-db.Directors = require("../models/directors")(sequelize, tools.Sequelize);
-db.Cargo = require("../models/cargo")(sequelize, tools.Sequelize);
-db.Mailing = require("../models/mailing")(sequelize, tools.Sequelize);
-db.ShippingAgent = require("../models/shipping_agent")(sequelize, tools.Sequelize);
-db.ShippingItems = require("../models/shipping_data")(sequelize, tools.Sequelize);
-module.exports = db;
+dbs.sequelize = sequelize;
+dbs.Users = require("../models/users")(sequelize, Sequelizes);
+dbs.CorperateProfile = require("../models/corperate_profile")(sequelize, Sequelizes);
+dbs.Oauth = require("../models/oauth")(sequelize, Sequelizes);
+dbs.CompanyInfo = require("../models/company_info")(sequelize, Sequelizes);
+dbs.Faqs = require("../models/faqs")(sequelize, Sequelizes);
+dbs.Testimonials = require("../models/testimonials")(sequelize, Sequelizes);
+dbs.Quotes = require("../models/quotes")(sequelize, Sequelizes);
+dbs.Promotions = require("../models/promotions")(sequelize, Sequelizes);
+dbs.Directors = require("../models/directors")(sequelize, Sequelizes);
+dbs.Cargo = require("../models/cargo")(sequelize, Sequelizes);
+dbs.Mailing = require("../models/mailing")(sequelize, Sequelizes);
+dbs.ShippingAgent = require("../models/shipping_agent")(sequelize, Sequelizes);
+dbs.ShippingItems = require("../models/shipping_data")(sequelize, Sequelizes);
+exports.dbs = dbs;

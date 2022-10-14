@@ -1,4 +1,5 @@
 const utilities = require("../utils/packages");
+const db = require("../database/mysql");
 
 const sendError = (message: string) => {
   var error = {
@@ -10,7 +11,7 @@ const sendError = (message: string) => {
 };
 
 const checkMail = async (req: any) => {
-  return await utilities.db.Users.findOne({ where: { email: req.body.email } });
+  return await db.dbs.Users.findOne({ where: { email: req.body.email } });
 };
 
 const timestamp = (async: any) => {
@@ -27,7 +28,7 @@ const sendSuccess = (message: string) => {
 };
 
 const checkPromo = async (code: string) => {
-  let checker = await utilities.db.Promotions.findOne({
+  let checker = await db.Promotions.findOne({
     where: { code: code },
   });
 

@@ -25,14 +25,12 @@ module.exports = {
         type: Sequelize.STRING,
       },
       first_name: {
-        allowNull: false,
-        defaultValue: 0.0,
-        type: Sequelize.DOUBLE,
+        allowNull: true,
+        type: Sequelize.STRING,
       },
-      lastname_name: {
-        allowNull: false,
-        defaultValue: 0.0,
-        type: Sequelize.DOUBLE,
+      last_name: {
+        allowNull: true,
+        type: Sequelize.STRING,
       },
       title: {
         allowNull: true,
