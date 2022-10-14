@@ -1,15 +1,16 @@
 const utilz = require("../utils/packages");
 import { Request, Response, NextFunction } from "express";
+const db = require("../database/mysql");
 
 module.exports = {
   getFags: async (req: Request, res: Response, next: NextFunction) => {
-    let faqs = await utilz.db.Faqs.findAll();
+    let faqs = await db.dbs.Faqs.findAll();
 
     return res.status(200).json({ faqs });
   },
 
   getTestimonials: async (req: Request, res: Response, next: NextFunction) => {
-    let testimonials = await utilz.db.Testimonials.findAll();
+    let testimonials = await db.dbs.Testimonials.findAll();
 
     return res.status(200).json({ testimonials });
   },
@@ -30,7 +31,7 @@ module.exports = {
       return res.status(400).json(utilz.helpers.sendError(errorMessage));
     }
 
-    await utilz.db.Mailing.create({
+    await db.dbs.Mailing.create({
       uuid: utilz.uuid(),
       email: req.body.email,
     });
@@ -42,8 +43,6 @@ module.exports = {
       );
   },
 
-  
-
   getShippingData: async (req: Request, res: Response, next: NextFunction) => {
     let refId = req.query.refId;
 
@@ -53,7 +52,7 @@ module.exports = {
         .json(utilz.helpers.sendError("Enter a valid reference id"));
     }
 
-    let data = await utilz.db.ShippingItems.findOne({
+    let data = await db.dbs.ShippingItems.findOne({
       where: { booking_reference: refId },
     });
 
@@ -69,7 +68,7 @@ module.exports = {
 
   checkPromo: async (req: Request, res: Response, next: NextFunction) => {
     let code = req.query.code;
-    let checker = await utilz.db.Promotions.findOne({ where: { code: code } });
+    let checker = await db.dbs.Promotions.findOne({ where: { code: code } });
 
     if (!checker) {
       return res

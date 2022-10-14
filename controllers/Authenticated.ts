@@ -1,6 +1,7 @@
 import { Request, Response, NextFunction } from "express";
 const util = require("../utils/packages");
 import { Query } from "express-serve-static-core";
+const db = require("../database/mysql");
 
 interface TypedRequestBody<T extends Query, U, R> extends Express.Request {
   body: U;
@@ -35,7 +36,7 @@ module.exports = {
     res: Response,
     next: NextFunction
   ) => {
-    const company_info = await util.db.CompanyInfo.findOne({
+    const company_info = await db.dbs.CompanyInfo.findOne({
       where: { user_id: req.user.uuid },
     });
 
@@ -118,7 +119,7 @@ module.exports = {
       ops_manual,
     } = req.body;
 
-    let data = await util.db.Quotes.create({
+    let data = await db.dbs.Quotes.create({
       uuid: util.uuid(),
       owner_id: req.user.uuid,
       capacity,
@@ -206,7 +207,7 @@ module.exports = {
       destination,
     } = req.body;
 
-    let data = await util.db.Quotes.create({
+    let data = await db.dbs.Quotes.create({
       uuid: util.uuid(),
       user_id: req.user.uuid,
       type,
@@ -309,7 +310,7 @@ module.exports = {
         content,
       } = item;
 
-      let cargo = await util.db.Cargo.findOne({ where: { uuid: cargo_id } });
+      let cargo = await db.dbs.Cargo.findOne({ where: { uuid: cargo_id } });
 
       // let insurance = 1;
 
@@ -347,7 +348,7 @@ module.exports = {
 
       let reference = util.helpers.generateReftId(10);
 
-      let status = await util.db.ShippingItems.create({
+      let status = await db.dbs.ShippingItems.create({
         uuid: util.uuid(),
         type,
         user_id: req.user.uuid,
