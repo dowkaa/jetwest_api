@@ -9,9 +9,11 @@ opts.secretOrKey = process.env.SECRET;
 var LocalStrategy = require("passport-local").Strategy;
 const mysql = require("../database/mysql");
 
+console.log({ mysql });
+
 utility.passport.use(
   new JWTStrategy(opts, async (jwt_payload: any, done: any) => {
-    var checkToken = await mysql.Oauth.findOne({
+    var checkToken = await mysql.dbs.Oauth.findOne({
       where: {
         id: jwt_payload.id,
         email: jwt_payload.email,
@@ -24,7 +26,7 @@ utility.passport.use(
       return done({ message: "Unathorized" });
     }
 
-    await mysql.Users.findOne({ where: { id: jwt_payload.id } })
+    await mysql.dbs.Users.findOne({ where: { id: jwt_payload.id } })
       .then((user: any) => {
         if (!user) {
           return done({ message: "Unathorized" });

@@ -16,8 +16,9 @@ opts.jwtFromRequest = ExtractJWT.fromAuthHeaderAsBearerToken();
 opts.secretOrKey = process.env.SECRET;
 var LocalStrategy = require("passport-local").Strategy;
 const mysql = require("../database/mysql");
+console.log({ mysql });
 utility.passport.use(new JWTStrategy(opts, (jwt_payload, done) => __awaiter(void 0, void 0, void 0, function* () {
-    var checkToken = yield mysql.Oauth.findOne({
+    var checkToken = yield mysql.dbs.Oauth.findOne({
         where: {
             id: jwt_payload.id,
             email: jwt_payload.email,
@@ -28,7 +29,7 @@ utility.passport.use(new JWTStrategy(opts, (jwt_payload, done) => __awaiter(void
     if (!checkToken) {
         return done({ message: "Unathorized" });
     }
-    yield mysql.Users.findOne({ where: { id: jwt_payload.id } })
+    yield mysql.dbs.Users.findOne({ where: { id: jwt_payload.id } })
         .then((user) => {
         if (!user) {
             return done({ message: "Unathorized" });

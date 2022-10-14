@@ -25,7 +25,7 @@ var User = (sequelize: any, type: any) => {
     business_reg_number: Sequelize.STRING,
     taxId_vat_number: Sequelize.STRING,
     ratePerKg: Sequelize.DOUBLE,
-    business_country: Sequelize.DOUBLE,
+    business_country: Sequelize.STRING,
     type: Sequelize.STRING,
   });
 };

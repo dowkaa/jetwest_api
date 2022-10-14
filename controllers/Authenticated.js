@@ -13,7 +13,7 @@ const util = require("../utils/packages");
 const db = require("../database/mysql");
 module.exports = {
     getProfile: (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
-        const company_info = yield db.dbs.CompanyInfo.findOne({
+        const Directors = yield db.dbs.Directors.findAll({
             where: { user_id: req.user.uuid },
         });
         const user = {
@@ -32,7 +32,7 @@ module.exports = {
             secondary_contact: req.user.secondary_contact,
             state: req.user.state,
             type: req.user.type,
-            company_info,
+            Directors,
         };
         return res.status(200).json({ user });
     }),
@@ -187,7 +187,7 @@ module.exports = {
             height: util.Joi.number().required(),
             category: util.Joi.string().required(),
             promo_code: util.Joi.string().allow(""),
-            value: util.Joi.string().required(),
+            value: util.Joi.number().required(),
             content: util.Joi.string().required(),
         })
             .unknown();
@@ -196,7 +196,7 @@ module.exports = {
         if (validate.error != null) {
             const errorMessage = validate.error.details
                 .map((i) => i.message)
-                .Join(".");
+                .join(".");
             return res.status(400).json(util.helpers.sendError(errorMessage));
         }
         const data = req.body.items;
@@ -209,7 +209,7 @@ module.exports = {
             //   insurance =
             // }
             if (!cargo) {
-                return res.status(400).json("Cargo not found");
+                return res.status(400).json(util.helpers.sendError("Cargo not found"));
             }
             let chargeable_weight;
             let volumetric_weight = (parseInt(width) * parseInt(height) * parseInt(length)) / 5000;
