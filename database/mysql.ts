@@ -35,7 +35,7 @@ sequelize
 
 db.sequelize = sequelize;
 
-db.Users = require("../models/Users")(sequelize, tools.Sequelize);
+db.Users = require("../models/users")(sequelize, tools.Sequelize);
 db.CorperateProfile = require("../models/corperate_profile")(
   sequelize,
   tools.Sequelize
