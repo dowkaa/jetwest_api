@@ -10,9 +10,10 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 const util = require("../utils/packages");
+const db = require("../database/mysql");
 module.exports = {
     getProfile: (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
-        const company_info = yield util.db.CompanyInfo.findOne({
+        const company_info = yield db.dbs.CompanyInfo.findOne({
             where: { user_id: req.user.uuid },
         });
         const user = {
@@ -68,7 +69,7 @@ module.exports = {
             return res.status(400).json(util.helpers.sendError(errorMessage));
         }
         const { capacity, available_capacity, take_off, geo_coverage, monthly_flight_time, is_available, airworthiness_type, airworthiness_make, airworthiness_model, airworthiness_cert_url, aircraft_registration, airworthiness_cert_exp_date, noise_cert_url, noise_cert_exp_date, insurance_cert_url, insurance_cert_exp_date, registration_cert, registration_cert_exp_date, mmel, ops_manual, } = req.body;
-        let data = yield util.db.Quotes.create({
+        let data = yield db.dbs.Quotes.create({
             uuid: util.uuid(),
             owner_id: req.user.uuid,
             capacity,
@@ -129,7 +130,7 @@ module.exports = {
             return res.status(400).json(util.helpers.sendError(errorMessage));
         }
         const { type, company_name, email, primary_phone, contact_fullname, phone_number, secondary_phone, length, width, weight, heigth, content, value, pick_up, destination, } = req.body;
-        let data = yield util.db.Quotes.create({
+        let data = yield db.dbs.Quotes.create({
             uuid: util.uuid(),
             user_id: req.user.uuid,
             type,
@@ -202,7 +203,7 @@ module.exports = {
         for (const item of data) {
             let price;
             const { type, pickup_location, destination, width, height, weight, length, cargo_id, category, promo_code, depature_date, value, content, } = item;
-            let cargo = yield util.db.Cargo.findOne({ where: { uuid: cargo_id } });
+            let cargo = yield db.dbs.Cargo.findOne({ where: { uuid: cargo_id } });
             // let insurance = 1;
             //   if (type === "Fragile") {
             //   insurance =
@@ -231,7 +232,7 @@ module.exports = {
                 price = chargeable_weight * req.user.ratePerKg;
             }
             let reference = util.helpers.generateReftId(10);
-            let status = yield util.db.ShippingItems.create({
+            let status = yield db.dbs.ShippingItems.create({
                 uuid: util.uuid(),
                 type,
                 user_id: req.user.uuid,

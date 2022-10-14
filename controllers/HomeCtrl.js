@@ -10,13 +10,14 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 const utilz = require("../utils/packages");
+const db = require("../database/mysql");
 module.exports = {
     getFags: (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
-        let faqs = yield utilz.db.Faqs.findAll();
+        let faqs = yield db.dbs.Faqs.findAll();
         return res.status(200).json({ faqs });
     }),
     getTestimonials: (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
-        let testimonials = yield utilz.db.Testimonials.findAll();
+        let testimonials = yield db.dbs.Testimonials.findAll();
         return res.status(200).json({ testimonials });
     }),
     postMailing: (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
@@ -32,7 +33,7 @@ module.exports = {
                 .join(".");
             return res.status(400).json(utilz.helpers.sendError(errorMessage));
         }
-        yield utilz.db.Mailing.create({
+        yield db.dbs.Mailing.create({
             uuid: utilz.uuid(),
             email: req.body.email,
         });
@@ -47,7 +48,7 @@ module.exports = {
                 .status(400)
                 .json(utilz.helpers.sendError("Enter a valid reference id"));
         }
-        let data = yield utilz.db.ShippingItems.findOne({
+        let data = yield db.dbs.ShippingItems.findOne({
             where: { booking_reference: refId },
         });
         if (!data) {
@@ -59,7 +60,7 @@ module.exports = {
     }),
     checkPromo: (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
         let code = req.query.code;
-        let checker = yield utilz.db.Promotions.findOne({ where: { code: code } });
+        let checker = yield db.dbs.Promotions.findOne({ where: { code: code } });
         if (!checker) {
             return res
                 .status(400)
