@@ -10,7 +10,7 @@
     "build": "tsc",
     "test": "jest",
     "git deploy": "npm run git add . && npm run git commit -am \"update\" && git push",
-    "update": "sudo git pull && pm2 stop jetwes && jest && pm2 start jetwest"
+    "update": "sudo git pull && pm2 stop jetwest && pm2 start jetwest"
   },
   "keywords": [],
   "author": "",
