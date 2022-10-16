@@ -47,6 +47,7 @@ module.exports = {
         email: utillz.Joi.string().required(),
         notification_type: utillz.Joi.string().required(),
         mobile: utillz.Joi.string().required(),
+        password: utillz.Joi.string().required(),
         otp: utillz.Joi.string(),
       })
       .unknown();
@@ -75,6 +76,7 @@ module.exports = {
       email,
       notification_type,
       otp,
+      password,
       mobile,
     } = req.body;
 
@@ -88,6 +90,7 @@ module.exports = {
       first_name,
       last_name,
       country,
+      password: utillz.bcrypt.hashSync(password),
       email,
       otp: req.body.otp ? req.body.otp : code,
     });

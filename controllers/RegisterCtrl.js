@@ -48,6 +48,7 @@ module.exports = {
             email: utillz.Joi.string().required(),
             notification_type: utillz.Joi.string().required(),
             mobile: utillz.Joi.string().required(),
+            password: utillz.Joi.string().required(),
             otp: utillz.Joi.string(),
         })
             .unknown();
@@ -64,7 +65,7 @@ module.exports = {
                 .status(400)
                 .json(utillz.helpers.sendError("User with email already exists"));
         }
-        const { first_name, last_name, country, email, notification_type, otp, mobile, } = req.body;
+        const { first_name, last_name, country, email, notification_type, otp, password, mobile, } = req.body;
         var code = utillz.helpers.generateClientId(6);
         var customer_id = utillz.helpers.generateClientId(10);
         const createUser = yield db.dbs.Users.create({
@@ -74,6 +75,7 @@ module.exports = {
             first_name,
             last_name,
             country,
+            password: utillz.bcrypt.hashSync(password),
             email,
             otp: req.body.otp ? req.body.otp : code,
         });
