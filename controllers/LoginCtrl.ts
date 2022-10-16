@@ -28,7 +28,6 @@ module.exports = {
       .keys({
         email: utill.Joi.string().required(),
         password: utill.Joi.string().required(),
-        type: utill.Joi.string().required(),
       })
       .unknown();
 
@@ -41,9 +40,9 @@ module.exports = {
       return res.status(400).json(utill.helpers.sendError(errorMessage));
     }
 
-    const { email, password, type } = req.body;
+    const { email, password } = req.body;
 
-    let user = await db.dbs.Users.findOne({ where: { email, type } });
+    let user = await db.dbs.Users.findOne({ where: { email } });
 
     if (!user) {
       return res

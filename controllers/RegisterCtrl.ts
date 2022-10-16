@@ -2,6 +2,7 @@ require("dotenv").config();
 import { Request, Response, NextFunction } from "express";
 const utillz = require("../utils/packages");
 const db = require("../database/mysql");
+const sms = require("../services/sms");
 
 const signToken = (user: any, token: string) => {
   var token: string = utillz.jwt.sign(
@@ -40,7 +41,12 @@ module.exports = {
   step1: async (req: Request, res: Response, next: NextFunction) => {
     const schema = utillz.Joi.object()
       .keys({
+        first_name: utillz.Joi.string().required(),
+        last_name: utillz.Joi.string().required(),
+        country: utillz.Joi.string().required(),
         email: utillz.Joi.string().required(),
+        notification_type: utillz.Joi.string().required(),
+        mobile: utillz.Joi.string().required(),
         otp: utillz.Joi.string(),
       })
       .unknown();
@@ -62,14 +68,28 @@ module.exports = {
         .json(utillz.helpers.sendError("User with email already exists"));
     }
 
+    const {
+      first_name,
+      last_name,
+      country,
+      email,
+      notification_type,
+      otp,
+      mobile,
+    } = req.body;
+
     var code = utillz.helpers.generateClientId(6);
     var customer_id = utillz.helpers.generateClientId(10);
 
     const createUser = await db.dbs.Users.create({
       customer_id,
       uuid: utillz.uuid(),
+      mobile_number: mobile,
+      first_name,
+      last_name,
+      country,
+      email,
       otp: req.body.otp ? req.body.otp : code,
-      email: req.body.email,
     });
 
     if (createUser) {
@@ -79,7 +99,11 @@ module.exports = {
         Thanks.`,
       };
 
-      utillz.welcome.sendMail(option);
+      if (notification_type == "email") {
+        utillz.welcome.sendMail(option);
+      } else {
+        sms.send(mobile, option.message);
+      }
 
       return res.status(200).json({
         success: {

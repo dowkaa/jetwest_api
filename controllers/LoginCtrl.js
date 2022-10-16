@@ -32,7 +32,6 @@ module.exports = {
             .keys({
             email: utill.Joi.string().required(),
             password: utill.Joi.string().required(),
-            type: utill.Joi.string().required(),
         })
             .unknown();
         const validate = loginSchema.validate(req.body);
@@ -42,8 +41,8 @@ module.exports = {
                 .join(".");
             return res.status(400).json(utill.helpers.sendError(errorMessage));
         }
-        const { email, password, type } = req.body;
-        let user = yield db.dbs.Users.findOne({ where: { email, type } });
+        const { email, password } = req.body;
+        let user = yield db.dbs.Users.findOne({ where: { email } });
         if (!user) {
             return res
                 .status(400)

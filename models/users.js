@@ -19,6 +19,8 @@ var User = (sequelize, type) => {
         locked: Sequelize.INTEGER,
         country: Sequelize.STRING,
         company_name: Sequelize.STRING,
+        first_name: Sequelize.STRING,
+        last_name: Sequelize.STRING,
         company_address: Sequelize.STRING,
         companyFounded: Sequelize.STRING,
         nature_of_business: Sequelize.STRING,

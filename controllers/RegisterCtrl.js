@@ -12,6 +12,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 require("dotenv").config();
 const utillz = require("../utils/packages");
 const db = require("../database/mysql");
+const sms = require("../services/sms");
 const signToken = (user, token) => {
     var token = utillz.jwt.sign({
         id: user.id,
@@ -41,7 +42,12 @@ module.exports = {
     step1: (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
         const schema = utillz.Joi.object()
             .keys({
+            first_name: utillz.Joi.string().required(),
+            last_name: utillz.Joi.string().required(),
+            country: utillz.Joi.string().required(),
             email: utillz.Joi.string().required(),
+            notification_type: utillz.Joi.string().required(),
+            mobile: utillz.Joi.string().required(),
             otp: utillz.Joi.string(),
         })
             .unknown();
@@ -58,13 +64,18 @@ module.exports = {
                 .status(400)
                 .json(utillz.helpers.sendError("User with email already exists"));
         }
+        const { first_name, last_name, country, email, notification_type, otp, mobile, } = req.body;
         var code = utillz.helpers.generateClientId(6);
         var customer_id = utillz.helpers.generateClientId(10);
         const createUser = yield db.dbs.Users.create({
             customer_id,
             uuid: utillz.uuid(),
+            mobile_number: mobile,
+            first_name,
+            last_name,
+            country,
+            email,
             otp: req.body.otp ? req.body.otp : code,
-            email: req.body.email,
         });
         if (createUser) {
             const option = {
@@ -72,7 +83,12 @@ module.exports = {
                 message: `Thanks for utillz.Joining the Jetwest team, we promise to serve your shiping needs. Kindly use the token ${code} to activate your account. 
         Thanks.`,
             };
-            utillz.welcome.sendMail(option);
+            if (notification_type == "email") {
+                utillz.welcome.sendMail(option);
+            }
+            else {
+                sms.send(mobile, option.message);
+            }
             return res.status(200).json({
                 success: {
                     status: "SUCCESS",
