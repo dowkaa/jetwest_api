@@ -21,6 +21,8 @@ module.exports = {
         activated: string;
         locked: string;
         username: string;
+        first_name: string;
+        last_name: string;
         company_name: string;
         mobile_number: string;
         country: string;
@@ -48,6 +50,8 @@ module.exports = {
       locked: req.user.locked,
       company_name: req.user.company_name,
       mobile_number: req.user.mobile_number,
+      first_name: req.user.first_name,
+      last_name: req.user.last_name,
       primary_contact: req.user.primary_contact,
       country: req.user.country,
       address: req.user.Area_street_sector_village,
