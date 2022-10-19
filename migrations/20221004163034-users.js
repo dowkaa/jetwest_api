@@ -21,6 +21,14 @@ module.exports = {
         allowNull: true,
         type: Sequelize.STRING,
       },
+      first_name: {
+        allowNull: true,
+        type: Sequelize.STRING,
+      },
+      last_name: {
+        allowNull: true,
+        type: Sequelize.STRING,
+      },
       customer_id: {
         allowNull: true,
         type: Sequelize.STRING,
@@ -33,29 +41,15 @@ module.exports = {
         allowNull: true,
         type: Sequelize.STRING,
       },
+      country: {
+        allowNull: true,
+        type: Sequelize.STRING,
+      },
       password: {
         allowNull: true,
         type: Sequelize.STRING,
       },
       mobile_number: {
-        allowNull: true,
-        type: Sequelize.STRING,
-      },
-      activated: {
-        allowNull: false,
-        defaultValue: 0,
-        type: Sequelize.INTEGER,
-      },
-      otp: {
-        allowNull: true,
-        type: Sequelize.STRING,
-      },
-      locked: {
-        allowNull: false,
-        defaultValue: 0,
-        type: Sequelize.INTEGER,
-      },
-      country: {
         allowNull: true,
         type: Sequelize.STRING,
       },
@@ -72,15 +66,7 @@ module.exports = {
         allowNull: true,
         type: Sequelize.STRING,
       },
-      nature_of_business: {
-        allowNull: true,
-        type: Sequelize.STRING,
-      },
-      business_reg_number: {
-        allowNull: true,
-        type: Sequelize.STRING,
-      },
-      taxId_vat_number: {
+      type: {
         allowNull: true,
         type: Sequelize.STRING,
       },
@@ -89,14 +75,21 @@ module.exports = {
         defaultValue: 1,
         type: Sequelize.DOUBLE,
       },
-      business_country: {
+      otp: {
         allowNull: true,
         type: Sequelize.STRING,
       },
-      type: {
-        allowNull: true,
-        type: Sequelize.STRING,
+      locked: {
+        allowNull: false,
+        defaultValue: 0,
+        type: Sequelize.INTEGER,
       },
+      activated: {
+        allowNull: false,
+        defaultValue: 0,
+        type: Sequelize.INTEGER,
+      },
+
       createdAt: {
         type: "TIMESTAMP",
         defaultValue: Sequelize.literal("CURRENT_TIMESTAMP"),

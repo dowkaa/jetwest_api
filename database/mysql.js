@@ -37,5 +37,6 @@ dbs.Directors = require("../models/directors")(sequelize, Sequelizes);
 dbs.Cargo = require("../models/cargo")(sequelize, Sequelizes);
 dbs.Mailing = require("../models/mailing")(sequelize, Sequelizes);
 dbs.ShippingAgent = require("../models/shipping_agent")(sequelize, Sequelizes);
+dbs.BusinessCompliance = require("../models/business_compliance")(sequelize, Sequelizes);
 dbs.ShippingItems = require("../models/shipping_data")(sequelize, Sequelizes);
 exports.dbs = dbs;

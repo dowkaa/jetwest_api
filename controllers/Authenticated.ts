@@ -25,13 +25,11 @@ module.exports = {
         last_name: string;
         company_name: string;
         mobile_number: string;
+        company_address: string;
+        companyFounded: string;
+        ratePerkg: string;
         country: string;
-        Area_street_sector_village: string;
-        contact_personal_full_name: string;
-        postal_code: string;
-        primary_contact: string;
         state: string;
-        secondary_contact: string;
         type: string;
       }
     >,
@@ -43,23 +41,20 @@ module.exports = {
     });
 
     const user = {
+      first_name: req.user.first_name,
+      last_name: req.user.last_name,
       customer_id: req.user.customer_id,
       username: req.user.username,
       email: req.user.email,
-      activated: req.user.activated,
-      locked: req.user.locked,
-      company_name: req.user.company_name,
-      mobile_number: req.user.mobile_number,
-      first_name: req.user.first_name,
-      last_name: req.user.last_name,
-      primary_contact: req.user.primary_contact,
       country: req.user.country,
-      address: req.user.Area_street_sector_village,
-      contact_personal_full_name: req.user.contact_personal_full_name,
-      postal_code: req.user.postal_code,
-      secondary_contact: req.user.secondary_contact,
-      state: req.user.state,
+      mobile_number: req.user.mobile_number,
+      company_name: req.user.company_name,
+      company_address: req.user.company_address,
+      companyFounded: req.user.companyFounded,
       type: req.user.type,
+      ratePerKg: req.user.ratePerkg,
+      locked: req.user.locked,
+      activated: req.user.activated,
       Directors,
     };
     return res.status(200).json({ user });

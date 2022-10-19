@@ -9,7 +9,7 @@ module.exports = {
      * Example:
      * await queryInterface.createTable('users', { id: Sequelize.INTEGER });
      */
-    await queryInterface.createTable("directors", {
+    await queryInterface.createTable("transactions", {
       id: {
         allowNull: false,
         autoIncrement: true,
@@ -24,52 +24,30 @@ module.exports = {
         allowNull: true,
         type: Sequelize.STRING,
       },
-      first_name: {
+      amount: {
         allowNull: true,
         type: Sequelize.STRING,
       },
-      last_name: {
+      reference: {
         allowNull: true,
         type: Sequelize.STRING,
       },
-      title: {
+      type: {
         allowNull: true,
         type: Sequelize.STRING,
       },
-      dob: {
+      method: {
         allowNull: true,
         type: Sequelize.STRING,
       },
-
-      email: {
+      status: {
         allowNull: true,
         type: Sequelize.STRING,
       },
-      id_number: {
+      description: {
         allowNull: true,
         type: Sequelize.STRING,
       },
-      director_owner_id_url: {
-        allowNull: true,
-        type: Sequelize.STRING,
-      },
-      director_owner_id_status: {
-        allowNull: true,
-        type: Sequelize.STRING,
-      },
-      address: {
-        allowNull: true,
-        type: Sequelize.STRING,
-      },
-      country: {
-        allowNull: true,
-        type: Sequelize.STRING,
-      },
-      mobile_number: {
-        allowNull: true,
-        type: Sequelize.STRING,
-      },
-
       createdAt: {
         type: "TIMESTAMP",
         defaultValue: Sequelize.literal("CURRENT_TIMESTAMP"),
@@ -90,6 +68,6 @@ module.exports = {
      * Example:
      * await queryInterface.dropTable('users');
      */
-    await queryInterface.dropTable("directors");
+    await queryInterface.dropTable("transactions");
   },
 };

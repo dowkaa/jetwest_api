@@ -16,12 +16,9 @@ var Directors = (sequelize: any, type: any) => {
     dob: Sequelize.STRING,
     email: Sequelize.STRING,
     id_number: Sequelize.STRING,
-    id_type: Sequelize.STRING,
-    id_url: Sequelize.STRING,
+    director_owner_id_url: Sequelize.STRING,
     address: Sequelize.STRING,
     country: Sequelize.STRING,
-    state: Sequelize.STRING,
-    zip: Sequelize.STRING,
     mobile_number: Sequelize.STRING,
   });
 };

@@ -45,6 +45,7 @@ const sendMail = (option) => __awaiter(void 0, void 0, void 0, function* () {
         subject: "Welcome to Jetwest Auto shipping Ltd",
         template: "welcome",
         context: {
+            name: option.name,
             message: `${option.message}`,
         },
     };

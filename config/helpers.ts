@@ -14,6 +14,10 @@ const checkMail = async (req: any) => {
   return await db.dbs.Users.findOne({ where: { email: req.body.email } });
 };
 
+const checkUserTransaction = async (reference: string) => {
+  return await db.dbs.Transactions.findOne({ where: { reference: reference } });
+};
+
 const timestamp = (async: any) => {
   return (Date.now() / 1000) | 0;
 };
@@ -106,6 +110,7 @@ const generateReftId = (length: number) => {
 
 module.exports = {
   sendError,
+  checkUserTransaction,
   generateClientId,
   sendSuccess,
   generateReftId,

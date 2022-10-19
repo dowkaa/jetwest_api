@@ -40,6 +40,7 @@ const sendMail = async (option: any) => {
     subject: "Welcome to Jetwest Auto shipping Ltd",
     template: "welcome",
     context: {
+      name: option.name,
       message: `${option.message}`,
     },
   };

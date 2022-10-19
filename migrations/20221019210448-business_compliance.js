@@ -9,7 +9,8 @@ module.exports = {
      * Example:
      * await queryInterface.createTable('users', { id: Sequelize.INTEGER });
      */
-    await queryInterface.createTable("directors", {
+
+    await queryInterface.createTable("business_compliance", {
       id: {
         allowNull: false,
         autoIncrement: true,
@@ -24,50 +25,90 @@ module.exports = {
         allowNull: true,
         type: Sequelize.STRING,
       },
-      first_name: {
+      natureOf_biz: {
         allowNull: true,
         type: Sequelize.STRING,
       },
-      last_name: {
+      business_reg_num: {
         allowNull: true,
         type: Sequelize.STRING,
       },
-      title: {
+      biz_tax_id: {
         allowNull: true,
         type: Sequelize.STRING,
       },
-      dob: {
+      country_of_incorporation: {
         allowNull: true,
         type: Sequelize.STRING,
       },
-
+      incorporation_date: {
+        allowNull: true,
+        type: Sequelize.STRING,
+      },
+      country_of_operation: {
+        allowNull: true,
+        type: Sequelize.STRING,
+      },
+      mobile: {
+        allowNull: true,
+        type: Sequelize.STRING,
+      },
       email: {
         allowNull: true,
         type: Sequelize.STRING,
       },
-      id_number: {
+      incoporation_doc_url: {
         allowNull: true,
         type: Sequelize.STRING,
       },
-      director_owner_id_url: {
+      incoporation_doc_url_status: {
         allowNull: true,
         type: Sequelize.STRING,
       },
-      director_owner_id_status: {
+      proofOf_biz_address_url: {
         allowNull: true,
         type: Sequelize.STRING,
       },
-      address: {
+      proofOf_biz_address_url_status: {
         allowNull: true,
         type: Sequelize.STRING,
       },
-      country: {
+      guarantor_form_url: {
         allowNull: true,
         type: Sequelize.STRING,
       },
-      mobile_number: {
+      guarantor_form_url_status: {
         allowNull: true,
         type: Sequelize.STRING,
+      },
+      artOf_association_url: {
+        allowNull: true,
+        type: Sequelize.STRING,
+      },
+      artOf_association_status: {
+        allowNull: true,
+        type: Sequelize.STRING,
+      },
+      shareHolder_register_url: {
+        allowNull: true,
+        type: Sequelize.STRING,
+      },
+      shareHolder_register_url_status: {
+        allowNull: true,
+        type: Sequelize.STRING,
+      },
+      memorandumOf_guidance_url: {
+        allowNull: true,
+        type: Sequelize.STRING,
+      },
+      memorandumOf_guidance_url_status: {
+        allowNull: true,
+        type: Sequelize.STRING,
+      },
+      status: {
+        allowNull: false,
+        defaultValue: 0,
+        type: Sequelize.INTEGER,
       },
 
       createdAt: {
@@ -90,6 +131,7 @@ module.exports = {
      * Example:
      * await queryInterface.dropTable('users');
      */
-    await queryInterface.dropTable("directors");
+
+    await queryInterface.dropTable("business_compliance");
   },
 };

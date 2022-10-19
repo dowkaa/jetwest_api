@@ -20,6 +20,9 @@ const sendError = (message) => {
 const checkMail = (req) => __awaiter(void 0, void 0, void 0, function* () {
     return yield db.dbs.Users.findOne({ where: { email: req.body.email } });
 });
+const checkUserTransaction = (reference) => __awaiter(void 0, void 0, void 0, function* () {
+    return yield db.dbs.Transactions.findOne({ where: { reference: reference } });
+});
 const timestamp = (async) => {
     return (Date.now() / 1000) | 0;
 };
@@ -94,6 +97,7 @@ const generateReftId = (length) => {
 };
 module.exports = {
     sendError,
+    checkUserTransaction,
     generateClientId,
     sendSuccess,
     generateReftId,

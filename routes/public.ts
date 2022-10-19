@@ -10,8 +10,10 @@ const HomeCtrl = require("../controllers/HomeCtrl");
 // Authentication
 router.post("/register_step_one", Register.step1);
 router.post("/register_activate", Register.step2);
-router.post("/register_step_two", Register.step3);
-router.post("/register_step_three", Register.step4);
+router.post("/update_account", Register.step3);
+router.post("/add_business", Register.addBusiness);
+router.post("/update_business_compliance", Register.businessDocs);
+router.post("/add_directors", Register.step4);
 router.post("/login", LoginCtrl.Login);
 
 //Home routes
