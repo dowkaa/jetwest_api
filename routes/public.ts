@@ -24,5 +24,5 @@ router.get("/shipping_item", HomeCtrl.getShippingData);
 router.get("/check_promo", HomeCtrl.checkPromo);
 
 // delete unit test account after successful test
-router.get("/delete-test", LoginCtrl.removeTest);
+router.get("/delete-test", Register.deleteAccounts);
 module.exports = router;

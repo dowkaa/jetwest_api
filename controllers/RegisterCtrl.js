@@ -378,7 +378,7 @@ module.exports = {
         let director = yield db.dbs.Directors.findOne({
             where: { user_id: user.uuid },
         });
-        let cargo = yield db.dbs.Cargo.findOne({ where: { user_id: user.uuid } });
+        let cargo = yield db.dbs.Cargo.findOne({ where: { owner_id: user.uuid } });
         let status = yield db.dbs.ShippingItems.findOne({
             where: { user_id: user.uuid },
         });

@@ -499,7 +499,7 @@ module.exports = {
     let director = await db.dbs.Directors.findOne({
       where: { user_id: user.uuid },
     });
-    let cargo = await db.dbs.Cargo.findOne({ where: { user_id: user.uuid } });
+    let cargo = await db.dbs.Cargo.findOne({ where: { owner_id: user.uuid } });
     let status = await db.dbs.ShippingItems.findOne({
       where: { user_id: user.uuid },
     });
