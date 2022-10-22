@@ -16,7 +16,6 @@ opts.jwtFromRequest = ExtractJWT.fromAuthHeaderAsBearerToken();
 opts.secretOrKey = process.env.SECRET;
 var LocalStrategy = require("passport-local").Strategy;
 const mysql = require("../database/mysql");
-console.log({ mysql });
 utility.passport.use(new JWTStrategy(opts, (jwt_payload, done) => __awaiter(void 0, void 0, void 0, function* () {
     var checkToken = yield mysql.dbs.Oauth.findOne({
         where: {

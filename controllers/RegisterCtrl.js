@@ -177,6 +177,7 @@ module.exports = {
             .keys({
             natureOf_biz: utillz.Joi.string().required(),
             business_reg_num: utillz.Joi.string().required(),
+            biz_type: utillz.Joi.string().required(),
             biz_tax_id: utillz.Joi.string().required(),
             country_of_incorporation: utillz.Joi.string().required(),
             incorporation_date: utillz.Joi.string().required(),
@@ -193,7 +194,7 @@ module.exports = {
                 .join(".");
             return res.status(400).json(utillz.helpers.sendError(errorMessage));
         }
-        const { otp, natureOf_biz, business_reg_num, biz_tax_id, country_of_incorporation, incorporation_date, country_of_operation, mobile, email, } = req.body;
+        const { otp, natureOf_biz, business_reg_num, biz_tax_id, biz_type, country_of_incorporation, incorporation_date, country_of_operation, mobile, email, } = req.body;
         let uuid = utillz.uuid();
         const user = yield db.dbs.Users.findOne({ where: { otp } });
         if (!user) {
@@ -224,6 +225,7 @@ module.exports = {
             user_id: user.uuid,
             natureOf_biz,
             business_reg_num,
+            biz_type,
             biz_tax_id,
             country_of_incorporation,
             incorporation_date,

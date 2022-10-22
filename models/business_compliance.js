@@ -22,6 +22,7 @@ var BusinessCompliance = (sequelize, type) => {
         incoporation_doc_url: Sequelize.STRING,
         incoporation_doc_url_status: Sequelize.STRING,
         proofOf_biz_address_url: Sequelize.STRING,
+        biz_type: Sequelize.STRING,
         proofOf_biz_address_url_status: Sequelize.STRING,
         guarantor_form_url: Sequelize.STRING,
         guarantor_form_url_status: Sequelize.STRING,

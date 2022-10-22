@@ -29,6 +29,10 @@ module.exports = {
         allowNull: true,
         type: Sequelize.STRING,
       },
+      biz_type: {
+        allowNull: true,
+        type: Sequelize.STRING,
+      },
       business_reg_num: {
         allowNull: true,
         type: Sequelize.STRING,
