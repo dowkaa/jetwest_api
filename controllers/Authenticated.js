@@ -273,4 +273,32 @@ module.exports = {
                 .json(util.helpers.sendError("Invalid request. Kindly try again"));
         }
     }),
+    resetPassword: (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
+        console.log("11111111111111111111111111");
+        const loginSchema = util.Joi.object()
+            .keys({
+            old_password: util.Joi.string().required(),
+            new_password: util.Joi.string().required(),
+        })
+            .unknown();
+        const validate = loginSchema.validate(req.body);
+        if (validate.error != null) {
+            const errorMessage = validate.error.details
+                .map((i) => i.message)
+                .join(".");
+            return res.status(400).json(util.helpers.sendError(errorMessage));
+        }
+        const { old_password, new_password } = req.body;
+        let user = yield yield db.dbs.Users.findOne({
+            where: { uuid: req.user.uuid },
+        });
+        if (util.bcrypt.compareSync(old_password, user.password)) {
+            user.password = util.bcrypt.hashSync(new_password);
+            yield user.save();
+            return res
+                .status(200)
+                .json(util.helpers.sendSuccess("Password updated successfully"));
+        }
+        return res.status(400).json(util.helpers.sendError("Invalid password"));
+    }),
 };

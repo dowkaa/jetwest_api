@@ -53,6 +53,11 @@ module.exports = {
     if (user.activated == 0) {
       const code = user.otp;
 
+      // setTimeout(async () => {
+      //   user.otp = null;
+      //   await user.save();
+      // }, 40000);
+
       const option = {
         email: user.email,
         name: user.fullname,
@@ -64,6 +69,8 @@ module.exports = {
       } catch (error) {
         console.log({ error });
       }
+
+      await utill.helpers.deactivateOtp(email);
 
       // welcomes.sendMail(option);
       return res

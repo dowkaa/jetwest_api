@@ -60,12 +60,28 @@ module.exports = {
             return res.status(400).json(utillz.helpers.sendError(errorMessage));
         }
         let checkMail = yield utillz.helpers.checkMail(req);
+        let checkMobile = yield utillz.helpers.checkMobile(req);
         if (checkMail) {
             return res
                 .status(400)
                 .json(utillz.helpers.sendError("User with email already exists"));
         }
+        if (checkMobile) {
+            return res
+                .status(400)
+                .json(utillz.helpers.sendError("User with mobile number already exists"));
+        }
         const { first_name, last_name, country, email, notification_type, otp, password, mobile, } = req.body;
+        if (!email.includes("@")) {
+            return res
+                .status(400)
+                .json(utillz.helpers.sendError("Kindly enter a valid email address"));
+        }
+        if (/[a-zA-Z]/.test(mobile)) {
+            return res
+                .status(400)
+                .json(utillz.helpers.sendError("Kindly enter a valid mobile number"));
+        }
         var code = utillz.helpers.generateClientId(6);
         var customer_id = utillz.helpers.generateClientId(10);
         const createUser = yield db.dbs.Users.create({
@@ -86,6 +102,7 @@ module.exports = {
                 message: `Thanks for Jetwest the Jetwest team, we promise to serve your shiping needs. Kindly use the token ${code} to activate your account. 
         Thanks.`,
             };
+            yield utillz.helpers.deactivateOtp(email);
             if (notification_type == "email") {
                 utillz.welcome.sendMail(option);
             }
@@ -140,7 +157,7 @@ module.exports = {
             company_address: utillz.Joi.string().required(),
             companyFounded: utillz.Joi.string().required(),
             type: utillz.Joi.string().required(),
-            otp: utillz.Joi.string(),
+            register_email: utillz.Joi.string(),
         })
             .unknown();
         const validate = schema.validate(req.body);
@@ -150,8 +167,8 @@ module.exports = {
                 .join(".");
             return res.status(400).json(utillz.helpers.sendError(errorMessage));
         }
-        const { otp } = req.body;
-        let user = yield db.dbs.Users.findOne({ where: { otp } });
+        const { register_email } = req.body;
+        let user = yield db.dbs.Users.findOne({ where: { email: register_email } });
         if (!user) {
             return res.status(400).json(utillz.helpers.sendError("Invalid otp"));
         }
@@ -184,7 +201,7 @@ module.exports = {
             country_of_operation: utillz.Joi.string().required(),
             mobile: utillz.Joi.string().required(),
             email: utillz.Joi.string().required(),
-            otp: utillz.Joi.string().required(),
+            register_email: utillz.Joi.string().required(),
         })
             .unknown();
         const validate1 = itemSchema.validate(req.body);
@@ -194,9 +211,11 @@ module.exports = {
                 .join(".");
             return res.status(400).json(utillz.helpers.sendError(errorMessage));
         }
-        const { otp, natureOf_biz, business_reg_num, biz_tax_id, biz_type, country_of_incorporation, incorporation_date, country_of_operation, mobile, email, } = req.body;
+        const { register_email, natureOf_biz, business_reg_num, biz_tax_id, biz_type, country_of_incorporation, incorporation_date, country_of_operation, mobile, email, } = req.body;
         let uuid = utillz.uuid();
-        const user = yield db.dbs.Users.findOne({ where: { otp } });
+        const user = yield db.dbs.Users.findOne({
+            where: { email: register_email },
+        });
         if (!user) {
             return res
                 .status(400)
@@ -298,7 +317,7 @@ module.exports = {
         const itemSchema = utillz.Joi.object()
             .keys({
             dataArray: utillz.Joi.array().required(),
-            otp: utillz.Joi.string().required(),
+            register_email: utillz.Joi.string().required(),
         })
             .unknown();
         const validate1 = itemSchema.validate(req.body);
@@ -329,8 +348,10 @@ module.exports = {
                 .join(".");
             return res.status(400).json(utillz.helpers.sendError(errorMessage));
         }
-        const { dataArray, otp } = req.body;
-        const user = yield db.dbs.Users.findOne({ where: { otp } });
+        const { dataArray, register_email } = req.body;
+        const user = yield db.dbs.Users.findOne({
+            where: { email: register_email },
+        });
         for (const items of dataArray) {
             const { first_name, last_name, title, dob, email, id_url, id_number, address, country, mobile_number, } = items;
             if (!user) {
@@ -363,6 +384,25 @@ module.exports = {
             },
         });
     }),
+    // resendRegistrationOtp: async (req: any, res: any, next: any) => {
+    //   let email = req.query.email;
+    //   if (!email) {
+    //     return res.status(400).json(utillz.helpers.sendError("No email added"));
+    //   }
+    //   let user = await db.dbs.Users.findOne({ where: { email } });
+    //   if (!user) {
+    //     return res
+    //       .status(400)
+    //       .json(utillz.helpers.sendError("No user with this email found"));
+    //   }
+    //   var code = utillz.helpers.generateClientId(6);
+    //   user.otp = code;
+    //   await user.save();
+    //   await utillz.helpers.deactivateOtp(email);
+    //   return res
+    //     .status(200)
+    //     .json(utillz.helpers.sendSuccess("otp sent successfully"));
+    // },
     deleteAccounts: (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
         let email = req.query.email;
         if (!email) {

@@ -8,6 +8,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
+Object.defineProperty(exports, "__esModule", { value: true });
 const utilities = require("../utils/packages");
 const db = require("../database/mysql");
 const sendError = (message) => {
@@ -22,6 +23,29 @@ const checkMail = (req) => __awaiter(void 0, void 0, void 0, function* () {
 });
 const checkUserTransaction = (reference) => __awaiter(void 0, void 0, void 0, function* () {
     return yield db.dbs.Transactions.findOne({ where: { reference: reference } });
+});
+const deactivateOtp = (param) => __awaiter(void 0, void 0, void 0, function* () {
+    if (param.includes("@")) {
+        let user = yield db.dbs.Users.findOne({ where: { email: param } });
+        console.log("Hello world");
+        setTimeout(() => __awaiter(void 0, void 0, void 0, function* () {
+            user.otp = null;
+            yield user.save();
+        }), 240000);
+    }
+    else {
+        let user = yield db.dbs.Users.findOne({ where: { mobile_number: param } });
+        console.log("11111222222");
+        setTimeout(() => __awaiter(void 0, void 0, void 0, function* () {
+            user.otp = null;
+            yield user.save();
+        }), 240000);
+    }
+});
+const checkMobile = (req) => __awaiter(void 0, void 0, void 0, function* () {
+    return yield db.dbs.Users.findOne({
+        where: { mobile_number: req.body.mobile },
+    });
 });
 const timestamp = (async) => {
     return (Date.now() / 1000) | 0;
@@ -101,7 +125,9 @@ module.exports = {
     generateClientId,
     sendSuccess,
     generateReftId,
+    deactivateOtp,
     checkPromo,
+    checkMobile,
     timestamp,
     checkMail,
 };

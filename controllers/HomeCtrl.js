@@ -41,6 +41,80 @@ module.exports = {
             .status(200)
             .json(utilz.helpers.sendSuccess("Email successfully added to mailing list"));
     }),
+    requestOtp: (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
+        let { email, mobile } = req.query;
+        var code = utilz.helpers.generateClientId(6);
+        if (email) {
+            if (!email || !email.includes("@")) {
+                return res
+                    .status(400)
+                    .json(utilz.helpers.sendError("Kindly enter a valid email"));
+            }
+            let user = yield db.dbs.Users.findOne({
+                where: { email: email },
+            });
+            if (!user) {
+                return res.status(400).json(utilz.helpers.sendError("User not found"));
+            }
+            if (user.activated === 1) {
+                return res
+                    .status(400)
+                    .json(utilz.helpers.sendError("Email already validated, kindly login to your account"));
+            }
+            if (user.otp) {
+                return res
+                    .status(400)
+                    .json(utilz.helpers.sendError("Code already sent, kindly wait for 4 minutes to request another code"));
+            }
+            user.otp = code;
+            yield user.save();
+            const option = {
+                email: email,
+                name: `${user.first_name} ${user.last_name}`,
+                message: `Thanks for Jetwest the Jetwest team, we promise to serve your shiping needs. Kindly use the token ${code} to activate your account. 
+        Thanks.`,
+            };
+            utilz.welcome.sendMail(option);
+            yield utilz.helpers.deactivateOtp(email);
+        }
+        else if (mobile) {
+            if (/[a-zA-Z]/.test(mobile)) {
+                return res
+                    .status(400)
+                    .json(utillz.helpers.sendError("Kindly enter a valid mobile number"));
+            }
+            let user = yield db.dbs.Users.findOne({
+                where: { mobile_number: mobile },
+            });
+            if (!user) {
+                return res.status(400).json(utilz.helpers.sendError("User not found"));
+            }
+            if (user.activated === 1) {
+                return res
+                    .status(400)
+                    .json(utilz.helpers.sendError("Email already validated, kindly login to your account"));
+            }
+            if (user.otp) {
+                return res
+                    .status(400)
+                    .json(utilz.helpers.sendError("Code already sent, kindly wait for 4 minutes to request another code"));
+            }
+            user.otp = code;
+            yield user.save();
+            const message = `Thanks for Jetwest the Jetwest team, we promise to serve your shiping needs. Kindly use the token ${code} to activate your account. 
+        Thanks.`;
+            // utilz.welcome.sendMail(option);
+            yield utilz.helpers.deactivateOtp(mobile);
+        }
+        else {
+            return res
+                .status(400)
+                .json(utilz.helpers.sendError("Kindly add a valid query parameter"));
+        }
+        return res
+            .status(200)
+            .json(utilz.helpers.sendSuccess("kindly activate account with otp code sent to your mobile number"));
+    }),
     getShippingData: (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
         let refId = req.query.refId;
         if (!refId) {

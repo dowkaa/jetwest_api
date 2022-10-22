@@ -1,3 +1,5 @@
+import { number } from "joi";
+
 const utilities = require("../utils/packages");
 const db = require("../database/mysql");
 
@@ -16,6 +18,32 @@ const checkMail = async (req: any) => {
 
 const checkUserTransaction = async (reference: string) => {
   return await db.dbs.Transactions.findOne({ where: { reference: reference } });
+};
+
+const deactivateOtp = async (param: string) => {
+  if (param.includes("@")) {
+    let user = await db.dbs.Users.findOne({ where: { email: param } });
+
+    console.log("Hello world");
+    setTimeout(async () => {
+      user.otp = null;
+      await user.save();
+    }, 240000);
+  } else {
+    let user = await db.dbs.Users.findOne({ where: { mobile_number: param } });
+
+    console.log("11111222222");
+    setTimeout(async () => {
+      user.otp = null;
+      await user.save();
+    }, 240000);
+  }
+};
+
+const checkMobile = async (req: any) => {
+  return await db.dbs.Users.findOne({
+    where: { mobile_number: req.body.mobile },
+  });
 };
 
 const timestamp = (async: any) => {
@@ -114,7 +142,9 @@ module.exports = {
   generateClientId,
   sendSuccess,
   generateReftId,
+  deactivateOtp,
   checkPromo,
+  checkMobile,
   timestamp,
   checkMail,
 };

@@ -17,6 +17,7 @@ function createServer() {
     app.use(packages.bodyParser.urlencoded({ extended: true }));
     app.use(packages.bodyParser.json());
     app.use("/api/jetwest/public/", packages.publicRoute);
+    app.use("/api/jetwest/password/", packages.password);
     app.use("/api/jetwest/auth/", packages.authRouth);
     app.use(packages.passport.initialize());
     app.use((req, res, next) => {

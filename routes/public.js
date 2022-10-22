@@ -1,7 +1,6 @@
 "use strict";
 const expresss = require("express");
 const router = expresss.Router();
-const passportss = require("passport");
 require("dotenv").config();
 const Register = require("../controllers/RegisterCtrl");
 const LoginCtrl = require("../controllers/LoginCtrl");
@@ -14,6 +13,7 @@ router.post("/add_business", Register.addBusiness);
 router.post("/update_business_compliance", Register.businessDocs);
 router.post("/add_directors", Register.step4);
 router.post("/login", LoginCtrl.Login);
+router.get("/resend-otp", HomeCtrl.requestOtp);
 //Home routes
 router.get("/get_faqs", HomeCtrl.getFags);
 router.get("/all_testimonials", HomeCtrl.getTestimonials);
