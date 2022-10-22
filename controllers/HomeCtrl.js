@@ -81,7 +81,7 @@ module.exports = {
             if (/[a-zA-Z]/.test(mobile)) {
                 return res
                     .status(400)
-                    .json(utillz.helpers.sendError("Kindly enter a valid mobile number"));
+                    .json(utilz.helpers.sendError("Kindly enter a valid mobile number"));
             }
             let user = yield db.dbs.Users.findOne({
                 where: { mobile_number: mobile },
