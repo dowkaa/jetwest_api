@@ -155,6 +155,156 @@ module.exports = {
       );
   },
 
+  updateRegStatus: async (
+    req: { query: { email: string; status: string } },
+    res: Response,
+    next: NextFunction
+  ) => {
+    let { email, status } = req.query;
+
+    if (!email && status) {
+      return res
+        .status(400)
+        .json(utilz.helpers.sendError("Enter a valid search parameter"));
+    }
+    let user = await db.dbs.Users.findOne({
+      where: { email: email },
+    });
+
+    if (!user) {
+      return res.status(400).json(utilz.helpers.sendError("User not found"));
+    }
+
+    user.reg_status = status;
+    await user.save();
+
+    return res
+      .status(200)
+      .json(
+        utilz.helpers.sendSuccess(
+          "User registration status updated successfully"
+        )
+      );
+  },
+
+  allCargos: async (req: Request, res: Response, next: NextFunction) => {
+    let cargos = await db.dbs.Cargo.findAll({ where: { is_available: 1 } });
+
+    return res.status(200).json({ cargos });
+  },
+
+  singleCargo: async (
+    req: { query: { cargo_id: string } },
+    res: Response,
+    next: NextFunction
+  ) => {
+    let id = req.query.cargo_id;
+    if (!id) {
+      return res
+        .status(400)
+        .json(utilz.helpers.sendError("Enter a valid search parameter"));
+    }
+    let cargo = await db.dbs.Cargo.findAll({ where: { uuid: id } });
+
+    if (!cargo) {
+      return res.status(400).json(utilz.helpers.sendError("Cargo not found"));
+    }
+
+    return res.status(200).json({ cargo });
+  },
+
+  getRegStatus: async (
+    req: { query: { email: string } },
+    res: Response,
+    next: NextFunction
+  ) => {
+    let { email } = req.query;
+    let user = await db.dbs.Users.findOne({
+      where: { email: email },
+    });
+
+    if (!user) {
+      return res.status(400).json(utilz.helpers.sendError("User not found"));
+    }
+
+    return res.status(200).json({ status: user.reg_status });
+  },
+
+  allAgents: async (req: Request, res: Response, next: NextFunction) => {
+    let agents = await db.dbs.Users.findAll({ where: { type: "Agent" } });
+    let arr = [];
+
+    for (const agent of agents) {
+      const Directors = await db.dbs.Directors.findAll({
+        where: { user_id: agent.uuid },
+      });
+      const user = {
+        uuid: agent.uuid,
+        first_name: agent.first_name,
+        last_name: agent.last_name,
+        customer_id: agent.customer_id,
+        username: agent.username,
+        email: agent.email,
+        country: agent.country,
+        mobile_number: agent.mobile_number,
+        company_name: agent.company_name,
+        company_address: agent.company_address,
+        companyFounded: agent.companyFounded,
+        type: agent.type,
+        ratePerKg: agent.ratePerkg,
+        locked: agent.locked,
+        activated: agent.activated,
+        Directors,
+      };
+
+      arr.push(user);
+    }
+
+    return res.status(200).json({ arr });
+  },
+
+  singleAgent: async (
+    req: { query: { id: string } },
+    res: Response,
+    next: NextFunction
+  ) => {
+    let uuid = req.query.id;
+    if (!uuid) {
+      return res
+        .status(400)
+        .json(utilz.helpers.sendError("Enter a valid search parameter"));
+    }
+    let agent = await db.dbs.Users.findOne({ where: { uuid: uuid } });
+
+    if (!agent) {
+      return res.status(400).json(utilz.helpers.sendError("Agent not found"));
+    }
+
+    const Directors = await db.dbs.Directors.findAll({
+      where: { user_id: agent.uuid },
+    });
+    const user = {
+      uuid: agent.uuid,
+      first_name: agent.first_name,
+      last_name: agent.last_name,
+      customer_id: agent.customer_id,
+      username: agent.username,
+      email: agent.email,
+      country: agent.country,
+      mobile_number: agent.mobile_number,
+      company_name: agent.company_name,
+      company_address: agent.company_address,
+      companyFounded: agent.companyFounded,
+      type: agent.type,
+      ratePerKg: agent.ratePerkg,
+      locked: agent.locked,
+      activated: agent.activated,
+      Directors,
+    };
+
+    return res.status(200).json({ agent: user });
+  },
+
   getShippingData: async (req: Request, res: Response, next: NextFunction) => {
     let refId = req.query.refId;
 
@@ -180,6 +330,11 @@ module.exports = {
 
   checkPromo: async (req: Request, res: Response, next: NextFunction) => {
     let code = req.query.code;
+    if (!code) {
+      return res
+        .status(400)
+        .json(utilz.helpers.sendError("Enter a valid search parameter"));
+    }
     let checker = await db.dbs.Promotions.findOne({ where: { code: code } });
 
     if (!checker) {

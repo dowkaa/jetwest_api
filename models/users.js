@@ -19,6 +19,7 @@ var User = (sequelize, type) => {
         mobile_number: Sequelize.STRING,
         company_name: Sequelize.STRING,
         company_address: Sequelize.STRING,
+        reg_status: Sequelize.STRING,
         companyFounded: Sequelize.STRING,
         type: Sequelize.STRING,
         ratePerKg: Sequelize.DOUBLE,

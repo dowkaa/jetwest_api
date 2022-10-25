@@ -164,6 +164,13 @@ module.exports = {
         const itemSchema = util.Joi.object()
             .keys({
             items: util.Joi.array().required(),
+            agent_id: util.Joi.string().allow(""),
+            reciever_firstname: util.Joi.string().required(),
+            reciever_lastname: util.Joi.string().required(),
+            reciever_email: util.Joi.string().required(),
+            reciver_mobile: util.Joi.string().required(),
+            reciever_primaryMobile: util.Joi.string().required(),
+            reciever_secMobile: util.Joi.string().required(),
         })
             .unknown();
         const validate1 = itemSchema.validate(req.body);
@@ -198,8 +205,12 @@ module.exports = {
                 .join(".");
             return res.status(400).json(util.helpers.sendError(errorMessage));
         }
-        const data = req.body.items;
-        for (const item of data) {
+        const { items, agent_id, reciever_email, reciever_firstname, reciever_lastname, reciver_mobile, reciever_primaryMobile, reciever_secMobile, } = req.body;
+        let checker = yield db.dbs.Users.findOne({ where: { uuid: agent_id } });
+        if (!checker) {
+            return res.status(400).json(util.helpers.sendError("Agent not found"));
+        }
+        for (const item of items) {
             let price;
             const { type, pickup_location, destination, width, height, weight, length, cargo_id, category, promo_code, depature_date, value, content, } = item;
             let cargo = yield db.dbs.Cargo.findOne({ where: { uuid: cargo_id } });
@@ -231,10 +242,33 @@ module.exports = {
                 price = chargeable_weight * req.user.ratePerKg;
             }
             let reference = util.helpers.generateReftId(10);
+            if (parseInt(weight) > volumetric_weight) {
+                console.log("112222");
+                if (parseFloat(cargo.available_capacity) - parseFloat(weight) < 0) {
+                    return res
+                        .status(400)
+                        .json(util.helpers.sendError("Cannot book shipment cargo capacity not enough"));
+                }
+                cargo.available_capacity =
+                    parseFloat(cargo.available_capacity) - parseFloat(weight);
+                yield cargo.save();
+            }
+            else {
+                console.log("3334444");
+                if (parseFloat(cargo.available_capacity) - volumetric_weight < 0) {
+                    return res
+                        .status(400)
+                        .json(util.helpers.sendError("Cannot book shipment cargo capacity not enough"));
+                }
+                cargo.available_capacity =
+                    parseFloat(cargo.available_capacity) - volumetric_weight;
+                yield cargo.save();
+            }
             let status = yield db.dbs.ShippingItems.create({
                 uuid: util.uuid(),
                 type,
                 user_id: req.user.uuid,
+                agent_id,
                 cargo_id,
                 pickup_location,
                 destination,
@@ -251,27 +285,19 @@ module.exports = {
                 promo_code: promo_code ? promo_code : null,
                 value,
                 content,
+                reciever_firstname,
+                reciever_lastname,
+                reciever_email,
+                reciver_mobile,
+                reciever_primaryMobile,
+                reciever_secMobile,
             });
-            // available_capacity is based on which of this is bigger volumetric_weight and weight
-            if (parseInt(weight) > volumetric_weight) {
-                cargo.available_capacity =
-                    parseInt(cargo.available_capacity) - parseInt(weight);
-                yield cargo.save();
-            }
-            else {
-                cargo.available_capacity =
-                    parseInt(cargo.available_capacity) - volumetric_weight;
-                yield cargo.save();
-            }
-            if (status) {
-                return res
-                    .status(200)
-                    .json(util.helpers.sendSuccess("Shipment booked successfully, the Jetwest team would reach out to to soon."));
-            }
-            return res
-                .status(400)
-                .json(util.helpers.sendError("Invalid request. Kindly try again"));
         }
+        // if (status) {
+        return res
+            .status(200)
+            .json(util.helpers.sendSuccess("Shipment booked successfully, the Jetwest team would reach out to to soon."));
+        // }
     }),
     resetPassword: (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
         console.log("11111111111111111111111111");

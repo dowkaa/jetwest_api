@@ -30,6 +30,12 @@ var shippingItems = (sequelize, type) => {
         promo_code: Sequelize.STRING,
         value: Sequelize.STRING,
         content: Sequelize.STRING,
+        reciever_firstname: Sequelize.STRING,
+        reciever_lastname: Sequelize.STRING,
+        reciever_email: Sequelize.STRING,
+        reciver_mobile: Sequelize.STRING,
+        reciever_primaryMobile: Sequelize.STRING,
+        reciever_secMobile: Sequelize.STRING,
     });
 };
 module.exports = shippingItems;

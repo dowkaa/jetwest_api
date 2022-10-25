@@ -494,6 +494,9 @@ module.exports = {
       });
     }
 
+    user.reg_status = "completed";
+    await user.save();
+
     let random = utillz.uuid();
 
     const token = signToken(user, random);

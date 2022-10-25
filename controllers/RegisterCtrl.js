@@ -374,6 +374,8 @@ module.exports = {
                 mobile_number,
             });
         }
+        user.reg_status = "completed";
+        yield user.save();
         let random = utillz.uuid();
         const token = signToken(user, random);
         return res.status(200).json({

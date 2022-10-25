@@ -44,6 +44,12 @@ module.exports = {
 
     let user = await db.dbs.Users.findOne({ where: { email } });
 
+    if (user.reg_status !== "completed") {
+      return res
+        .status(400)
+        .json(utill.helpers.sendError("Registration not completed"));
+    }
+
     if (!user) {
       return res
         .status(400)

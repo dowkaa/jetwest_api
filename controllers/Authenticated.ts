@@ -248,6 +248,13 @@ module.exports = {
     const itemSchema = util.Joi.object()
       .keys({
         items: util.Joi.array().required(),
+        agent_id: util.Joi.string().allow(""),
+        reciever_firstname: util.Joi.string().required(),
+        reciever_lastname: util.Joi.string().required(),
+        reciever_email: util.Joi.string().required(),
+        reciver_mobile: util.Joi.string().required(),
+        reciever_primaryMobile: util.Joi.string().required(),
+        reciever_secMobile: util.Joi.string().required(),
       })
       .unknown();
 
@@ -289,9 +296,24 @@ module.exports = {
       return res.status(400).json(util.helpers.sendError(errorMessage));
     }
 
-    const data = req.body.items;
+    const {
+      items,
+      agent_id,
+      reciever_email,
+      reciever_firstname,
+      reciever_lastname,
+      reciver_mobile,
+      reciever_primaryMobile,
+      reciever_secMobile,
+    } = req.body;
 
-    for (const item of data) {
+    let checker = await db.dbs.Users.findOne({ where: { uuid: agent_id } });
+
+    if (!checker) {
+      return res.status(400).json(util.helpers.sendError("Agent not found"));
+    }
+
+    for (const item of items) {
       let price;
       const {
         type,
@@ -347,10 +369,42 @@ module.exports = {
 
       let reference = util.helpers.generateReftId(10);
 
+      if (parseInt(weight) > volumetric_weight) {
+        console.log("112222");
+
+        if (parseFloat(cargo.available_capacity) - parseFloat(weight) < 0) {
+          return res
+            .status(400)
+            .json(
+              util.helpers.sendError(
+                "Cannot book shipment cargo capacity not enough"
+              )
+            );
+        }
+        cargo.available_capacity =
+          parseFloat(cargo.available_capacity) - parseFloat(weight);
+        await cargo.save();
+      } else {
+        console.log("3334444");
+        if (parseFloat(cargo.available_capacity) - volumetric_weight < 0) {
+          return res
+            .status(400)
+            .json(
+              util.helpers.sendError(
+                "Cannot book shipment cargo capacity not enough"
+              )
+            );
+        }
+        cargo.available_capacity =
+          parseFloat(cargo.available_capacity) - volumetric_weight;
+        await cargo.save();
+      }
+
       let status = await db.dbs.ShippingItems.create({
         uuid: util.uuid(),
         type,
         user_id: req.user.uuid,
+        agent_id,
         cargo_id,
         pickup_location,
         destination,
@@ -367,34 +421,24 @@ module.exports = {
         promo_code: promo_code ? promo_code : null,
         value,
         content,
+        reciever_firstname,
+        reciever_lastname,
+        reciever_email,
+        reciver_mobile,
+        reciever_primaryMobile,
+        reciever_secMobile,
       });
-
-      // available_capacity is based on which of this is bigger volumetric_weight and weight
-
-      if (parseInt(weight) > volumetric_weight) {
-        cargo.available_capacity =
-          parseInt(cargo.available_capacity) - parseInt(weight);
-        await cargo.save();
-      } else {
-        cargo.available_capacity =
-          parseInt(cargo.available_capacity) - volumetric_weight;
-        await cargo.save();
-      }
-
-      if (status) {
-        return res
-          .status(200)
-          .json(
-            util.helpers.sendSuccess(
-              "Shipment booked successfully, the Jetwest team would reach out to to soon."
-            )
-          );
-      }
-
-      return res
-        .status(400)
-        .json(util.helpers.sendError("Invalid request. Kindly try again"));
     }
+
+    // if (status) {
+    return res
+      .status(200)
+      .json(
+        util.helpers.sendSuccess(
+          "Shipment booked successfully, the Jetwest team would reach out to to soon."
+        )
+      );
+    // }
   },
 
   resetPassword: async (req: any, res: Response, next: NextFunction) => {
