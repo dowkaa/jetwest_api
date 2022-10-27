@@ -43,17 +43,17 @@ module.exports = {
         }
         const { email, password } = req.body;
         let user = yield db.dbs.Users.findOne({ where: { email } });
+        if (!user) {
+            return res
+                .status(400)
+                .json(utill.helpers.sendError("Account does not exist"));
+        }
         if (user.reg_status !== "completed") {
             return res.status(400).json({
                 status: "ERROR",
                 message: "Registration not completed",
                 login_status: user.reg_status,
             });
-        }
-        if (!user) {
-            return res
-                .status(400)
-                .json(utill.helpers.sendError("Account does not exist"));
         }
         if (user.activated == 0) {
             const code = user.otp;
