@@ -287,6 +287,11 @@ module.exports = {
         }
         const { incoporation_doc_url, proofOf_biz_address_url, guarantor_form_url, artOf_association, shareHolder_register_url, register_email, memorandumOf_guidance_url, } = req.body;
         let user = yield db.dbs.Users.findOne({ where: { email: register_email } });
+        if (!user) {
+            return res
+                .status(400)
+                .json(utillz.helpers.sendError("Invalid user credential"));
+        }
         let business = yield db.dbs.BusinessCompliance.findOne({
             where: { user_id: user.uuid },
         });

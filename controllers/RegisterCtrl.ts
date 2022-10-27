@@ -372,6 +372,12 @@ module.exports = {
 
     let user = await db.dbs.Users.findOne({ where: { email: register_email } });
 
+    if (!user) {
+      return res
+        .status(400)
+        .json(utillz.helpers.sendError("Invalid user credential"));
+    }
+
     let business = await db.dbs.BusinessCompliance.findOne({
       where: { user_id: user.uuid },
     });
