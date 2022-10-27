@@ -231,7 +231,17 @@ module.exports = {
   },
 
   allAgents: async (req: Request, res: Response, next: NextFunction) => {
-    let agents = await db.dbs.Users.findAll({ where: { type: "Agent" } });
+    let airport = req.query.airport;
+    if (!airport) {
+      return res
+        .status(400)
+        .json(utilz.helpers.sendError("Enter a valid search parameter"));
+    }
+
+    let agents = await db.dbs.Users.findAll({
+      where: { airport: airport, type: "Agent" },
+    });
+
     let arr = [];
 
     for (const agent of agents) {

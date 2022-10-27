@@ -110,6 +110,8 @@ module.exports = {
       mobile_number: mobile,
       first_name,
       last_name,
+
+      reg_status: "step-1",
       country,
       password: utillz.bcrypt.hashSync(password),
       email,
@@ -174,7 +176,7 @@ module.exports = {
         .status(400)
         .json(utillz.helpers.sendError("Invalid authenication code"));
     }
-
+    await user.save();
     user.activated = 1;
     await user.save();
 
@@ -220,6 +222,7 @@ module.exports = {
 
     user.company_name = req.body.company_name;
     user.organisation = req.body.organisation;
+    user.reg_status = "step-2";
     user.company_address = req.body.company_address;
     user.companyFounded = req.body.companyFounded;
     user.type = req.body.type;
@@ -237,7 +240,7 @@ module.exports = {
       .keys({
         natureOf_biz: utillz.Joi.string().required(),
         business_reg_num: utillz.Joi.string().required(),
-        biz_type: utillz.Joi.string().required(),
+        biz_type: utillz.Joi.string().allow(""),
         biz_tax_id: utillz.Joi.string().required(),
         country_of_incorporation: utillz.Joi.string().required(),
         incorporation_date: utillz.Joi.string().required(),
@@ -323,6 +326,8 @@ module.exports = {
       email,
       status: 3,
     });
+    user.reg_status = "step-3";
+    await user.save();
 
     return res.status(200).json({
       success: {
@@ -342,7 +347,7 @@ module.exports = {
         artOf_association: utillz.Joi.string().required(),
         shareHolder_register_url: utillz.Joi.string().required(),
         memorandumOf_guidance_url: utillz.Joi.string().required(),
-        email: utillz.Joi.string().required(),
+        register_email: utillz.Joi.string().required(),
       })
       .unknown();
 
@@ -361,14 +366,14 @@ module.exports = {
       guarantor_form_url,
       artOf_association,
       shareHolder_register_url,
+      register_email,
       memorandumOf_guidance_url,
-      email,
     } = req.body;
 
-    // let user = await db.dbs.Users.findOne({ where: { email } });
+    let user = await db.dbs.Users.findOne({ where: { email: register_email } });
 
     let business = await db.dbs.BusinessCompliance.findOne({
-      where: { email },
+      where: { user_id: user.uuid },
     });
 
     if (!business) {
@@ -401,6 +406,8 @@ module.exports = {
     business.memorandumOf_guidance_url_status = "pending";
     business.status = 2;
     await business.save();
+    user.reg_status = "step-4";
+    await user.save();
 
     return res
       .status(200)

@@ -162,7 +162,15 @@ module.exports = {
         return res.status(200).json({ status: user.reg_status });
     }),
     allAgents: (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
-        let agents = yield db.dbs.Users.findAll({ where: { type: "Agent" } });
+        let airport = req.query.airport;
+        if (!airport) {
+            return res
+                .status(400)
+                .json(utilz.helpers.sendError("Enter a valid search parameter"));
+        }
+        let agents = yield db.dbs.Users.findAll({
+            where: { airport: airport, type: "Agent" },
+        });
         let arr = [];
         for (const agent of agents) {
             const Directors = yield db.dbs.Directors.findAll({
