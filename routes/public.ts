@@ -35,6 +35,9 @@ router.post("/add_mail", HomeCtrl.postMailing);
 router.get("/shipping_item", HomeCtrl.getShippingData);
 router.get("/check_promo", HomeCtrl.checkPromo);
 
+// shipment routes
+router.get("/routes", HomeCtrl.shipmentRoutes);
+
 // delete unit test account after successful test
 router.get("/delete-test", Register.deleteAccounts);
 module.exports = router;

@@ -232,6 +232,12 @@ module.exports = {
     return res.status(200).json({ status: user.reg_status });
   },
 
+  shipmentRoutes: async (req: Request, res: Response, next: NextFunction) => {
+    let routes = await await db.dbs.ShipmentRoutes.findAll();
+
+    return res.status(200).json({ routes });
+  },
+
   allAgents: async (req: Request, res: Response, next: NextFunction) => {
     let airport = req.query.airport;
     if (!airport) {

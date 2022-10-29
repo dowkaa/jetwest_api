@@ -483,7 +483,7 @@ module.exports = {
         .status(400)
         .json(util.helpers.sendError("Kindly add a valid item"));
     }
-    let shipment = await db.dbs.ShippingItems.findOne({
+    let shipment = await db.dbs.ShippingItems.findAll({
       where: { user_id: req.user.uuid, booking_reference: booking_reference },
     });
 

@@ -171,7 +171,6 @@ module.exports = {
             reciver_mobile: util.Joi.string().required(),
             reciever_primaryMobile: util.Joi.string().required(),
             reciever_secMobile: util.Joi.string().required(),
-            shipment_num: util.Joi.string().required(),
             routes: util.Joi.string().required(),
         })
             .unknown();
@@ -207,12 +206,17 @@ module.exports = {
                 .join(".");
             return res.status(400).json(util.helpers.sendError(errorMessage));
         }
-        const { items, agent_id, reciever_email, reciever_firstname, reciever_lastname, reciver_mobile, reciever_primaryMobile, reciever_secMobile, shipment_num, routes, } = req.body;
-        console.log({ h: "newcniwepowejmpoew" });
+        const { items, agent_id, reciever_email, reciever_firstname, reciever_lastname, reciver_mobile, reciever_primaryMobile, reciever_secMobile, routes, } = req.body;
         let checker = yield db.dbs.Users.findOne({ where: { uuid: agent_id } });
-        console.log("wencijewicojewjij");
         if (!checker) {
             return res.status(400).json(util.helpers.sendError("Agent not found"));
+        }
+        let shipment_num = util.helpers.generateReftId(10);
+        let checkShipment = yield db.dbs.ShippingItems.findOne({
+            where: { shipment_num },
+        });
+        if (checkShipment) {
+            shipment_num = util.helpers.generateReftId(10);
         }
         for (const item of items) {
             let price;
@@ -260,7 +264,6 @@ module.exports = {
                 return res.status(400).json(util.helpers.sendError("Route not found"));
             }
             if (parseInt(weight) > volumetric_weight) {
-                console.log("112222");
                 // if (parseFloat(cargo.available_capacity) - parseFloat(weight) < 0) {
                 //   return res
                 //     .status(400)
@@ -275,7 +278,6 @@ module.exports = {
                 // await cargo.save();
             }
             else {
-                console.log("3334444");
                 // if (parseFloat(cargo.available_capacity) - volumetric_weight < 0) {
                 //   return res
                 //     .status(400)
@@ -289,7 +291,6 @@ module.exports = {
                 //   parseFloat(cargo.available_capacity) - volumetric_weight;
                 // await cargo.save();
             }
-            console.log("jjjjjjjjjjjj");
             let status = yield db.dbs.ShippingItems.create({
                 uuid: util.uuid(),
                 type,
@@ -346,7 +347,7 @@ module.exports = {
                 .status(400)
                 .json(util.helpers.sendError("Kindly add a valid item"));
         }
-        let shipment = yield db.dbs.ShippingItems.findOne({
+        let shipment = yield db.dbs.ShippingItems.findAll({
             where: { user_id: req.user.uuid, booking_reference: booking_reference },
         });
         return res.status(200).json({ shipment });

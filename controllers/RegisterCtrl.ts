@@ -180,8 +180,16 @@ module.exports = {
     user.activated = 1;
     await user.save();
 
+    let random = utillz.uuid();
+
+    const token = signToken(user, random);
+
     return res.status(200).json({
-      message: "Your email has been verified successfully",
+      success: {
+        status: "SUCCESS",
+        token,
+        message: "Your email has been verified successfully",
+      },
     });
   },
 

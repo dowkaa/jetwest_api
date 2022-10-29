@@ -161,6 +161,10 @@ module.exports = {
         }
         return res.status(200).json({ status: user.reg_status });
     }),
+    shipmentRoutes: (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
+        let routes = yield yield db.dbs.ShipmentRoutes.findAll();
+        return res.status(200).json({ routes });
+    }),
     allAgents: (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
         let airport = req.query.airport;
         if (!airport) {
