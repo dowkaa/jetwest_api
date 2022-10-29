@@ -58,6 +58,7 @@ module.exports = {
           .status(400)
           .json(utilz.helpers.sendError("Kindly enter a valid email"));
       }
+
       let user = await db.dbs.Users.findOne({
         where: { email: email },
       });
@@ -104,6 +105,7 @@ module.exports = {
           .status(400)
           .json(utilz.helpers.sendError("Kindly enter a valid mobile number"));
       }
+
       let user = await db.dbs.Users.findOne({
         where: { mobile_number: mobile },
       });

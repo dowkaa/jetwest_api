@@ -171,6 +171,8 @@ module.exports = {
             reciver_mobile: util.Joi.string().required(),
             reciever_primaryMobile: util.Joi.string().required(),
             reciever_secMobile: util.Joi.string().required(),
+            shipment_num: util.Joi.string().required(),
+            routes: util.Joi.string().required(),
         })
             .unknown();
         const validate1 = itemSchema.validate(req.body);
@@ -185,7 +187,7 @@ module.exports = {
             type: util.Joi.string().required(),
             pickup_location: util.Joi.string().required(),
             depature_date: util.Joi.string().required(),
-            cargo_id: util.Joi.string().required(),
+            shipment_ref: util.Joi.string().required(),
             destination: util.Joi.string().required(),
             width: util.Joi.number().required(),
             length: util.Joi.number().required(),
@@ -205,22 +207,16 @@ module.exports = {
                 .join(".");
             return res.status(400).json(util.helpers.sendError(errorMessage));
         }
-        const { items, agent_id, reciever_email, reciever_firstname, reciever_lastname, reciver_mobile, reciever_primaryMobile, reciever_secMobile, } = req.body;
+        const { items, agent_id, reciever_email, reciever_firstname, reciever_lastname, reciver_mobile, reciever_primaryMobile, reciever_secMobile, shipment_num, routes, } = req.body;
+        console.log({ h: "newcniwepowejmpoew" });
         let checker = yield db.dbs.Users.findOne({ where: { uuid: agent_id } });
+        console.log("wencijewicojewjij");
         if (!checker) {
             return res.status(400).json(util.helpers.sendError("Agent not found"));
         }
         for (const item of items) {
             let price;
-            const { type, pickup_location, destination, width, height, weight, length, cargo_id, category, promo_code, depature_date, value, content, } = item;
-            let cargo = yield db.dbs.Cargo.findOne({ where: { uuid: cargo_id } });
-            // let insurance = 1;
-            //   if (type === "Fragile") {
-            //   insurance =
-            // }
-            if (!cargo) {
-                return res.status(400).json(util.helpers.sendError("Cargo not found"));
-            }
+            const { type, pickup_location, destination, width, height, weight, length, shipment_ref, category, promo_code, depature_date, value, content, } = item;
             let chargeable_weight;
             let volumetric_weight = (parseInt(width) * parseInt(height) * parseInt(length)) / 5000;
             chargeable_weight =
@@ -235,41 +231,71 @@ module.exports = {
                         .json(util.helpers.sendError(checkPromo.message));
                 }
                 let discount = checkPromo.checker.percentage;
-                price =
-                    chargeable_weight * req.user.ratePerKg * (parseInt(discount) / 100);
+                if (category === "fragile") {
+                    price =
+                        chargeable_weight *
+                            (chargeable_weight * 0.3) *
+                            req.user.ratePerKg *
+                            (parseInt(discount) / 100);
+                }
+                else {
+                    price =
+                        chargeable_weight * req.user.ratePerKg * (parseInt(discount) / 100);
+                }
             }
             else {
-                price = chargeable_weight * req.user.ratePerKg;
+                if (category === "fragile") {
+                    price =
+                        chargeable_weight * (chargeable_weight * 0.3) * req.user.ratePerKg;
+                }
+                else {
+                    price = chargeable_weight * req.user.ratePerKg;
+                }
             }
-            let reference = util.helpers.generateReftId(10);
+            // let reference = util.helpers.generateReftId(10);
+            let route = yield db.dbs.ShipmentRoute.findOne({
+                where: { route: routes },
+            });
+            if (!route) {
+                return res.status(400).json(util.helpers.sendError("Route not found"));
+            }
             if (parseInt(weight) > volumetric_weight) {
                 console.log("112222");
-                if (parseFloat(cargo.available_capacity) - parseFloat(weight) < 0) {
-                    return res
-                        .status(400)
-                        .json(util.helpers.sendError("Cannot book shipment cargo capacity not enough"));
-                }
-                cargo.available_capacity =
-                    parseFloat(cargo.available_capacity) - parseFloat(weight);
-                yield cargo.save();
+                // if (parseFloat(cargo.available_capacity) - parseFloat(weight) < 0) {
+                //   return res
+                //     .status(400)
+                //     .json(
+                //       util.helpers.sendError(
+                //         "Cannot book shipment cargo capacity not enough"
+                //       )
+                //     );
+                // }
+                // cargo.available_capacity =
+                //   parseFloat(cargo.available_capacity) - parseFloat(weight);
+                // await cargo.save();
             }
             else {
                 console.log("3334444");
-                if (parseFloat(cargo.available_capacity) - volumetric_weight < 0) {
-                    return res
-                        .status(400)
-                        .json(util.helpers.sendError("Cannot book shipment cargo capacity not enough"));
-                }
-                cargo.available_capacity =
-                    parseFloat(cargo.available_capacity) - volumetric_weight;
-                yield cargo.save();
+                // if (parseFloat(cargo.available_capacity) - volumetric_weight < 0) {
+                //   return res
+                //     .status(400)
+                //     .json(
+                //       util.helpers.sendError(
+                //         "Cannot book shipment cargo capacity not enough"
+                //       )
+                //     );
+                // }
+                // cargo.available_capacity =
+                //   parseFloat(cargo.available_capacity) - volumetric_weight;
+                // await cargo.save();
             }
+            console.log("jjjjjjjjjjjj");
             let status = yield db.dbs.ShippingItems.create({
                 uuid: util.uuid(),
                 type,
                 user_id: req.user.uuid,
                 agent_id,
-                cargo_id,
+                shipment_num,
                 pickup_location,
                 destination,
                 depature_date,
@@ -277,8 +303,10 @@ module.exports = {
                 height,
                 sur_charge: 10,
                 taxes: 10,
+                status: "pending",
+                shipment_routeId: route.uuid,
                 weight,
-                booking_reference: reference,
+                booking_reference: shipment_ref,
                 volumetric_weight,
                 price: price,
                 category,
@@ -298,6 +326,48 @@ module.exports = {
             .status(200)
             .json(util.helpers.sendSuccess("Shipment booked successfully, the Jetwest team would reach out to to soon."));
         // }
+    }),
+    getAllShipments: (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
+        let shipment_num = req.query.shipment_num;
+        if (!shipment_num) {
+            return res
+                .status(400)
+                .json(util.helpers.sendError("Kindly add a valid item"));
+        }
+        let shipment = yield db.dbs.ShippingItems.findAll({
+            where: { user_id: req.user.uuid, shipment_num: shipment_num },
+        });
+        return res.status(200).json({ shipment });
+    }),
+    getShipmentItem: (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
+        let booking_reference = req.query.booking_reference;
+        if (!booking_reference) {
+            return res
+                .status(400)
+                .json(util.helpers.sendError("Kindly add a valid item"));
+        }
+        let shipment = yield db.dbs.ShippingItems.findOne({
+            where: { user_id: req.user.uuid, booking_reference: booking_reference },
+        });
+        return res.status(200).json({ shipment });
+    }),
+    upcomingShipments: (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
+        let shipment = yield db.dbs.ShippingItems.findAll({
+            where: { user_id: req.user.uuid, status: "pending" },
+        });
+        return res.status(200).json({ shipment });
+    }),
+    enRouteShipments: (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
+        let shipment = yield db.dbs.ShippingItems.findAll({
+            where: { user_id: req.user.uuid, status: "enroute" },
+        });
+        return res.status(200).json({ shipment });
+    }),
+    completedShipments: (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
+        let shipment = yield db.dbs.ShippingItems.findAll({
+            where: { user_id: req.user.uuid, status: "completed" },
+        });
+        return res.status(200).json({ shipment });
     }),
     resetPassword: (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
         console.log("11111111111111111111111111");
