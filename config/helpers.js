@@ -58,7 +58,7 @@ const sendSuccess = (message) => {
     return success;
 };
 const checkPromo = (code) => __awaiter(void 0, void 0, void 0, function* () {
-    let checker = yield db.Promotions.findOne({
+    let checker = yield db.dbs.Promotions.findOne({
         where: { code: code },
     });
     if (!checker) {

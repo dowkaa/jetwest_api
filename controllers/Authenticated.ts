@@ -325,6 +325,14 @@ module.exports = {
       shipment_num = util.helpers.generateReftId(10);
     }
 
+    let route = await db.dbs.ShipmentRoutes.findOne({
+      where: { route: routes },
+    });
+
+    if (!route) {
+      return res.status(400).json(util.helpers.sendError("Route not found"));
+    }
+
     for (const item of items) {
       let price;
       const {
@@ -367,29 +375,22 @@ module.exports = {
           price =
             chargeable_weight *
             (chargeable_weight * 0.3) *
-            req.user.ratePerKg *
+            route.ratePerKg *
             (parseInt(discount) / 100);
         } else {
           price =
-            chargeable_weight * req.user.ratePerKg * (parseInt(discount) / 100);
+            chargeable_weight * route.ratePerKg * (parseInt(discount) / 100);
         }
       } else {
         if (category === "fragile") {
           price =
-            chargeable_weight * (chargeable_weight * 0.3) * req.user.ratePerKg;
+            chargeable_weight * (chargeable_weight * 0.3) * route.ratePerKg;
         } else {
-          price = chargeable_weight * req.user.ratePerKg;
+          price = chargeable_weight * route.ratePerKg;
         }
       }
 
       // let reference = util.helpers.generateReftId(10);
-      let route = await db.dbs.ShipmentRoute.findOne({
-        where: { route: routes },
-      });
-
-      if (!route) {
-        return res.status(400).json(util.helpers.sendError("Route not found"));
-      }
 
       if (parseInt(weight) > volumetric_weight) {
         // if (parseFloat(cargo.available_capacity) - parseFloat(weight) < 0) {

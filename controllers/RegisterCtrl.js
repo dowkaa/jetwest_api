@@ -147,8 +147,14 @@ module.exports = {
         yield user.save();
         user.activated = 1;
         yield user.save();
+        let random = utillz.uuid();
+        const token = signToken(user, random);
         return res.status(200).json({
-            message: "Your email has been verified successfully",
+            success: {
+                status: "SUCCESS",
+                token,
+                message: "Your email has been verified successfully",
+            },
         });
     }),
     step3: (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {

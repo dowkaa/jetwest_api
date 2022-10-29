@@ -60,7 +60,7 @@ const sendSuccess = (message: string) => {
 };
 
 const checkPromo = async (code: string) => {
-  let checker = await db.Promotions.findOne({
+  let checker = await db.dbs.Promotions.findOne({
     where: { code: code },
   });
 
