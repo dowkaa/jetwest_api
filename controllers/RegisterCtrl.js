@@ -145,6 +145,7 @@ module.exports = {
                 .json(utillz.helpers.sendError("Invalid authenication code"));
         }
         yield user.save();
+        user.reg_status = "step-2";
         user.activated = 1;
         yield user.save();
         let random = utillz.uuid();
@@ -187,7 +188,7 @@ module.exports = {
         }
         user.company_name = req.body.company_name;
         user.organisation = req.body.organisation;
-        user.reg_status = "step-2";
+        user.reg_status = "step-3";
         user.company_address = req.body.company_address;
         user.companyFounded = req.body.companyFounded;
         user.type = req.body.type;
@@ -262,7 +263,7 @@ module.exports = {
             email,
             status: 3,
         });
-        user.reg_status = "step-3";
+        user.reg_status = "step-4";
         yield user.save();
         return res.status(200).json({
             success: {
@@ -325,7 +326,7 @@ module.exports = {
         business.memorandumOf_guidance_url_status = "pending";
         business.status = 2;
         yield business.save();
-        user.reg_status = "step-4";
+        user.reg_status = "step-5";
         yield user.save();
         return res
             .status(200)
