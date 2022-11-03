@@ -358,6 +358,84 @@ module.exports = {
         });
         return res.status(200).json({ shipment });
     }),
+    editShipment: (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
+        const itemSchema = util.Joi.object()
+            .keys({
+            items: util.Joi.array().required(),
+            agent_id: util.Joi.string().allow(""),
+            reciever_firstname: util.Joi.string().required(),
+            reciever_lastname: util.Joi.string().required(),
+            reciever_email: util.Joi.string().required(),
+            reciver_mobile: util.Joi.string().required(),
+            reciever_primaryMobile: util.Joi.string().required(),
+            reciever_secMobile: util.Joi.string().required(),
+            routes: util.Joi.string().required(),
+            type: util.Joi.string().required(),
+            pickup_location: util.Joi.string().required(),
+            depature_date: util.Joi.string().required(),
+            shipment_ref: util.Joi.string().required(),
+            destination: util.Joi.string().required(),
+            width: util.Joi.number().required(),
+            length: util.Joi.number().required(),
+            weight: util.Joi.number().required(),
+            height: util.Joi.number().required(),
+            category: util.Joi.string().required(),
+            promo_code: util.Joi.string().allow(""),
+            value: util.Joi.number().required(),
+            content: util.Joi.string().required(),
+            shipment_id: util.Joi.string().required(),
+        })
+            .unknown();
+        const validate1 = itemSchema.validate(req.body);
+        if (validate1.error != null) {
+            const errorMessage = validate1.error.details
+                .map((i) => i.message)
+                .Join(".");
+            return res.status(400).json(util.helpers.sendError(errorMessage));
+        }
+        const { agent_id, reciever_firstname, reciever_lastname, reciever_email, reciver_mobile, reciever_primaryMobile, reciever_secMobile, type, pickup_location, depature_date, shipment_ref, destination, width, length, weight, height, category, promo_code, value, content, shipment_id, } = req.body;
+        let shipment = yield db.dbs.ShippingItems.findOne({
+            where: { uuid: shipment_id },
+        });
+        if (!shipment) {
+            return res.status(400).json(util.helpers.sendError("Shipment not found"));
+        }
+        if (shipment.status !== "pending") {
+            return res
+                .status(400)
+                .json(util.helpers.sendError("Operation not allowed"));
+        }
+        let status = yield db.dbs.ShippingItems.create({
+            type,
+            user_id: req.user.uuid,
+            agent_id,
+            pickup_location,
+            destination,
+            depature_date,
+            width,
+            height,
+            sur_charge: 10,
+            taxes: 10,
+            status: "pending",
+            weight,
+            booking_reference: shipment_ref,
+            category,
+            promo_code: promo_code ? promo_code : null,
+            value,
+            content,
+            reciever_firstname,
+            reciever_lastname,
+            reciever_email,
+            reciver_mobile,
+            reciever_primaryMobile,
+            reciever_secMobile,
+        });
+        if (status) {
+            return res
+                .status(200)
+                .json(util.helpers.sendSuccess("Shipment booked successfully, the Jetwest team would reach out to to soon."));
+        }
+    }),
     enRouteShipments: (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
         let shipment = yield db.dbs.ShippingItems.findAll({
             where: { user_id: req.user.uuid, status: "enroute" },

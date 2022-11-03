@@ -347,92 +347,6 @@ module.exports = {
     });
   },
 
-  businessDocs: async (req: Request, res: Response, next: NextFunction) => {
-    const itemSchema = utillz.Joi.object()
-      .keys({
-        incoporation_doc_url: utillz.Joi.string().required(),
-        proofOf_biz_address_url: utillz.Joi.string().required(),
-        guarantor_form_url: utillz.Joi.string().required(),
-        artOf_association: utillz.Joi.string().required(),
-        shareHolder_register_url: utillz.Joi.string().required(),
-        memorandumOf_guidance_url: utillz.Joi.string().required(),
-        register_email: utillz.Joi.string().required(),
-      })
-      .unknown();
-
-    const validate1 = itemSchema.validate(req.body);
-
-    if (validate1.error != null) {
-      const errorMessage = validate1.error.details
-        .map((i: any) => i.message)
-        .join(".");
-      return res.status(400).json(utillz.helpers.sendError(errorMessage));
-    }
-
-    const {
-      incoporation_doc_url,
-      proofOf_biz_address_url,
-      guarantor_form_url,
-      artOf_association,
-      shareHolder_register_url,
-      register_email,
-      memorandumOf_guidance_url,
-    } = req.body;
-
-    let user = await db.dbs.Users.findOne({ where: { email: register_email } });
-
-    if (!user) {
-      return res
-        .status(400)
-        .json(utillz.helpers.sendError("Invalid user credential"));
-    }
-
-    let business = await db.dbs.BusinessCompliance.findOne({
-      where: { user_id: user.uuid },
-    });
-
-    if (!business) {
-      return res
-        .status(400)
-        .json(utillz.helpers.sendError("Invalid credential passed"));
-    }
-
-    if (business.status === 2) {
-      return res
-        .status(400)
-        .json(
-          utillz.helpers.sendError(
-            "Compliance document already added, kindly wait for approval for documents provided"
-          )
-        );
-    }
-
-    business.incoporation_doc_url = incoporation_doc_url;
-    business.incoporation_doc_url_status = "pending";
-    business.proofOf_biz_address_url = proofOf_biz_address_url;
-    business.proofOf_biz_address_url_status = "pending";
-    business.guarantor_form_url = guarantor_form_url;
-    business.guarantor_form_url_status = "pending";
-    business.artOf_association_url = artOf_association;
-    business.artOf_association_status = "pending";
-    business.shareHolder_register_url = shareHolder_register_url;
-    business.shareHolder_register_url_status = "pending";
-    business.memorandumOf_guidance_url = memorandumOf_guidance_url;
-    business.memorandumOf_guidance_url_status = "pending";
-    business.status = 2;
-    await business.save();
-    user.reg_status = "step-5";
-    await user.save();
-
-    return res
-      .status(200)
-      .json(
-        utillz.helpers.sendSuccess(
-          "Business updated successfully; an email would be sent to your business email when the documents have been reviewed, Thanks."
-        )
-      );
-  },
-
   step4: async (req: Request, res: Response, next: NextFunction) => {
     const itemSchema = utillz.Joi.object()
       .keys({
@@ -516,7 +430,7 @@ module.exports = {
       });
     }
 
-    user.reg_status = "completed";
+    user.reg_status = "step-5";
     await user.save();
 
     let random = utillz.uuid();
@@ -530,6 +444,92 @@ module.exports = {
         message: "directors data added successfully",
       },
     });
+  },
+
+  businessDocs: async (req: Request, res: Response, next: NextFunction) => {
+    const itemSchema = utillz.Joi.object()
+      .keys({
+        incoporation_doc_url: utillz.Joi.string().required(),
+        proofOf_biz_address_url: utillz.Joi.string().required(),
+        guarantor_form_url: utillz.Joi.string().required(),
+        artOf_association: utillz.Joi.string().required(),
+        shareHolder_register_url: utillz.Joi.string().required(),
+        memorandumOf_guidance_url: utillz.Joi.string().required(),
+        register_email: utillz.Joi.string().required(),
+      })
+      .unknown();
+
+    const validate1 = itemSchema.validate(req.body);
+
+    if (validate1.error != null) {
+      const errorMessage = validate1.error.details
+        .map((i: any) => i.message)
+        .join(".");
+      return res.status(400).json(utillz.helpers.sendError(errorMessage));
+    }
+
+    const {
+      incoporation_doc_url,
+      proofOf_biz_address_url,
+      guarantor_form_url,
+      artOf_association,
+      shareHolder_register_url,
+      register_email,
+      memorandumOf_guidance_url,
+    } = req.body;
+
+    let user = await db.dbs.Users.findOne({ where: { email: register_email } });
+
+    if (!user) {
+      return res
+        .status(400)
+        .json(utillz.helpers.sendError("Invalid user credential"));
+    }
+
+    let business = await db.dbs.BusinessCompliance.findOne({
+      where: { user_id: user.uuid },
+    });
+
+    if (!business) {
+      return res
+        .status(400)
+        .json(utillz.helpers.sendError("Invalid credential passed"));
+    }
+
+    if (business.status === 2) {
+      return res
+        .status(400)
+        .json(
+          utillz.helpers.sendError(
+            "Compliance document already added, kindly wait for approval for documents provided"
+          )
+        );
+    }
+
+    business.incoporation_doc_url = incoporation_doc_url;
+    business.incoporation_doc_url_status = "pending";
+    business.proofOf_biz_address_url = proofOf_biz_address_url;
+    business.proofOf_biz_address_url_status = "pending";
+    business.guarantor_form_url = guarantor_form_url;
+    business.guarantor_form_url_status = "pending";
+    business.artOf_association_url = artOf_association;
+    business.artOf_association_status = "pending";
+    business.shareHolder_register_url = shareHolder_register_url;
+    business.shareHolder_register_url_status = "pending";
+    business.memorandumOf_guidance_url = memorandumOf_guidance_url;
+    business.memorandumOf_guidance_url_status = "pending";
+    business.status = 2;
+    await business.save();
+    user.reg_status = "completed";
+    await user.save();
+
+    return res
+      .status(200)
+      .json(
+        utillz.helpers.sendSuccess(
+          "Business updated successfully; an email would be sent to your business email when the documents have been reviewed, Thanks."
+        )
+      );
   },
 
   // resendRegistrationOtp: async (req: any, res: any, next: any) => {
