@@ -16,6 +16,18 @@ routerr.get(
 );
 
 routerr.post(
+  "/update-agent",
+  [jwtMiddleWare, signatureSignerMiddleware],
+  AuthenticatedCtrl.updatedShipmentAgent
+);
+
+routerr.post(
+  "/edit-shipment",
+  [jwtMiddleWare, signatureSignerMiddleware],
+  AuthenticatedCtrl.editShipment
+);
+
+routerr.post(
   "/request_quote",
   [jwtMiddleWare, signatureSignerMiddleware],
   AuthenticatedCtrl.requestQuote
@@ -62,6 +74,25 @@ routerr.get(
   "/completed-shipments",
   [jwtMiddleWare, signatureSignerMiddleware],
   AuthenticatedCtrl.completedShipments
+);
+
+// agents
+routerr.get(
+  "/agent-upcoming-shipments",
+  [jwtMiddleWare, signatureSignerMiddleware],
+  AuthenticatedCtrl.upcomingAgentShipment
+);
+
+routerr.get(
+  "/agent-shipments-enroute",
+  [jwtMiddleWare, signatureSignerMiddleware],
+  AuthenticatedCtrl.AgentShipmentEnroute
+);
+
+routerr.get(
+  "/searchUpComing",
+  [jwtMiddleWare, signatureSignerMiddleware],
+  AuthenticatedCtrl.searchUpComing
 );
 
 module.exports = routerr;

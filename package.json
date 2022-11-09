@@ -4,13 +4,13 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "start": "npm run build && ts-node-dev --respawn index.ts",
+    "start": "ts-node-dev --respawn index.ts",
     "migrate": "npx sequelize-cli db:migrate",
     "dev": "nodemon --exec ts-node index.ts",
     "build": "tsc",
     "test": "jest",
     "git deploy": "npm run git add . && npm run git commit -am \"update\" && git push",
-    "update": "sudo git pull && pm2 stop jetwest && pm2 start jetwest"
+    "update": "sudo git pull && npm run build && pm2 stop jetwest && pm2 start jetwest"
   },
   "keywords": [],
   "author": "",
@@ -34,6 +34,7 @@
     "node-uuid": "^1.4.8",
     "nodemailer": "^6.8.0",
     "nodemailer-express-handlebars": "^5.0.0",
+    "paginate-info": "^1.0.4",
     "passport": "^0.6.0",
     "passport-jwt": "^4.0.0",
     "passport-local": "^1.0.0",
