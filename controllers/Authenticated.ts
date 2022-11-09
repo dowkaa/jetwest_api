@@ -647,6 +647,13 @@ module.exports = {
   searchUpComing: async (req: any, res: Response, next: NextFunction) => {
     let ref = req.query.ref;
 
+     let checker = await db.dbs.Users.findOne({where: {uuid: req.user.uuid, type: "Agent"}});
+    if(!checker){
+      return res
+        .status(400)
+        .json(util.helpers.sendError("Non agents are not allowed here"));
+    }
+
     if (!ref) {
       return res
         .status(400)
@@ -667,6 +674,13 @@ module.exports = {
   // agent shipments enroute
   AgentShipmentEnroute: async (req: any, res: Response, next: NextFunction) => {
     let pageNum = req.query.page;
+
+     let checker = await db.dbs.Users.findOne({where: {uuid: req.user.uuid, type: "Agent"}});
+    if(!checker){
+      return res
+        .status(400)
+        .json(util.helpers.sendError("Non agents are not allowed here"));
+    }
 
     if (!pageNum || isNaN(pageNum)) {
       return res
@@ -761,6 +775,13 @@ module.exports = {
     //   // where: { user_id: req.user.id },
     //   order: [["id", "DESC"]],
     // });
+
+    let checker = await db.dbs.Users.findOne({where: {uuid: req.user.uuid, type: "Agent"}});
+    if(!checker){
+      return res
+        .status(400)
+        .json(util.helpers.sendError("Non agents are not allowed here"));
+    }
 
     var shipments = await db.dbs.ShippingItems.findAndCountAll({
       offset: offset,
