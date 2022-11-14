@@ -13,6 +13,8 @@ exports.reset = require("../Mail/resetPassword");
 exports.uuid = require("node-uuid");
 exports.publicRoute = require("../routes/public");
 exports.authRouth = require("../routes/auth");
+exports.transactions = require("../routes/Transaction");
+exports.carriers = require("../routes/carriers");
 exports.password = require("../routes/passwordAuth");
 // exports.Sequelize = require("sequelize");
 exports.helmet = require("helmet");
@@ -20,8 +22,11 @@ exports.jwt = require("jsonwebtoken");
 exports.bcrypt = require("bcryptjs");
 exports.jwt_decode = require("jwt-decode");
 exports.welcome = require("../Mail/welcome");
+exports.contactUs = require("../Mail/contactUs");
 // const expresss = require("express");
 // exports.router = express.Router();
+
+exports.sequelize = require("sequelize");
 
 exports.Register = require("../controllers/RegisterCtrl");
 exports.LoginCtrl = require("../controllers/LoginCtrl");

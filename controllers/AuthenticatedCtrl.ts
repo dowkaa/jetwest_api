@@ -513,10 +513,10 @@ module.exports = {
     var next_page = currentPage + 1;
     var prev_page = currentPage - 1;
     var nextP =
-      `/api/jetwest/auth/all-shipments?shipment_num=${shipment_num}&page=` +
+      `/api/jetwest/auth/all-shipments?shipment_num=${shipment_num}&pageNum=` +
       next_page;
     var prevP =
-      `/api/jetwest/auth/all-shipments?shipment_num=${shipment_num}&page=` +
+      `/api/jetwest/auth/all-shipments?shipment_num=${shipment_num}&pageNum=` +
       prev_page;
 
     const meta = paginate(
@@ -542,13 +542,13 @@ module.exports = {
       per_page: pageSize,
       current_page: currentPage,
       last_page: meta.pageCount, //transactions.count,
-      first_page_url: `/api/jetwest/auth/all-shipments?shipment_num=${shipment_num}&page=1`,
+      first_page_url: `/api/jetwest/auth/all-shipments?shipment_num=${shipment_num}&pageNum=1`,
       last_page_url:
-        `/api/jetwest/auth/all-shipments?shipment_num=${shipment_num}&page=` +
+        `/api/jetwest/auth/all-shipments?shipment_num=${shipment_num}&pageNum=` +
         meta.pageCount, //transactions.count,
       next_page_url: nextP,
       prev_page_url: prevP,
-      path: `/api/jetwest/auth/all-shipments?shipment_num=${shipment_num}&page=`,
+      path: `/api/jetwest/auth/all-shipments?shipment_num=${shipment_num}&pageNum=`,
       from: 1,
       to: meta.pageCount, //transactions.count,
     });
@@ -606,8 +606,8 @@ module.exports = {
 
     var next_page = currentPage + 1;
     var prev_page = currentPage - 1;
-    var nextP = "/api/jetwest/auth/upcoming-shipments?page=" + next_page;
-    var prevP = "/api/jetwest/auth/upcoming-shipments?page=" + prev_page;
+    var nextP = "/api/jetwest/auth/upcoming-shipments?pageNum=" + next_page;
+    var prevP = "/api/jetwest/auth/upcoming-shipments?pageNum=" + prev_page;
 
     const meta = paginate(
       currentPage,
@@ -632,9 +632,9 @@ module.exports = {
       per_page: pageSize,
       current_page: currentPage,
       last_page: meta.pageCount, //transactions.count,
-      first_page_url: "/api/jetwest/auth/upcoming-shipments?page=1",
+      first_page_url: "/api/jetwest/auth/upcoming-shipments?pageNum=1",
       last_page_url:
-        "/api/jetwest/auth/upcoming-shipments?page=" + meta.pageCount, //transactions.count,
+        "/api/jetwest/auth/upcoming-shipments?pageNum=" + meta.pageCount, //transactions.count,
       next_page_url: nextP,
       prev_page_url: prevP,
       path: "/api/jetwest/auth/upcoming-shipments",
@@ -647,8 +647,10 @@ module.exports = {
   searchUpComing: async (req: any, res: Response, next: NextFunction) => {
     let ref = req.query.ref;
 
-     let checker = await db.dbs.Users.findOne({where: {uuid: req.user.uuid, type: "Agent"}});
-    if(!checker){
+    let checker = await db.dbs.Users.findOne({
+      where: { uuid: req.user.uuid, type: "Agent" },
+    });
+    if (!checker) {
       return res
         .status(400)
         .json(util.helpers.sendError("Non agents are not allowed here"));
@@ -675,8 +677,10 @@ module.exports = {
   AgentShipmentEnroute: async (req: any, res: Response, next: NextFunction) => {
     let pageNum = req.query.page;
 
-     let checker = await db.dbs.Users.findOne({where: {uuid: req.user.uuid, type: "Agent"}});
-    if(!checker){
+    let checker = await db.dbs.Users.findOne({
+      where: { uuid: req.user.uuid, type: "Agent" },
+    });
+    if (!checker) {
       return res
         .status(400)
         .json(util.helpers.sendError("Non agents are not allowed here"));
@@ -711,8 +715,10 @@ module.exports = {
 
     var next_page = currentPage + 1;
     var prev_page = currentPage - 1;
-    var nextP = "/api/jetwest/auth/agent-shipments-enroute?page=" + next_page;
-    var prevP = "/api/jetwest/auth/agent-shipments-enroute?page=" + prev_page;
+    var nextP =
+      "/api/jetwest/auth/agent-shipments-enroute?pageNum=" + next_page;
+    var prevP =
+      "/api/jetwest/auth/agent-shipments-enroute?pageNum=" + prev_page;
 
     const meta = paginate(
       currentPage,
@@ -737,9 +743,9 @@ module.exports = {
       per_page: pageSize,
       current_page: currentPage,
       last_page: meta.pageCount, //transactions.count,
-      first_page_url: "/api/jetwest/auth/agent-shipments-enroute?page=1",
+      first_page_url: "/api/jetwest/auth/agent-shipments-enroute?pageNum=1",
       last_page_url:
-        "/api/jetwest/auth/agent-shipments-enroute?page=" + meta.pageCount, //transactions.count,
+        "/api/jetwest/auth/agent-shipments-enroute?pageNum=" + meta.pageCount, //transactions.count,
       next_page_url: nextP,
       prev_page_url: prevP,
       path: "/api/jetwest/auth/agent-shipments-enroute",
@@ -776,8 +782,10 @@ module.exports = {
     //   order: [["id", "DESC"]],
     // });
 
-    let checker = await db.dbs.Users.findOne({where: {uuid: req.user.uuid, type: "Agent"}});
-    if(!checker){
+    let checker = await db.dbs.Users.findOne({
+      where: { uuid: req.user.uuid, type: "Agent" },
+    });
+    if (!checker) {
       return res
         .status(400)
         .json(util.helpers.sendError("Non agents are not allowed here"));
@@ -792,8 +800,10 @@ module.exports = {
 
     var next_page = currentPage + 1;
     var prev_page = currentPage - 1;
-    var nextP = "/api/jetwest/auth/agent-upcoming-shipments?page=" + next_page;
-    var prevP = "/api/jetwest/auth/agent-upcoming-shipments?page=" + prev_page;
+    var nextP =
+      "/api/jetwest/auth/agent-upcoming-shipments?pageNum=" + next_page;
+    var prevP =
+      "/api/jetwest/auth/agent-upcoming-shipments?pageNum=" + prev_page;
 
     const meta = paginate(
       currentPage,
@@ -818,9 +828,9 @@ module.exports = {
       per_page: pageSize,
       current_page: currentPage,
       last_page: meta.pageCount, //transactions.count,
-      first_page_url: "/api/jetwest/auth/agent-upcoming-shipments?page=1",
+      first_page_url: "/api/jetwest/auth/agent-upcoming-shipments?pageNum=1",
       last_page_url:
-        "/api/jetwest/auth/agent-upcoming-shipments?page=" + meta.pageCount, //transactions.count,
+        "/api/jetwest/auth/agent-upcoming-shipments?pageNum=" + meta.pageCount, //transactions.count,
       next_page_url: nextP,
       prev_page_url: prevP,
       path: "/api/jetwest/auth/agent-upcoming-shipments",
@@ -1029,8 +1039,8 @@ module.exports = {
 
     var next_page = currentPage + 1;
     var prev_page = currentPage - 1;
-    var nextP = "/api/jetwest/auth/shipments-enroute?page=" + next_page;
-    var prevP = "/api/jetwest/auth/shipments-enroute?page=" + prev_page;
+    var nextP = "/api/jetwest/auth/shipments-enroute?pageNum=" + next_page;
+    var prevP = "/api/jetwest/auth/shipments-enroute?pageNum=" + prev_page;
 
     const meta = paginate(
       currentPage,
@@ -1055,12 +1065,12 @@ module.exports = {
       per_page: pageSize,
       current_page: currentPage,
       last_page: meta.pageCount, //transactions.count,
-      first_page_url: "/api/jetwest/auth/shipments-enroute?page=1",
+      first_page_url: "/api/jetwest/auth/shipments-enroute?pageNum=1",
       last_page_url:
-        "/api/jetwest/auth/shipments-enroute?page=" + meta.pageCount, //transactions.count,
+        "/api/jetwest/auth/shipments-enroute?pageNum=" + meta.pageCount, //transactions.count,
       next_page_url: nextP,
       prev_page_url: prevP,
-      path: "/api/jetwest/auth/shipments-enroute?page=",
+      path: "/api/jetwest/auth/shipments-enroute?pageNum=",
       from: 1,
       to: meta.pageCount, //transactions.count,
     });
@@ -1097,8 +1107,8 @@ module.exports = {
 
     var next_page = currentPage + 1;
     var prev_page = currentPage - 1;
-    var nextP = "/api/jetwest/auth/completed-shipments?page=" + next_page;
-    var prevP = "/api/jetwest/auth/completed-shipments?page=" + prev_page;
+    var nextP = "/api/jetwest/auth/completed-shipments?pageNum=" + next_page;
+    var prevP = "/api/jetwest/auth/completed-shipments?pageNum=" + prev_page;
 
     const meta = paginate(
       currentPage,
@@ -1113,12 +1123,12 @@ module.exports = {
       per_page: pageSize,
       current_page: currentPage,
       last_page: meta.pageCount, //transactions.count,
-      first_page_url: "/api/jetwest/auth/completed-shipments?page=1",
+      first_page_url: "/api/jetwest/auth/completed-shipments?pageNum=1",
       last_page_url:
-        "/api/jetwest/auth/completed-shipments?page=" + meta.pageCount, //transactions.count,
+        "/api/jetwest/auth/completed-shipments?pageNum=" + meta.pageCount, //transactions.count,
       next_page_url: nextP,
       prev_page_url: prevP,
-      path: "/api/jetwest/auth/completed-shipments?page=",
+      path: "/api/jetwest/auth/completed-shipments?pageNum=",
       from: 1,
       to: meta.pageCount, //transactions.count,
     });

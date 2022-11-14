@@ -1,5 +1,3 @@
-import { type } from "os";
-
 var Sequelize = require("sequelize");
 
 var shippingItems = (sequelize: any, type: any) => {
@@ -22,6 +20,8 @@ var shippingItems = (sequelize: any, type: any) => {
     cargo_id: Sequelize.STRING,
     agent_id: Sequelize.STRING,
     price: Sequelize.DOUBLE,
+    ispaid: Sequelize.INTEGER,
+    frieghtTime: Sequelize.INTEGER,
     height: Sequelize.STRING,
     shipment_routeId: Sequelize.STRING,
     weight: Sequelize.STRING,

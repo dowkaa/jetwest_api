@@ -38,6 +38,10 @@ router.get("/check_promo", HomeCtrl.checkPromo);
 // shipment routes
 router.get("/routes", HomeCtrl.shipmentRoutes);
 
+// get in touch
+router.post("/get-in-touch", HomeCtrl.getInTouch);
+
 // delete unit test account after successful test
 router.get("/delete-test", Register.deleteAccounts);
+
 module.exports = router;

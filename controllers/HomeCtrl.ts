@@ -43,6 +43,52 @@ module.exports = {
       );
   },
 
+  getInTouch: async (req: any, res: Response, next: NextFunction) => {
+    const loginSchema = utilz.Joi.object()
+      .keys({
+        email: utilz.Joi.string().required(),
+        firstname: utilz.Joi.string().required(),
+        lastname: utilz.Joi.string().required(),
+        message: utilz.Joi.string().required(),
+      })
+      .unknown();
+
+    const validate = loginSchema.validate(req.body);
+
+    if (validate.error != null) {
+      const errorMessage = validate.error.details
+        .map((i: any) => i.message)
+        .join(".");
+      return res.status(400).json(utilz.helpers.sendError(errorMessage));
+    }
+
+    const { email, firstname, lastname, message } = req.body;
+
+    await db.dbs.ContactUs.create({
+      uuid: utilz.uui,
+      email,
+      firstname,
+      lastname,
+      message,
+    });
+
+    const option = {
+      name: `${firstname} ${lastname}`,
+      message,
+      email,
+    };
+
+    utilz.contactUs.sendMails(option);
+
+    return res
+      .status(200)
+      .json(
+        utilz.helpers.sendSuccess(
+          "Thanks for taking your time to send us a message about your thoughts, we really appreciate and would reach out if it demands. Thank you."
+        )
+      );
+  },
+
   requestOtp: async (
     req: { query: { email: string; mobile: string } },
     res: Response,

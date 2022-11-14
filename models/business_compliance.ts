@@ -1,5 +1,3 @@
-import { type } from "os";
-
 var Sequelize = require("sequelize");
 
 var BusinessCompliance = (sequelize: any, type: any) => {

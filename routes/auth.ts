@@ -7,7 +7,7 @@ require("dotenv").config();
 const jwtMiddleWare = passportsss.authenticate("jwt", { session: false });
 var signatureSignerMiddleware = signatureSigner;
 
-var AuthenticatedCtrl = require("../controllers/Authenticated");
+var AuthenticatedCtrl = require("../controllers/AuthenticatedCtrl");
 
 routerr.get(
   "/get-profile",

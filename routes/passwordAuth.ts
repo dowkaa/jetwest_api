@@ -7,7 +7,7 @@ require("dotenv").config();
 const jwtMiddleWares = passport.authenticate("jwt", { session: false });
 
 const PasswordCtrl = require("../controllers/PasswordCtrl");
-const Auth = require("../controllers/Authenticated");
+const Auth = require("../controllers/AuthenticatedCtrl");
 
 // Authentication
 routers.get("/forgot-password", PasswordCtrl.forgotPassword);

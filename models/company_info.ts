@@ -1,5 +1,3 @@
-import { type } from "os";
-
 var Sequelize = require("sequelize");
 
 var CompanyInfo = (sequelize: any, type: any) => {

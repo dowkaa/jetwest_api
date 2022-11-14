@@ -50,6 +50,7 @@ dbs.Quotes = require("../models/quotes")(sequelize, Sequelizes);
 dbs.Promotions = require("../models/promotions")(sequelize, Sequelizes);
 dbs.Directors = require("../models/directors")(sequelize, Sequelizes);
 dbs.Cargo = require("../models/cargo")(sequelize, Sequelizes);
+dbs.ContactUs = require("../models/contactUs")(sequelize, Sequelizes);
 dbs.Mailing = require("../models/mailing")(sequelize, Sequelizes);
 dbs.ShippingAgent = require("../models/shipping_agent")(sequelize, Sequelizes);
 dbs.BusinessCompliance = require("../models/business_compliance")(
