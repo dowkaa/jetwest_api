@@ -35,7 +35,7 @@ const sendMails = async (option: any) => {
   await transporter.use("compile", hbb(options));
 
   const message = {
-    from: option.email,
+    from: `${process.env.FROM_NAME} <${process.env.FROM_EMAIL}>`,
     to: "odohfriday9@gmail.com", //"hi@dowkaa.com",
     subject: "Mail from a customer",
     template: "contactUs",
@@ -45,7 +45,7 @@ const sendMails = async (option: any) => {
     },
   };
 
-  const info = await transporter.sendMails(message);
+  const info = await transporter.sendMail(message);
   return info;
 };
 

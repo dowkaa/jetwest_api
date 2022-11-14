@@ -575,7 +575,7 @@ module.exports = {
 
     // return res.status(200).json({ shipment });
 
-    let pageNum = req.query.page;
+    let pageNum = req.query.pageNum;
 
     if (!pageNum || isNaN(pageNum)) {
       return res
@@ -675,7 +675,7 @@ module.exports = {
 
   // agent shipments enroute
   AgentShipmentEnroute: async (req: any, res: Response, next: NextFunction) => {
-    let pageNum = req.query.page;
+    let pageNum = req.query.pageNum;
 
     let checker = await db.dbs.Users.findOne({
       where: { uuid: req.user.uuid, type: "Agent" },
@@ -760,7 +760,7 @@ module.exports = {
     res: Response,
     next: NextFunction
   ) => {
-    let pageNum = req.query.page;
+    let pageNum = req.query.pageNum;
 
     if (!pageNum || isNaN(pageNum)) {
       return res
@@ -1008,7 +1008,7 @@ module.exports = {
 
     // return res.status(200).json({ shipment });
 
-    let pageNum = req.query.page;
+    let pageNum = req.query.pageNum;
 
     if (!pageNum || isNaN(pageNum)) {
       return res
@@ -1083,7 +1083,7 @@ module.exports = {
 
     // return res.status(200).json({ shipment });
 
-    let pageNum = req.query.page;
+    let pageNum = req.query.pageNum;
 
     if (!pageNum || isNaN(pageNum)) {
       return res
