@@ -317,6 +317,7 @@ module.exports = {
     }
 
     let shipment_num = util.helpers.generateReftId(10);
+    let scan_code = util.helpers.generateReftId(10);
 
     let checkShipment = await db.dbs.ShippingItems.findOne({
       where: { shipment_num },
@@ -436,6 +437,7 @@ module.exports = {
         taxes: 10,
         status: "pending",
         shipment_routeId: route.uuid,
+        scan_code,
         weight,
         booking_reference: shipment_ref,
         volumetric_weight,

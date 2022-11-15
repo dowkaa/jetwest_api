@@ -24,6 +24,8 @@ var shippingItems = (sequelize: any, type: any) => {
     frieghtTime: Sequelize.INTEGER,
     height: Sequelize.STRING,
     shipment_routeId: Sequelize.STRING,
+    is_scanned: Sequelize.INTEGER,
+    scan_code: Sequelize.STRING,
     weight: Sequelize.STRING,
     volumetric_weight: Sequelize.INTEGER,
     booking_reference: Sequelize.STRING,
