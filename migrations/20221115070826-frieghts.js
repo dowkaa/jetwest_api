@@ -21,19 +21,43 @@ module.exports = {
         allowNull: true,
         type: Sequelize.STRING,
       },
-      email: {
+      flight_reg: {
         allowNull: true,
         type: Sequelize.STRING,
       },
-      firstname: {
+      shipment_id: {
         allowNull: true,
         type: Sequelize.STRING,
       },
-      lastname: {
+      date: {
         allowNull: true,
         type: Sequelize.STRING,
       },
-      message: {
+      origin: {
+        allowNull: true,
+        type: Sequelize.STRING,
+      },
+      std: {
+        allowNull: true,
+        type: Sequelize.STRING,
+      },
+      destination: {
+        allowNull: true,
+        type: Sequelize.STRING,
+      },
+      sta: {
+        allowNull: true,
+        type: Sequelize.STRING,
+      },
+      duration: {
+        allowNull: true,
+        type: Sequelize.STRING,
+      },
+      weight: {
+        allowNull: true,
+        type: Sequelize.STRING,
+      },
+      status: {
         allowNull: true,
         type: Sequelize.STRING,
       },

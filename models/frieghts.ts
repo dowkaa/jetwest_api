@@ -9,9 +9,16 @@ var Frieghts = (sequelize: any, type: any) => {
       primaryKey: true,
     },
     uuid: Sequelize.STRING,
-    type: Sequelize.STRING,
-    title: Sequelize.STRING,
-    question: Sequelize.STRING,
+    flight_reg: Sequelize.STRING,
+    shipment_id: Sequelize.STRING,
+    date: Sequelize.STRING,
+    origin: Sequelize.STRING,
+    std: Sequelize.STRING,
+    destination: Sequelize.STRING,
+    sta: Sequelize.STRING,
+    duration: Sequelize.STRING,
+    weight: Sequelize.STRING,
+    status: sequelize.STRING,
   });
 };
 
