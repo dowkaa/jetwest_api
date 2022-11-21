@@ -6,7 +6,7 @@ const { paginate } = require("paginate-info");
 module.exports = {
   estimateData: async (req: any, res: Response, next: NextFunction) => {
     let checker = await db.dbs.Users.findOne({
-      where: { uuid: req.user.uuid, type: "Carriers" },
+      where: { uuid: req.user.uuid, type: "Carrier" },
     });
     if (!checker) {
       return res
@@ -46,7 +46,7 @@ module.exports = {
     });
 
     let checker = await db.dbs.Users.findOne({
-      where: { uuid: req.user.uuid, type: "Carriers" },
+      where: { uuid: req.user.uuid, type: "Carrier" },
     });
     if (!checker) {
       return res
@@ -109,7 +109,7 @@ module.exports = {
 
   completedFrieghts: async (req: any, res: Response, next: NextFunction) => {
     let checker = await db.dbs.Users.findOne({
-      where: { uuid: req.user.uuid, type: "Carriers" },
+      where: { uuid: req.user.uuid, type: "Carrier" },
     });
     if (!checker) {
       return res
@@ -175,7 +175,7 @@ module.exports = {
 
   FrieghtsEnroute: async (req: any, res: Response, next: NextFunction) => {
     let checker = await db.dbs.Users.findOne({
-      where: { uuid: req.user.uuid, type: "Carriers" },
+      where: { uuid: req.user.uuid, type: "Carrier" },
     });
     if (!checker) {
       return res
