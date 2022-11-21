@@ -36,6 +36,16 @@ module.exports = {
     let cargo = await db.dbs.Cargo.findOne({
       where: { owner_id: req.user.uuid },
     });
+
+    let checker = await db.dbs.Users.findOne({
+      where: { uuid: req.user.uuid, type: "Carriers" },
+    });
+    if (!checker) {
+      return res
+        .status(400)
+        .json(util.helpers.sendError("Non carriers are not allowed here"));
+    }
+
     const { pageNum } = req.query;
 
     if (!pageNum || isNaN(pageNum)) {
@@ -90,6 +100,15 @@ module.exports = {
   },
 
   completedFrieghts: async (req: any, res: Response, next: NextFunction) => {
+    let checker = await db.dbs.Users.findOne({
+      where: { uuid: req.user.uuid, type: "Carriers" },
+    });
+    if (!checker) {
+      return res
+        .status(400)
+        .json(util.helpers.sendError("Non carriers are not allowed here"));
+    }
+
     let cargo = await db.dbs.Cargo.findOne({
       where: { owner_id: req.user.uuid },
     });
@@ -147,6 +166,14 @@ module.exports = {
   },
 
   FrieghtsEnroute: async (req: any, res: Response, next: NextFunction) => {
+    let checker = await db.dbs.Users.findOne({
+      where: { uuid: req.user.uuid, type: "Carriers" },
+    });
+    if (!checker) {
+      return res
+        .status(400)
+        .json(util.helpers.sendError("Non carriers are not allowed here"));
+    }
     let cargo = await db.dbs.Cargo.findOne({
       where: { owner_id: req.user.uuid },
     });
