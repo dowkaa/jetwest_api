@@ -847,11 +847,89 @@ module.exports = {
     res: Response,
     next: NextFunction
   ) => {
-    let shipments = await db.dbs.ShippingItems.findAll({
+    // let shipments = await db.dbs.ShippingItems.findAll({
+    //   where: { agent_id: req.user.uuid, status: "completed" },
+    // });
+
+    // return res.status(200).json({ shipments });
+
+    let pageNum = req.query.pageNum;
+
+    if (!pageNum || isNaN(pageNum)) {
+      return res
+        .status(400)
+        .json(util.helpers.sendError("Kindly add a valid page number"));
+    }
+
+    var currentPage = parseInt(pageNum) ? parseInt(pageNum) : 1;
+
+    var page = currentPage - 1;
+    var pageSize = 25;
+    const offset = page * pageSize;
+    const limit = pageSize;
+
+    // const transactions = await db.dbs.User.findAndCountAll({
+    //   offset: offset,
+    //   limit: limit,
+    //   // where: { user_id: req.user.id },
+    //   order: [["id", "DESC"]],
+    // });
+
+    let checker = await db.dbs.Users.findOne({
+      where: { uuid: req.user.uuid, type: "Agent" },
+    });
+    if (!checker) {
+      return res
+        .status(400)
+        .json(util.helpers.sendError("Non agents are not allowed here"));
+    }
+
+    var shipments = await db.dbs.ShippingItems.findAndCountAll({
+      offset: offset,
+      limit: limit,
       where: { agent_id: req.user.uuid, status: "completed" },
+      order: [["id", "DESC"]],
     });
 
-    return res.status(200).json({ shipments });
+    var next_page = currentPage + 1;
+    var prev_page = currentPage - 1;
+    var nextP =
+      "/api/jetwest/auth/completed-agent-shipmemts?pageNum=" + next_page;
+    var prevP =
+      "/api/jetwest/auth/completed-agent-shipmemts?pageNum=" + prev_page;
+
+    const meta = paginate(
+      currentPage,
+      shipments.count,
+      shipments.rows,
+      pageSize
+    );
+
+    // if (meta.pageCount <= currentPage) {
+    //   nextP = "api/v-1/@@/transactions?page=" + next_page++;
+    //   var prevP = "api/v-1/@@/transactions?page=" + currentPage;
+    // }
+
+    // if (meta.pageCount > currentPage) {
+    //   nextP = "api/v-1/@@/transactions?page=" + 1;
+    //   prev_page = currentPage - 1;
+    // }
+
+    res.status(200).json({
+      status: "SUCCESS",
+      data: shipments,
+      per_page: pageSize,
+      current_page: currentPage,
+      last_page: meta.pageCount, //transactions.count,
+      first_page_url: "/api/jetwest/auth/completed-agent-shipmemts?pageNum=1",
+      last_page_url:
+        "/api/jetwest/auth/completed-agent-shipmemts?pageNum=" + meta.pageCount, //transactions.count,
+      next_page_url: nextP,
+      prev_page_url: prevP,
+      path: "/api/jetwest/auth/completed-agent-shipmemts",
+      from: 1,
+      to: meta.pageCount, //transactions.count,
+    });
   },
 
   updatedShipmentAgent: async (
