@@ -95,4 +95,10 @@ routerr.get(
   AuthenticatedCtrl.searchUpComing
 );
 
+routerr.get(
+  "/completed-agent-shipmemts",
+  [jwtMiddleWare, signatureSignerMiddleware],
+  AuthenticatedCtrl.completedAgentShipments
+);
+
 module.exports = routerr;

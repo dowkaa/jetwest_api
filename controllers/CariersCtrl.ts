@@ -51,7 +51,7 @@ module.exports = {
     const offset = page * pageSize;
     const limit = pageSize;
 
-    var shipments = await db.dbs.ShippingItems.findAndCountAll({
+    var shipments = await db.dbs.Frieghts.findAndCountAll({
       offset: offset,
       limit: limit,
       where: { cargo_id: cargo.uuid },
@@ -110,7 +110,7 @@ module.exports = {
     const offset = page * pageSize;
     const limit = pageSize;
 
-    var shipments = await db.dbs.ShippingItems.findAndCountAll({
+    var shipments = await db.dbs.Frieghts.findAndCountAll({
       offset: offset,
       limit: limit,
       where: { cargo_id: cargo.uuid, status: "completed" },
@@ -165,7 +165,7 @@ module.exports = {
     const offset = page * pageSize;
     const limit = pageSize;
 
-    var shipments = await db.dbs.ShippingItems.findAndCountAll({
+    var shipments = await db.dbs.Frieghts.findAndCountAll({
       offset: offset,
       limit: limit,
       where: { cargo_id: cargo.uuid, status: "enroute" },

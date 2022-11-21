@@ -11,6 +11,7 @@ var Frieghts = (sequelize: any, type: any) => {
     uuid: Sequelize.STRING,
     flight_reg: Sequelize.STRING,
     shipment_id: Sequelize.STRING,
+    cargo_id: Sequelize.STRING,
     date: Sequelize.STRING,
     origin: Sequelize.STRING,
     std: Sequelize.STRING,
@@ -18,7 +19,7 @@ var Frieghts = (sequelize: any, type: any) => {
     sta: Sequelize.STRING,
     duration: Sequelize.STRING,
     weight: Sequelize.STRING,
-    status: sequelize.STRING,
+    status: Sequelize.STRING,
   });
 };
 
