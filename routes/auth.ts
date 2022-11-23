@@ -90,9 +90,9 @@ routerr.get(
 );
 
 routerr.get(
-  "/searchUpComing",
+  "/searchShipment",
   [jwtMiddleWare, signatureSignerMiddleware],
-  AuthenticatedCtrl.searchUpComing
+  AuthenticatedCtrl.searchShipment
 );
 
 routerr.get(

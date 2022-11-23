@@ -1,5 +1,6 @@
 import { Request, Response, NextFunction } from "express";
 const util = require("../utils/packages");
+const { Op } = require("sequelize");
 import { Query } from "express-serve-static-core";
 const db = require("../database/mysql");
 const { paginate } = require("paginate-info");
@@ -646,33 +647,87 @@ module.exports = {
   },
 
   // search agent shipment by reference
-  searchUpComing: async (req: any, res: Response, next: NextFunction) => {
+  searchShipment: async (req: any, res: Response, next: NextFunction) => {
     let ref = req.query.ref;
+    let pageNum = req.query.pageNum;
 
     let checker = await db.dbs.Users.findOne({
       where: { uuid: req.user.uuid, type: "Agent" },
     });
+
     if (!checker) {
       return res
         .status(400)
         .json(util.helpers.sendError("Non agents are not allowed here"));
     }
 
-    if (!ref) {
+    if (!pageNum || isNaN(pageNum)) {
       return res
         .status(400)
-        .json(util.helpers.sendError("Kindly add a valid search parameter"));
+        .json(util.helpers.sendError("Kindly add a valid page number"));
     }
 
-    let shipment = await db.dbs.ShippingItems.findAll({
+    var currentPage = parseInt(pageNum) ? parseInt(pageNum) : 1;
+
+    var page = currentPage - 1;
+    var pageSize = 25;
+    const offset = page * pageSize;
+    const limit = pageSize;
+
+    // const transactions = await db.dbs.User.findAndCountAll({
+    //   offset: offset,
+    //   limit: limit,
+    //   // where: { user_id: req.user.id },
+    //   order: [["id", "DESC"]],
+    // });
+
+    var shipments = await db.dbs.ShippingItems.findAndCountAll({
+      offset: offset,
+      limit: limit,
       where: {
         agent_id: req.user.uuid,
-        status: "pending",
-        booking_reference: ref,
+        [Op.or]: [{ booking_reference: ref }, { shipment_num: ref }],
       },
+      order: [["id", "DESC"]],
     });
 
-    return res.status(200).json({ shipment });
+    var next_page = currentPage + 1; // 35.232.228.188
+    var prev_page = currentPage - 1;
+    var nextP = "/api/jetwest/auth/searchShipment?pageNum=" + next_page;
+    var prevP = "/api/jetwest/auth/searchShipment?pageNum=" + prev_page;
+
+    const meta = paginate(
+      currentPage,
+      shipments.count,
+      shipments.rows,
+      pageSize
+    );
+
+    // if (meta.pageCount <= currentPage) {
+    //   nextP = "api/v-1/@@/transactions?page=" + next_page++;
+    //   var prevP = "api/v-1/@@/transactions?page=" + currentPage;
+    // }
+
+    // if (meta.pageCount > currentPage) {
+    //   nextP = "api/v-1/@@/transactions?page=" + 1;
+    //   prev_page = currentPage - 1;
+    // }
+
+    res.status(200).json({
+      status: "SUCCESS",
+      data: shipments,
+      per_page: pageSize,
+      current_page: currentPage,
+      last_page: meta.pageCount, //transactions.count,
+      first_page_url: "/api/jetwest/auth/searchShipment?pageNum=1",
+      last_page_url:
+        "/api/jetwest/auth/searchShipment?pageNum=" + meta.pageCount, //transactions.count,
+      next_page_url: nextP,
+      prev_page_url: prevP,
+      path: "/api/jetwest/auth/searchShipment",
+      from: 1,
+      to: meta.pageCount, //transactions.count,
+    });
   },
 
   // agent shipments enroute

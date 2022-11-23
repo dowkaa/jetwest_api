@@ -47,7 +47,7 @@ const addData = async () => {
     await db.dbs.ShippingItems.create({
       uuid: util.uuid(),
       type: "kncioiec",
-      user_id: "f0a508a8-010d-4a30-9e8e-d20913c90174",
+      user_id: "23318d37-12dc-47dd-9a77-af79ca4b339b",
       agent_id: "9ffd873f-769c-4d11-8c82-0f8bd4291544",
       shipment_num: "cejeiepineifne",
       pickup_location: "Lagos-Internation-Airport",
@@ -78,7 +78,7 @@ const addData = async () => {
     await db.dbs.ShippingItems.create({
       uuid: util.uuid(),
       type: "kncioiec",
-      user_id: "f0a508a8-010d-4a30-9e8e-d20913c90174",
+      user_id: "23318d37-12dc-47dd-9a77-af79ca4b339b",
       agent_id: "9ffd873f-769c-4d11-8c82-0f8bd4291544",
       shipment_num: "cejeiepineifne",
       pickup_location: "Lagos-Internation-Airport",
@@ -105,57 +105,12 @@ const addData = async () => {
       reciever_primaryMobile: "09020269804",
       reciever_secMobile: "09020269804",
     });
-
-    await db.dbs.Frieghts.create({
-      uuid: util.uuid(),
-      flight_reg: "kmkcewmolmooemope",
-      shipment_id: "cksndkmdpmpmdplmmdpo",
-      cargo_id: "booscboqscspoicqiocwqbcj",
-      date: "2022-11-20 20:34:23",
-      origin: "Lagos",
-      std: "Hello world",
-      destination: "Port Harcourt",
-      sta: "Hello world 22",
-      duration: "130hrs",
-      weight: "10000",
-      status: "pending",
-    });
-
-    await db.dbs.Frieghts.create({
-      uuid: util.uuid(),
-      flight_reg: "kmkcewmolmooemope",
-      shipment_id: "cksndkmdpmpmdplmmdpo",
-      cargo_id: "ewfeufuehfuehfhejfbuehfieqfiuoeifbiefoi",
-      date: "2022-11-20 20:34:23",
-      origin: "Lagos",
-      std: "Hello world",
-      destination: "Port Harcourt",
-      sta: "Hello world 22",
-      duration: "130hrs",
-      weight: "10000",
-      status: "completed",
-    });
-
-    await db.dbs.Frieghts.create({
-      uuid: util.uuid(),
-      flight_reg: "kmkcewmolmooemope",
-      shipment_id: "cksndkmdpmpmdplmmdpo",
-      cargo_id: "ewfeufuehfuehfhejfbuehfieqfiuoeifbiefoi",
-      date: "2022-11-20 20:34:23",
-      origin: "Lagos",
-      std: "Hello world",
-      destination: "Port Harcourt",
-      sta: "Hello world 22",
-      duration: "130hrs",
-      weight: "10000",
-      status: "enroute",
-    });
   }
 };
 
-// if (process.env.STATE === "prod") {
-//   addData();
-// }
+if (process.env.STATE === "prod") {
+  addData();
+}
 
 const app = server.createServer();
 const http = require("http").Server(app);

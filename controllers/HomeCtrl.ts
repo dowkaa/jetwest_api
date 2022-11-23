@@ -383,6 +383,14 @@ module.exports = {
     });
 
     if (!data) {
+      let data2 = await db.dbs.ShippingItems.findOne({
+        where: { shipment_num: refId },
+      });
+
+      if (data2) {
+        return res.status(200).json(utilz.helpers.sendSuccess({ data: data2 }));
+      }
+
       return res
         .status(400)
         .json(
