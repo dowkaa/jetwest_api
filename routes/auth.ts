@@ -59,6 +59,12 @@ routerr.get(
 );
 
 routerr.get(
+  "/trackShipment",
+  [jwtMiddleWare, signatureSignerMiddleware],
+  AuthenticatedCtrl.trackShipment
+);
+
+routerr.get(
   "/shipment-byQR",
   [jwtMiddleWare, signatureSignerMiddleware],
   AuthenticatedCtrl.getShipmentItem

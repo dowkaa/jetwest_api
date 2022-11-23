@@ -467,6 +467,72 @@ module.exports = {
     // }
   },
 
+  trackShipment: async (req: any, res: Response, next: NextFunction) => {
+    let ref = req.query.ref;
+    let pageNum = req.query.pageNum;
+
+    if (!pageNum || isNaN(pageNum)) {
+      return res
+        .status(400)
+        .json(util.helpers.sendError("Kindly add a valid page number"));
+    }
+
+    var currentPage = parseInt(pageNum) ? parseInt(pageNum) : 1;
+
+    var page = currentPage - 1;
+    var pageSize = 25;
+    const offset = page * pageSize;
+    const limit = pageSize;
+
+    var shipments = await db.dbs.ShippingItems.findAndCountAll({
+      offset: offset,
+      limit: limit,
+      where: {
+        user_id: req.user.uuid,
+        [Op.or]: [{ booking_reference: ref }, { shipment_num: ref }],
+      },
+      order: [["id", "DESC"]],
+    });
+
+    var next_page = currentPage + 1;
+    var prev_page = currentPage - 1;
+    var nextP = "/api/jetwest/auth/trackShipment?pageNum=" + next_page;
+    var prevP = "/api/jetwest/auth/trackShipment?pageNum=" + prev_page;
+
+    const meta = paginate(
+      currentPage,
+      shipments.count,
+      shipments.rows,
+      pageSize
+    );
+
+    // if (meta.pageCount <= currentPage) {
+    //   nextP = "api/v-1/@@/transactions?page=" + next_page++;
+    //   var prevP = "api/v-1/@@/transactions?page=" + currentPage;
+    // }
+
+    // if (meta.pageCount > currentPage) {
+    //   nextP = "api/v-1/@@/transactions?page=" + 1;
+    //   prev_page = currentPage - 1;
+    // }
+
+    res.status(200).json({
+      status: "SUCCESS",
+      data: shipments,
+      per_page: pageSize,
+      current_page: currentPage,
+      last_page: meta.pageCount, //transactions.count,
+      first_page_url: "/api/jetwest/auth/trackShipment?pageNum=1",
+      last_page_url:
+        "/api/jetwest/auth/trackShipment?pageNum=" + meta.pageCount, //transactions.count,
+      next_page_url: nextP,
+      prev_page_url: prevP,
+      path: "/api/jetwest/auth/trackShipment",
+      from: 1,
+      to: meta.pageCount, //transactions.count,
+    });
+  },
+
   getAllShipments: async (req: any, res: Response, next: NextFunction) => {
     // let shipment_num = req.query.shipment_num;
     // if (!shipment_num) {
@@ -691,7 +757,7 @@ module.exports = {
       order: [["id", "DESC"]],
     });
 
-    var next_page = currentPage + 1; // 35.232.228.188
+    var next_page = currentPage + 1;
     var prev_page = currentPage - 1;
     var nextP = "/api/jetwest/auth/searchShipment?pageNum=" + next_page;
     var prevP = "/api/jetwest/auth/searchShipment?pageNum=" + prev_page;
