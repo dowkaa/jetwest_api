@@ -466,6 +466,7 @@ module.exports = {
       );
     // }
   },
+  
 
   trackShipment: async (req: any, res: Response, next: NextFunction) => {
     let ref = req.query.ref;
@@ -505,16 +506,6 @@ module.exports = {
       shipments.rows,
       pageSize
     );
-
-    // if (meta.pageCount <= currentPage) {
-    //   nextP = "api/v-1/@@/transactions?page=" + next_page++;
-    //   var prevP = "api/v-1/@@/transactions?page=" + currentPage;
-    // }
-
-    // if (meta.pageCount > currentPage) {
-    //   nextP = "api/v-1/@@/transactions?page=" + 1;
-    //   prev_page = currentPage - 1;
-    // }
 
     res.status(200).json({
       status: "SUCCESS",
