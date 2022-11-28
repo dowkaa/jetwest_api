@@ -466,7 +466,6 @@ module.exports = {
       );
     // }
   },
-  
 
   trackShipment: async (req: any, res: Response, next: NextFunction) => {
     let ref = req.query.ref;
@@ -1086,25 +1085,7 @@ module.exports = {
     const itemSchema = util.Joi.object()
       .keys({
         agent_id: util.Joi.string().allow(""),
-        reciever_firstname: util.Joi.string().required(),
-        reciever_lastname: util.Joi.string().required(),
-        reciever_email: util.Joi.string().required(),
-        reciver_mobile: util.Joi.string().required(),
-        reciever_primaryMobile: util.Joi.string().required(),
-        reciever_secMobile: util.Joi.string().required(),
-        routes: util.Joi.string().required(),
-        type: util.Joi.string().required(),
-        pickup_location: util.Joi.string().required(),
-        shipment_ref: util.Joi.string().required(),
-        destination: util.Joi.string().required(),
-        width: util.Joi.number().required(),
-        length: util.Joi.number().required(),
-        weight: util.Joi.number().required(),
-        height: util.Joi.number().required(),
-        category: util.Joi.string().required(),
-        promo_code: util.Joi.string().allow(""),
-        value: util.Joi.number().required(),
-        content: util.Joi.string().required(),
+        date: util.Joi.string().required(),
         shipment_id: util.Joi.string().required(),
       })
       .unknown();
@@ -1118,29 +1099,7 @@ module.exports = {
       return res.status(400).json(util.helpers.sendError(errorMessage));
     }
 
-    const {
-      agent_id,
-      reciever_firstname,
-      reciever_lastname,
-      reciever_email,
-      reciver_mobile,
-      reciever_primaryMobile,
-      reciever_secMobile,
-      type,
-      pickup_location,
-      depature_date,
-      shipment_ref,
-      destination,
-      width,
-      length,
-      weight,
-      height,
-      category,
-      promo_code,
-      value,
-      content,
-      shipment_id,
-    } = req.body;
+    const { agent_id, date, shipment_id } = req.body;
 
     let shipment = await db.dbs.ShippingItems.findOne({
       where: { uuid: shipment_id },
@@ -1163,28 +1122,9 @@ module.exports = {
         .json(util.helpers.sendError("Operation not allowed"));
     }
 
-    shipment.type = type;
+    shipment.depature_date = date;
     shipment.agent_id = agent_id;
-    shipment.pickup_location = pickup_location;
-    shipment.destination = destination;
-    shipment.depature_date = depature_date;
-    shipment.width = width;
-    shipment.height = height;
-    shipment.sur_charge = 10;
-    shipment.taxes = 10;
-    shipment.status = "pending";
-    shipment.weight = weight;
-    shipment.booking_reference = shipment_ref;
-    shipment.category = category;
-    shipment.promo_code = promo_code ? promo_code : null;
-    shipment.value = value;
-    shipment.content = content;
-    shipment.reciever_firstname = reciever_firstname;
-    shipment.reciever_lastname = reciever_lastname;
-    shipment.reciever_email = reciever_email;
-    shipment.reciver_mobile = reciver_mobile;
-    shipment.reciever_primaryMobile = reciever_primaryMobile;
-    shipment.reciever_secMobile = reciever_secMobile;
+    await shipment.save();
     // });
 
     // if (status) {
