@@ -45,6 +45,10 @@ module.exports = {
       where: { owner_id: req.user.uuid },
     });
 
+    if (!cargo) {
+      return res.status(400).json(util.helpers.sendError("No aircrafts found"));
+    }
+
     let checker = await db.dbs.Users.findOne({
       where: { uuid: req.user.uuid, type: "Carrier" },
     });
