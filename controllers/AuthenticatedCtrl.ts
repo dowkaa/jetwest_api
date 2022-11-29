@@ -175,6 +175,14 @@ module.exports = {
       .json(util.helpers.sendError("Error, kindly try again"));
   },
 
+  myCargos: async (req: any, res: Response, next: NextFunction) => {
+    let cargos = await db.dbs.Cargo.findAndCountAll({
+      where: { owner_id: req.user.uuid },
+    });
+
+    return res.status(200).json({ cargos });
+  },
+
   requestQuote: async (req: any, res: Response, next: NextFunction) => {
     const loginSchema = util.Joi.object()
       .keys({

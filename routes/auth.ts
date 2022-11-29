@@ -45,6 +45,12 @@ routerr.post(
   AuthenticatedCtrl.addCargo
 );
 
+routerr.get(
+  "/my-cargos",
+  [jwtMiddleWare, signatureSignerMiddleware],
+  AuthenticatedCtrl.myCargos
+);
+
 // shipments
 routerr.get(
   "/upcoming-shipments",
