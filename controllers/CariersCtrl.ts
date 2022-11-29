@@ -22,6 +22,12 @@ module.exports = {
       order: [["id", "DESC"]],
     });
 
+    if (!cargo) {
+      return res
+        .status(200)
+        .json({ totalShipments, totalHours: 0, totalCancelled: 0 });
+    }
+
     var totalCancelled = await db.dbs.ShippingItems.count({
       where: { cargo_id: cargo.uuid, status: "cancelled" },
       order: [["id", "DESC"]],
@@ -124,6 +130,10 @@ module.exports = {
     let cargo = await db.dbs.Cargo.findOne({
       where: { owner_id: req.user.uuid },
     });
+
+    if (!cargo) {
+      return res.status(400).json(util.helpers.sendError("No aircrafts found"));
+    }
     const { pageNum } = req.query;
 
     if (!pageNum || isNaN(pageNum)) {
@@ -181,6 +191,7 @@ module.exports = {
     let checker = await db.dbs.Users.findOne({
       where: { uuid: req.user.uuid, type: "Carrier" },
     });
+
     if (!checker) {
       return res
         .status(400)
@@ -189,6 +200,10 @@ module.exports = {
     let cargo = await db.dbs.Cargo.findOne({
       where: { owner_id: req.user.uuid },
     });
+
+    if (!cargo) {
+      return res.status(400).json(util.helpers.sendError("No aircrafts found"));
+    }
     const { pageNum } = req.query;
 
     if (!pageNum || isNaN(pageNum)) {
