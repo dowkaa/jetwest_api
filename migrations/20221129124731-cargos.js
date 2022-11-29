@@ -24,21 +24,15 @@ module.exports = {
         allowNull: true,
         type: Sequelize.STRING,
       },
-      capacity: {
-        allowNull: false,
-        defaultValue: 0.0,
-        type: Sequelize.DOUBLE,
-      },
-      available_capacity: {
-        allowNull: false,
-        defaultValue: 0.0,
-        type: Sequelize.DOUBLE,
-      },
-      take_off: {
+      model: {
         allowNull: true,
         type: Sequelize.STRING,
       },
-      geo_coverage: {
+      payload: {
+        allowNull: true,
+        type: Sequelize.STRING,
+      },
+      areasOfCoverage: {
         allowNull: true,
         type: Sequelize.STRING,
       },
@@ -46,27 +40,19 @@ module.exports = {
         allowNull: true,
         type: Sequelize.STRING,
       },
-      is_available: {
+      weekly_flight_time: {
         allowNull: true,
         type: Sequelize.STRING,
       },
-      airworthiness_type: {
-        allowNull: true,
-        type: Sequelize.STRING,
-      },
-      airworthiness_make: {
-        allowNull: true,
-        type: Sequelize.STRING,
-      },
-      airworthiness_model: {
-        allowNull: true,
-        type: Sequelize.STRING,
-      },
-      airworthiness_cert_url: {
+      daily_flight_time: {
         allowNull: true,
         type: Sequelize.STRING,
       },
       aircraft_registration: {
+        allowNull: true,
+        type: Sequelize.STRING,
+      },
+      airworthiness_cert_url: {
         allowNull: true,
         type: Sequelize.STRING,
       },
@@ -90,11 +76,15 @@ module.exports = {
         allowNull: true,
         type: Sequelize.STRING,
       },
-      registration_cert: {
+      registration_cert_url: {
         allowNull: true,
         type: Sequelize.STRING,
       },
       registration_cert_exp_date: {
+        allowNull: true,
+        type: Sequelize.STRING,
+      },
+      maintenance_program_url: {
         allowNull: true,
         type: Sequelize.STRING,
       },
