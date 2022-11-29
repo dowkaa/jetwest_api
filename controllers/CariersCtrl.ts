@@ -5,6 +5,14 @@ const { paginate } = require("paginate-info");
 
 module.exports = {
   estimateData: async (req: any, res: Response, next: NextFunction) => {
+    let cargo = await db.dbs.Cargo.findOne({
+      where: { owner_id: req.user.uuid },
+    });
+
+    if (!cargo) {
+      return res.status(200).json(util.helpers.sendError("No aircraft found"));
+    }
+
     let checker = await db.dbs.Users.findOne({
       where: { uuid: req.user.uuid, type: "Carrier" },
     });
@@ -13,20 +21,11 @@ module.exports = {
         .status(400)
         .json(util.helpers.sendError("Non carriers are not allowed here"));
     }
-    let cargo = await db.dbs.Cargo.findOne({
-      where: { owner_id: req.user.uuid },
-    });
 
     var totalShipments = await db.dbs.ShippingItems.count({
       where: { cargo_id: cargo.uuid, status: "completed" },
       order: [["id", "DESC"]],
     });
-
-    if (!cargo) {
-      return res
-        .status(200)
-        .json({ totalShipments, totalHours: 0, totalCancelled: 0 });
-    }
 
     var totalCancelled = await db.dbs.ShippingItems.count({
       where: { cargo_id: cargo.uuid, status: "cancelled" },
