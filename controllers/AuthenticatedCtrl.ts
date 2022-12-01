@@ -1232,12 +1232,6 @@ module.exports = {
   },
 
   completedShipments: async (req: any, res: Response, next: NextFunction) => {
-    // let shipment = await db.dbs.ShippingItems.findAll({
-    //   where: { user_id: req.user.uuid, status: "completed" },
-    // });
-
-    // return res.status(200).json({ shipment });
-
     let pageNum = req.query.pageNum;
 
     if (!pageNum || isNaN(pageNum)) {

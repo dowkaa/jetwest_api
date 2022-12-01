@@ -565,7 +565,7 @@ module.exports = {
       return res.status(400).json(utillz.helpers.sendError("No email added"));
     }
 
-    let user = await db.dbs.Users.findOne({ where: { email } });
+    let user = await db.dbs.Users.findOne({ where: { email: email } });
     if (!user) {
       return res
         .status(400)
