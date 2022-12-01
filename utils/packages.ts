@@ -33,4 +33,4 @@ exports.sequelize = require("sequelize");
 exports.Register = require("../controllers/RegisterCtrl");
 exports.LoginCtrl = require("../controllers/LoginCtrl");
 exports.HomeCtrl = require("../controllers/HomeCtrl");
-exports.paystackQueue = require("../queues/paystack");
+exports.paystackQueue = require("../Queues/paystack");
