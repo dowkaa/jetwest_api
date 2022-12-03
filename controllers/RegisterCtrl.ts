@@ -188,6 +188,8 @@ module.exports = {
     return res.status(200).json({
       success: {
         status: "SUCCESS",
+        email: user.email,
+        account_type: user.type,
         token,
         message: "Your email has been verified successfully",
       },
@@ -240,6 +242,8 @@ module.exports = {
     return res.status(200).json({
       success: {
         status: "SUCCESS",
+        email: user.email,
+        account_type: user.type,
       },
     });
   },
@@ -341,7 +345,8 @@ module.exports = {
     return res.status(200).json({
       success: {
         status: "SUCCESS",
-        email,
+        email: user.email,
+        account_type: user.type,
         message: "business data added successfully",
       },
     });
@@ -441,6 +446,8 @@ module.exports = {
       success: {
         status: "SUCCESS",
         token,
+        email: user.email,
+        account_type: user.type,
         message: "directors data added successfully",
       },
     });

@@ -24,6 +24,7 @@ function createServer() {
 
   app.use("/api/jetwest/public/", packages.publicRoute);
   app.use("/api/jetwest/password/", packages.password);
+  app.use("/api/jetwest/webhook/", packages.Webhook);
   app.use("/api/jetwest/carriers/", packages.carriers);
   app.use("/api/jetwest/transactions/", packages.transactions);
   app.use("/api/jetwest/auth/", packages.authRouth);

@@ -116,6 +116,18 @@ module.exports = {
       return res.status(400).json(util.helpers.sendError(errorMessage));
     }
 
+    const user = await db.dbs.Users.findOne({ where: { uuid: req.user.uuid } });
+
+    if (user.type !== "Carriers") {
+      return res
+        .status(400)
+        .json(
+          util.helpers.sendError(
+            "Non carriers are not allowed to add shipments"
+          )
+        );
+    }
+
     const {
       model,
       payload,

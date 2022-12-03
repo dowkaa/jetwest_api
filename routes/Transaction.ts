@@ -8,6 +8,16 @@ const jwtMiddleWaree = passporte.authenticate("jwt", { session: false });
 
 var TransactionsCtrl = require("../controllers/TransactionCtrl");
 
-routere.get("/hello_world", TransactionsCtrl.checkTransaction);
+routere.post(
+  "/make-payment",
+  [jwtMiddleWaree, signature],
+  TransactionsCtrl.paystackPayment
+);
+
+routere.post(
+  "/inialize-payment",
+  [jwtMiddleWaree, signature],
+  TransactionsCtrl.initializeTransaction
+);
 
 module.exports = routere;

@@ -49,7 +49,13 @@ dbs.ShipmentRoutes = require("../models/shipment_route")(sequelize, Sequelizes);
 dbs.Quotes = require("../models/quotes")(sequelize, Sequelizes);
 dbs.Promotions = require("../models/promotions")(sequelize, Sequelizes);
 dbs.Frieghts = require("../models/frieghts")(sequelize, Sequelizes);
+dbs.PaystackStarter = require("../models/paystck_starter")(
+  sequelize,
+  Sequelizes
+);
+dbs.Webhook = require("../models/webhook")(sequelize, Sequelizes);
 dbs.Directors = require("../models/directors")(sequelize, Sequelizes);
+dbs.Transactions = require("../models/transactions")(sequelize, Sequelizes);
 dbs.Cargo = require("../models/cargo")(sequelize, Sequelizes);
 dbs.ContactUs = require("../models/contactUs")(sequelize, Sequelizes);
 dbs.Mailing = require("../models/mailing")(sequelize, Sequelizes);

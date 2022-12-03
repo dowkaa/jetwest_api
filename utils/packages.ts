@@ -1,4 +1,7 @@
+// database
 exports.dbs = require("../database/mysql");
+
+// libraries/packages
 exports.express = require("express");
 exports.session = require("express-session");
 exports.helpers = require("../config/helpers");
@@ -12,24 +15,24 @@ exports.cryptoJS = require("crypto-js");
 exports.reset = require("../Mail/resetPassword");
 exports.moment = require("moment");
 exports.axios = require("axios");
+exports.sequelize = require("sequelize");
 exports.uuid = require("node-uuid");
+
+// routes
 exports.publicRoute = require("../routes/public");
 exports.authRouth = require("../routes/auth");
 exports.transactions = require("../routes/Transaction");
+exports.Webhook = require("../routes/webhook");
 exports.carriers = require("../routes/carriers");
 exports.password = require("../routes/passwordAuth");
-// exports.Sequelize = require("sequelize");
 exports.helmet = require("helmet");
 exports.jwt = require("jsonwebtoken");
 exports.bcrypt = require("bcryptjs");
 exports.jwt_decode = require("jwt-decode");
 exports.welcome = require("../Mail/welcome");
 exports.contactUs = require("../Mail/contactUs");
-// const expresss = require("express");
-// exports.router = express.Router();
 
-exports.sequelize = require("sequelize");
-
+// Controller directories
 exports.Register = require("../controllers/RegisterCtrl");
 exports.LoginCtrl = require("../controllers/LoginCtrl");
 exports.HomeCtrl = require("../controllers/HomeCtrl");
