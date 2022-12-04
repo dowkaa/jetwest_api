@@ -55,6 +55,7 @@ module.exports = {
         status: "ERROR",
         message: "Registration not completed",
         login_status: user.reg_status,
+        account_type: user.type,
       });
     }
 
