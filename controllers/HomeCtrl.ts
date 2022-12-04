@@ -275,7 +275,9 @@ module.exports = {
       return res.status(400).json(utilz.helpers.sendError("User not found"));
     }
 
-    return res.status(200).json({ status: user.reg_status });
+    return res
+      .status(200)
+      .json({ status: user.reg_status, account_type: user.type });
   },
 
   shipmentRoutes: async (req: Request, res: Response, next: NextFunction) => {

@@ -6,7 +6,7 @@ require("dotenv").config();
 
 //redis config
 const redis = new Redis({
-  host: process.env.DB_HOST,
+  host: process.env.DB_HOST, // host.docker.internal:host-gateway
 });
 
 //producer
