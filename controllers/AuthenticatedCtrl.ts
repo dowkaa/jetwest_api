@@ -118,7 +118,7 @@ module.exports = {
 
     const user = await db.dbs.Users.findOne({ where: { uuid: req.user.uuid } });
 
-    if (user.type !== "Carriers") {
+    if (user.type !== "Carrier") {
       return res
         .status(400)
         .json(
