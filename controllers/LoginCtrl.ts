@@ -54,6 +54,7 @@ module.exports = {
       return res.status(400).json({
         status: "ERROR",
         message: "Registration not completed",
+        email: user.email,
         login_status: user.reg_status,
         account_type: user.type,
       });
