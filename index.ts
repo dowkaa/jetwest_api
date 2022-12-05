@@ -111,9 +111,9 @@ const addData = async () => {
   }
 };
 
-if (process.env.STATE === "prod") {
-  addData();
-}
+// if (process.env.STATE === "prod") {
+//   addData();
+// }
 
 const app = server.createServer();
 const http = require("http").Server(app);
