@@ -572,7 +572,6 @@ module.exports = {
       offset: offset,
       limit: limit,
       where: {
-        user_id: req.user.uuid,
         [Op.or]: [{ booking_reference: ref }, { shipment_num: ref }],
       },
       order: [["id", "DESC"]],
@@ -703,7 +702,7 @@ module.exports = {
         .json(util.helpers.sendError("Kindly add a valid item"));
     }
     let shipment = await db.dbs.ShippingItems.findAll({
-      where: { user_id: req.user.uuid, booking_reference: booking_reference },
+      where: { booking_reference: booking_reference },
     });
 
     return res.status(200).json({ shipment });
@@ -823,7 +822,6 @@ module.exports = {
       offset: offset,
       limit: limit,
       where: {
-        agent_id: req.user.uuid,
         [Op.or]: [{ booking_reference: ref }, { shipment_num: ref }],
       },
       order: [["id", "DESC"]],
