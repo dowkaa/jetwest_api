@@ -112,7 +112,7 @@ module.exports = {
     if (validate.error != null) {
       const errorMessage = validate.error.details
         .map((i: any) => i.message)
-        .Join(".");
+        .join(".");
       return res.status(400).json(util.helpers.sendError(errorMessage));
     }
 
@@ -188,11 +188,60 @@ module.exports = {
   },
 
   myCargos: async (req: any, res: Response, next: NextFunction) => {
-    let cargos = await db.dbs.Cargo.findAndCountAll({
+    // return res.status(200).json({ cargos });
+
+    const { pageNum } = req.query;
+
+    if (!pageNum || isNaN(pageNum)) {
+      return res
+        .status(400)
+        .json(util.helpers.sendError("Kindly add a valid page number"));
+    }
+
+    var currentPage = parseInt(pageNum) ? parseInt(pageNum) : 1;
+
+    var page = currentPage - 1;
+    var pageSize = 25;
+    const offset = page * pageSize;
+    const limit = pageSize;
+
+    // const transactions = await db.dbs.User.findAndCountAll({
+    //   offset: offset,
+    //   limit: limit,
+    //   // where: { user_id: req.user.id },
+    //   order: [["id", "DESC"]],
+    // });
+
+    var cargos = await db.dbs.Cargo.findAndCountAll({
+      offset: offset,
+      limit: limit,
       where: { owner_id: req.user.uuid },
+      order: [["id", "DESC"]],
     });
 
-    return res.status(200).json({ cargos });
+    //1`;
+
+    var next_page = currentPage + 1;
+    var prev_page = currentPage - 1;
+    var nextP = `/api/jetwest/auth/my-cargos?pageNum=` + next_page;
+    var prevP = `/api/jetwest/auth/my-cargos?pageNum=` + prev_page;
+
+    const meta = paginate(currentPage, cargos.count, cargos.rows, pageSize);
+
+    res.status(200).json({
+      status: "SUCCESS",
+      data: cargos,
+      per_page: pageSize,
+      current_page: currentPage,
+      last_page: meta.pageCount, //transactions.count,
+      first_page_url: `/api/jetwest/auth/my-cargos?pageNum=1`,
+      last_page_url: `/api/jetwest/auth/my-cargos?pageNum=` + meta.pageCount, //transactions.count,
+      next_page_url: nextP,
+      prev_page_url: prevP,
+      path: `/api/jetwest/auth/my-cargos?pageNum=`,
+      from: 1,
+      to: meta.pageCount, //transactions.count,
+    });
   },
 
   requestQuote: async (req: any, res: Response, next: NextFunction) => {
@@ -572,8 +621,6 @@ module.exports = {
     // return res.status(200).json({ shipment });
 
     const { pageNum, shipment_num } = req.query;
-
-    console.log({ pageNum, shipment_num });
 
     if (!pageNum || isNaN(pageNum) || !shipment_num) {
       return res
