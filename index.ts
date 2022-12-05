@@ -16,7 +16,7 @@ const addData = async () => {
     await db.dbs.ShippingItems.create({
       uuid: util.uuid(),
       type: "kncioiec",
-      user_id: "23318d37-12dc-47dd-9a77-af79ca4b339b",
+      user_id: "ab4489b8-5aa8-45c0-b218-9b14b877b45c",
       agent_id: "9ffd873f-769c-4d11-8c82-0f8bd4291544",
       shipment_num: "cejeiepineifne",
       pickup_location: "Lagos-Internation-Airport",
@@ -34,6 +34,7 @@ const addData = async () => {
       volumetric_weight: "10000",
       price: "10000",
       category: "Fragile",
+      progress: "completed",
       value: "1000",
       content: "Gold",
       reciever_firstname: "Philomena",
@@ -47,7 +48,7 @@ const addData = async () => {
     await db.dbs.ShippingItems.create({
       uuid: util.uuid(),
       type: "kncioiec",
-      user_id: "23318d37-12dc-47dd-9a77-af79ca4b339b",
+      user_id: "ab4489b8-5aa8-45c0-b218-9b14b877b45c",
       agent_id: "9ffd873f-769c-4d11-8c82-0f8bd4291544",
       shipment_num: "cejeiepineifne",
       pickup_location: "Lagos-Internation-Airport",
@@ -63,6 +64,7 @@ const addData = async () => {
       weight: "jnvcowinvpw",
       booking_reference: "shipment_ref",
       volumetric_weight: "10000",
+      progress: "landed",
       price: "10000",
       category: "Fragile",
       value: "1000",
@@ -78,13 +80,14 @@ const addData = async () => {
     await db.dbs.ShippingItems.create({
       uuid: util.uuid(),
       type: "kncioiec",
-      user_id: "23318d37-12dc-47dd-9a77-af79ca4b339b",
+      user_id: "ab4489b8-5aa8-45c0-b218-9b14b877b45c",
       agent_id: "9ffd873f-769c-4d11-8c82-0f8bd4291544",
       shipment_num: "cejeiepineifne",
       pickup_location: "Lagos-Internation-Airport",
       destination: "Lagos",
       depature_date: "2022-11-11",
       width: 100,
+      progress: "loaded",
       height: 100,
       sur_charge: 10,
       taxes: 10,
@@ -108,9 +111,9 @@ const addData = async () => {
   }
 };
 
-// if (process.env.STATE === "prod") {
-//   addData();
-// }
+if (process.env.STATE === "prod") {
+  addData();
+}
 
 const app = server.createServer();
 const http = require("http").Server(app);
