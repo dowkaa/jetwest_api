@@ -1,4 +1,5 @@
 // const express = require('express');
+export {};
 require("dotenv").config();
 require("./database/mysql");
 const port = process.env.PORT;

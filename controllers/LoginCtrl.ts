@@ -50,15 +50,15 @@ module.exports = {
         .json(utill.helpers.sendError("Account does not exist"));
     }
 
-    if (user.reg_status !== "completed") {
-      return res.status(400).json({
-        status: "ERROR",
-        message: "Registration not completed",
-        email: user.email,
-        login_status: user.reg_status,
-        account_type: user.type,
-      });
-    }
+    // if (user.reg_status !== "completed") {
+    //   return res.status(400).json({
+    //     status: "ERROR",
+    //     message: "Registration not completed",
+    //     email: user.email,
+    //     login_status: user.reg_status,
+    //     account_type: user.type,
+    //   });
+    // }
 
     if (user.activated == 0) {
       const code = user.otp;
@@ -70,7 +70,7 @@ module.exports = {
 
       const option = {
         email: user.email,
-        name: user.fullname,
+        name: `${user.first_name} ${user.last_name}`,
         message: `Thanks for joining the Jetwest team, we promise to serve your shiping needs. <br /> Kindly use the token ${code} to activate your account. <br /><br /> Thanks.`,
       };
 
@@ -81,6 +81,8 @@ module.exports = {
       }
 
       await utill.helpers.deactivateOtp(email);
+
+      await user.save();
 
       // welcomes.sendMail(option);
       return res
@@ -100,6 +102,18 @@ module.exports = {
           message: "Your account has been locked, kindly contact support",
         });
       }
+
+      const opt = {
+        name: `${user.first_name} ${user.last_name}`,
+        email: user.email,
+      };
+
+      if (parseInt(user.login_count) === 0) {
+        console.log("Hello world");
+        utill.introduction.sendMail(opt);
+      }
+      user.login_count = parseInt(user.login_count) + 1;
+      await user.save();
 
       let random = utill.uuid();
 

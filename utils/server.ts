@@ -19,6 +19,29 @@ function createServer() {
     })
   );
 
+  var Queue = require("bull");
+  const { createBullBoard } = require("bull-board");
+  const { BullAdapter } = require("bull-board/bullAdapter");
+  const updateUserBalance = new Queue("update-users-balance");
+  const getUsers = new Queue("initialize");
+  const firstMail = new Queue("first_mail");
+  const secondMail = new Queue("second_mail");
+
+  const { router, setQueues, replaceQueues, addQueue, removeQueue } =
+    createBullBoard([
+      new BullAdapter(updateUserBalance),
+      new BullAdapter(firstMail),
+      new BullAdapter(secondMail),
+    ]);
+
+  //card-queue
+  app.use("/admin/queues", router);
+
+  setTimeout(() => {
+    const option = {};
+    packages.initialize.processJob(option);
+  }, 2000);
+
   app.use(packages.bodyParser.urlencoded({ extended: true }));
   app.use(packages.bodyParser.json());
 

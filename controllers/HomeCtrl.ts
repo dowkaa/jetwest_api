@@ -139,10 +139,9 @@ module.exports = {
       const option = {
         email: email,
         name: `${user.first_name} ${user.last_name}`,
-        message: `Thanks for Jetwest the Jetwest team, we promise to serve your shiping needs. Kindly use the token ${code} to activate your account. 
-        Thanks.`,
+        otp: code,
       };
-      utilz.welcome.sendMail(option);
+      utilz.verify.sendMail(option);
 
       await utilz.helpers.deactivateOtp(email);
     } else if (mobile) {

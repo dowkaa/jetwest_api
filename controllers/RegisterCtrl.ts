@@ -110,7 +110,6 @@ module.exports = {
       mobile_number: mobile,
       first_name,
       last_name,
-
       reg_status: "step-1",
       country,
       password: utillz.bcrypt.hashSync(password),
@@ -124,12 +123,14 @@ module.exports = {
         name: `${first_name} ${last_name}`,
         message: `Thanks for Jetwest the Jetwest team, we promise to serve your shiping needs. Kindly use the token ${code} to activate your account. 
         Thanks.`,
+        otp: code,
       };
 
       await utillz.helpers.deactivateOtp(email);
 
       if (notification_type == "email") {
         utillz.welcome.sendMail(option);
+        utillz.verify.sendMail(option);
       } else {
         sms.send(mobile, option.message);
       }
@@ -168,7 +169,13 @@ module.exports = {
     let user = await db.dbs.Users.findOne({ where: { otp } });
 
     if (!user) {
-      return res.status(400).json(utillz.helpers.sendError("User not found"));
+      return res
+        .status(400)
+        .json(
+          utillz.helpers.sendError(
+            "Otp expired or invalid, kindly request for another otp. Thanks."
+          )
+        );
     }
 
     if (user.otp != otp) {
@@ -176,10 +183,15 @@ module.exports = {
         .status(400)
         .json(utillz.helpers.sendError("Invalid authenication code"));
     }
+
     await user.save();
     user.reg_status = "step-2";
     user.activated = 1;
     await user.save();
+    const option = {
+      name: `${user.first_name} ${user.last_name}`,
+    };
+    utillz.verifySuccess.sendMail(option);
 
     let random = utillz.uuid();
 

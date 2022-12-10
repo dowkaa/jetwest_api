@@ -29,11 +29,23 @@ exports.helmet = require("helmet");
 exports.jwt = require("jsonwebtoken");
 exports.bcrypt = require("bcryptjs");
 exports.jwt_decode = require("jwt-decode");
-exports.welcome = require("../Mail/welcome");
-exports.contactUs = require("../Mail/contactUs");
+
+// cron jobs
+exports.firstMail = require("../Queues/first_mail");
+exports.secondMail = require("../Queues/second_mail");
+exports.initialize = require("../Queues/initialize");
 
 // Controller directories
 exports.Register = require("../controllers/RegisterCtrl");
 exports.LoginCtrl = require("../controllers/LoginCtrl");
 exports.HomeCtrl = require("../controllers/HomeCtrl");
 exports.paystackQueue = require("../Queues/paystack");
+
+//  Mailers
+exports.firstMailer = require("../Mail/firstMail");
+exports.secondMailer = require("../Mail/secondMail");
+exports.welcome = require("../Mail/welcome");
+exports.contactUs = require("../Mail/contactUs");
+exports.verify = require("../Mail/verify");
+exports.introduction = require("../Mail/introduction");
+exports.verifySuccess = require("../Mail/verifySuccess");
