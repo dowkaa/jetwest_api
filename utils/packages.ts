@@ -47,5 +47,5 @@ exports.secondMailer = require("../Mail/secondMail");
 exports.welcome = require("../Mail/welcome");
 exports.contactUs = require("../Mail/contactUs");
 exports.verify = require("../Mail/verify");
-exports.introduction = require("../Mail/introduction");
+exports.introduction = require("../Mail/Introduction");
 exports.verifySuccess = require("../Mail/verifySuccess");
