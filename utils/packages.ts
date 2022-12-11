@@ -49,3 +49,4 @@ exports.contactUs = require("../Mail/contactUs");
 exports.verify = require("../Mail/verify");
 exports.introduction = require("../Mail/Introduction");
 exports.verifySuccess = require("../Mail/verifySuccess");
+// http://35.184.239.130:4044/auth/forgot-password/change-password/75693a1dcdc412346b16153bb2cc4471296d742c8f1ea1c6b38dbea721f5e9b5
