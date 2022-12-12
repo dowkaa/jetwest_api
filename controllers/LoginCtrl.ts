@@ -85,13 +85,13 @@ module.exports = {
       await user.save();
 
       // welcomes.sendMail(option);
-      return res
-        .status(400)
-        .json(
-          utill.helpers.sendError(
-            "Account has not been activated, kindly activate account with otp code sent to your email"
-          )
-        );
+      // return res
+      //   .status(400)
+      //   .json(
+      //     utill.helpers.sendError(
+      //       "Account has not been activated, kindly activate account with otp code sent to your email"
+      //     )
+      //   );
     }
 
     if (utill.bcrypt.compareSync(password, user.password)) {
