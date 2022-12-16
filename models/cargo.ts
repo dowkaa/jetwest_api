@@ -28,6 +28,7 @@ var Cargos = (sequelize: any, type: any) => {
     maintenance_program_url: Sequelize.STRING,
     mmel: Sequelize.STRING,
     ops_manual: Sequelize.STRING,
+    status: Sequelize.STRING,
   });
 };
 

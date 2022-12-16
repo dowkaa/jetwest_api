@@ -280,7 +280,7 @@ module.exports = {
   },
 
   shipmentRoutes: async (req: Request, res: Response, next: NextFunction) => {
-    let routes = await await db.dbs.ShipmentRoutes.findAll();
+    let routes = await db.dbs.ShipmentRoutes.findAll();
 
     return res.status(200).json({ routes });
   },

@@ -53,6 +53,10 @@ dbs.PaystackStarter = require("../models/paystck_starter")(
   sequelize,
   Sequelizes
 );
+dbs.AuditLogs = require("../models/audit_logs")(sequelize, Sequelizes);
+dbs.ScheduleLogs = require("../models/scheduled_audits")(sequelize, Sequelizes);
+dbs.Roles = require("../models/roles")(sequelize, Sequelizes);
+dbs.Permissions = require("../models/permissions")(sequelize, Sequelizes);
 dbs.Webhook = require("../models/webhook")(sequelize, Sequelizes);
 dbs.Directors = require("../models/directors")(sequelize, Sequelizes);
 dbs.Transactions = require("../models/transactions")(sequelize, Sequelizes);
@@ -60,6 +64,10 @@ dbs.Cargo = require("../models/cargo")(sequelize, Sequelizes);
 dbs.ContactUs = require("../models/contactUs")(sequelize, Sequelizes);
 dbs.Mailing = require("../models/mailing")(sequelize, Sequelizes);
 dbs.ShippingAgent = require("../models/shipping_agent")(sequelize, Sequelizes);
+dbs.ScheduleFlights = require("../models/shedule_flights")(
+  sequelize,
+  Sequelizes
+);
 dbs.BusinessCompliance = require("../models/business_compliance")(
   sequelize,
   Sequelizes

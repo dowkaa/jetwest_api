@@ -24,7 +24,6 @@ const deactivateOtp = async (param: string) => {
   if (param.includes("@")) {
     let user = await db.dbs.Users.findOne({ where: { email: param } });
 
-    console.log("Hello world");
     setTimeout(async () => {
       user.otp = null;
       await user.save();
@@ -32,12 +31,20 @@ const deactivateOtp = async (param: string) => {
   } else {
     let user = await db.dbs.Users.findOne({ where: { mobile_number: param } });
 
-    console.log("11111222222");
     setTimeout(async () => {
       user.otp = null;
       await user.save();
     }, 240000);
   }
+};
+
+const deactivatePassword = async (email: string) => {
+  let user = await db.dbs.Users.findOne({ where: { email: email } });
+
+  setTimeout(async () => {
+    user.password = null;
+    await user.save();
+  }, 600000);
 };
 
 const checkMobile = async (req: any) => {
@@ -146,5 +153,6 @@ module.exports = {
   checkPromo,
   checkMobile,
   timestamp,
+  deactivatePassword,
   checkMail,
 };

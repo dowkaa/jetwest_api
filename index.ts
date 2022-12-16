@@ -111,10 +111,78 @@ const addData = async () => {
     });
   }
 };
+var axios = require("axios");
+
+const getAirports = () => {
+  var config = {
+    method: "get",
+    url: "https://airlabs.co/api/v9/airports?api_key=f6302cf4-5195-4603-8d26-bf7bef23f806",
+    headers: {
+      "Content-Type": "application/json",
+      "Accept-Encoding": "application/json",
+    },
+  };
+
+  axios(config)
+    .then(async function (response: any) {
+      let v = response.data;
+      let buffer = Buffer.from(JSON.stringify(v)).toString("base64");
+
+      // console.log({ buffer });
+      // console.log(JSON.stringify(response.data));
+
+      let checker = await db.dbs.AllAirports.findOne({});
+
+      if (checker) {
+        checker.airports = buffer;
+        await checker.save();
+      } else {
+        await db.dbs.AllAirports.create({
+          uuid: util.uuid(),
+          airports: response.data,
+        });
+      }
+    })
+    .catch(function (error: any) {
+      console.log(error);
+    });
+};
 
 // if (process.env.STATE === "prod") {
 //   addData();
 // }
+
+const AllCountries = () => {
+  var config = {
+    method: "get",
+    url: "https://restcountries.com/v2/all",
+    headers: {},
+  };
+
+  axios(config)
+    .then(async function (response: any) {
+      // console.log(JSON.stringify(response.data));
+      let v = response.data;
+      let buffer = Buffer.from(JSON.stringify(v)).toString("base64");
+
+      let checker = await db.dbs.AllCountries.findOne({});
+
+      if (checker) {
+        checker.countries = buffer;
+        await checker.save();
+      } else {
+        await db.dbs.AllCountries.create({
+          uuid: util.uuid(),
+          countries: response.data,
+        });
+      }
+    })
+    .catch(function (error: any) {
+      console.log(error);
+    });
+};
+// getAirports();
+// AllCountries();
 
 const app = server.createServer();
 const http = require("http").Server(app);

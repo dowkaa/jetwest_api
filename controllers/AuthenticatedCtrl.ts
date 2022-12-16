@@ -27,6 +27,8 @@ module.exports = {
         last_name: string;
         company_name: string;
         mobile_number: string;
+        is_Admin: number;
+        admin_type: string;
         company_address: string;
         companyFounded: string;
         ratePerkg: string;
@@ -52,6 +54,8 @@ module.exports = {
       mobile_number: req.user.mobile_number,
       company_name: req.user.company_name,
       company_address: req.user.company_address,
+      is_Admin: req.user.is_Admin,
+      admin_type: req.user.admin_type,
       companyFounded: req.user.companyFounded,
       type: req.user.type,
       ratePerKg: req.user.ratePerkg,
@@ -169,6 +173,7 @@ module.exports = {
       registration_cert_exp_date,
       maintenance_program_url,
       mmel,
+      status: "pending",
       ops_manual,
     });
 
@@ -228,7 +233,7 @@ module.exports = {
 
     const meta = paginate(currentPage, cargos.count, cargos.rows, pageSize);
 
-    res.status(200).json({
+    return res.status(200).json({
       status: "SUCCESS",
       data: cargos,
       per_page: pageSize,
