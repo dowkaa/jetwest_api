@@ -409,6 +409,8 @@ module.exports = {
       return res.status(400).json(utill.helpers.sendError(errorMessage));
     }
 
+    const {};
+
     let user = await db.dbs.Users.findOne({ where: { uuid: req.user.uuid } });
 
     if (parseInt(user.is_Admin) != 1) {
@@ -428,6 +430,15 @@ module.exports = {
     }
 
     const { name, description } = req.body;
+    let checkPermission = await db.dbs.Permissions.findOne({
+      where: { uuid: description },
+    });
+
+    if (!checkPermission) {
+      return res
+        .status(400)
+        .json(utill.helpers.sendError(`Permission does not exist`));
+    }
 
     let checker = await db.dbs.Roles.findOne({ where: { name: name } });
 
