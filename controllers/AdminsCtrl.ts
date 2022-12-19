@@ -409,8 +409,6 @@ module.exports = {
       return res.status(400).json(utill.helpers.sendError(errorMessage));
     }
 
-    const {};
-
     let user = await db.dbs.Users.findOne({ where: { uuid: req.user.uuid } });
 
     if (parseInt(user.is_Admin) != 1) {
