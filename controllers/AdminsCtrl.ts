@@ -117,6 +117,18 @@ module.exports = {
 
     const { type, items } = req.body;
 
+    let checker = await db.dbs.Permissions.findOne({ where: { type: type } });
+
+    if (checker) {
+      return res
+        .status(400)
+        .json(
+          utill.helpers.sendError(
+            `permission with type ${type} already created`
+          )
+        );
+    }
+
     await db.dbs.Permissions.create({
       uuid: utill.uuid(),
       type: type,
