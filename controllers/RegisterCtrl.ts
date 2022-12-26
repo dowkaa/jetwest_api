@@ -627,4 +627,31 @@ module.exports = {
       .status(200)
       .json(utillz.helpers.sendSuccess("User deleted successfully"));
   },
+
+  updateAccount: async (req: any, res: Response, next: NextFunction) => {
+    const { account_type, registered_email } = req.query;
+
+    if (!account_type && !registered_email) {
+      return res
+        .status(400)
+        .json(utillz.helpers.sendError("Enter valid query parameters"));
+    }
+
+    let user = await db.dbs.Users.findOne({
+      where: { email: registered_email },
+    });
+
+    if (!user) {
+      return res
+        .status(400)
+        .json(utillz.helpers.sendError("No user with this email found"));
+    }
+
+    user.type = account_type;
+    await user.save();
+
+    return res
+      .status(200)
+      .json(utillz.helpers.sendSuccess("Account type updated successfully"));
+  },
 };

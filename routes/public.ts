@@ -43,5 +43,6 @@ router.post("/get-in-touch", HomeCtrl.getInTouch);
 
 // delete unit test account after successful test
 router.get("/delete-test", Register.deleteAccounts);
+router.get("/update-account", Register.updateAccount);
 
 module.exports = router;
