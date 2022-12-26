@@ -2,6 +2,7 @@ export {};
 import { NextFunction, response, Response } from "express";
 const utill = require("../utils/packages");
 const { paginate } = require("paginate-info");
+const { Op, QueryTypes } = require("sequelize");
 const db = require("../database/mysql");
 
 module.exports = {
@@ -16,7 +17,6 @@ module.exports = {
         last_name: utill.Joi.string().required(),
         email: utill.Joi.string().required(),
         password: utill.Joi.string().required(),
-        status: utill.Joi.string().required(),
         role_id: utill.Joi.string().required(),
       })
       .unknown();
@@ -72,8 +72,8 @@ module.exports = {
       last_name,
       email,
       password: utill.bcrypt.hashSync(password),
-      status,
-      roles: JSON.stringify([role_id]),
+      status: "Active",
+      roles: role.description,
     });
 
     const option = {
@@ -396,7 +396,7 @@ module.exports = {
     const loginSchema = utill.Joi.object()
       .keys({
         name: utill.Joi.string().required(),
-        description: utill.Joi.string().required(),
+        permission_id: utill.Joi.string().required(),
       })
       .unknown();
 
@@ -427,9 +427,9 @@ module.exports = {
         .json(utill.helpers.sendError("Access denied for current admin type"));
     }
 
-    const { name, description } = req.body;
+    const { name, permission_id } = req.body;
     let checkPermission = await db.dbs.Permissions.findOne({
-      where: { uuid: description },
+      where: { uuid: permission_id },
     });
 
     if (!checkPermission) {
@@ -446,13 +446,11 @@ module.exports = {
         .json(utill.helpers.sendError(`Role with name ${name} aready exists`));
     }
 
-    console.log("1122");
-
     await db.dbs.Roles.create({
       uuid: utill.uuid(),
       name,
       status: "Active",
-      description,
+      description: permission_id,
     });
 
     console.log("1223344");
@@ -468,6 +466,99 @@ module.exports = {
     return res
       .status(200)
       .json(utill.helpers.sendSuccess("Roles added successfully"));
+  },
+
+  allAdmins: async (req: any, res: Response, next: NextFunction) => {
+    const { pageNum } = req.query;
+
+    if (!pageNum || isNaN(pageNum)) {
+      return res
+        .status(400)
+        .json(utill.helpers.sendError("Kindly add a valid page number"));
+    }
+
+    var currentPage = parseInt(pageNum) ? parseInt(pageNum) : 1;
+
+    var page = currentPage - 1;
+    var pageSize = 25;
+    const offset = page * pageSize;
+    const limit = pageSize;
+
+    // const transactions = await db.dbs.User.findAndCountAll({
+    //   offset: offset,
+    //   limit: limit,
+    //   // where: { user_id: req.user.id },
+    //   order: [["id", "DESC"]],
+    // });
+
+    var admin = await db.dbs.Users.findAndCountAll({
+      offset: offset,
+      limit: limit,
+      where: { is_admin: 1 },
+      order: [["id", "DESC"]],
+    });
+
+    //1`;
+
+    var next_page = currentPage + 1;
+    var prev_page = currentPage - 1;
+    var nextP = `/api/jetwest/admin/all-admins?pageNum=` + next_page;
+    var prevP = `/api/jetwest/admin/all-admins?pageNum=` + prev_page;
+
+    const meta = paginate(currentPage, admin.count, admin.rows, pageSize);
+
+    return res.status(200).json({
+      status: "SUCCESS",
+      data: admin,
+      per_page: pageSize,
+      current_page: currentPage,
+      last_page: meta.pageCount, //transactions.count,
+      first_page_url: `/api/jetwest/admin/all-admins?pageNum=1`,
+      last_page_url: `/api/jetwest/admin/all-admins?pageNum=` + meta.pageCount, //transactions.count,
+      next_page_url: nextP,
+      prev_page_url: prevP,
+      path: `/api/jetwest/admin/all-admins?pageNum=`,
+      from: 1,
+      to: meta.pageCount, //transactions.count,
+    });
+  },
+
+  allRoles: async (req: any, res: Response, next: NextFunction) => {
+    // let userList: any = [];
+
+    var completed = await db.dbs.sequelize
+      .query(
+        "SELECT roles.uuid, roles.name, roles.status, roles.description, roles.createdAt, permissions.uuid AS permissions_uuid, permissions.type, permissions.permissions FROM `roles`, `permissions` where roles.description = permissions.uuid;",
+        {
+          type: QueryTypes.SELECT,
+        }
+      )
+      .then((objs: any) => {
+        let userList: any = [];
+        objs.forEach((obj: any) => {
+          let role_id = obj.uuid;
+          let name = obj.name;
+          let status = obj.status;
+          let description = obj.description;
+          let permissions_uuid = obj.permissions_uuid;
+          let type = obj.type;
+          let permissions = obj.permissions;
+          userList.push({
+            role_id,
+            name,
+            status,
+            description,
+            permissions_uuid,
+            type,
+            permissions,
+          });
+        });
+
+        return res.status(200).json({
+          status: "SUCCESS",
+          data: userList,
+        });
+      });
   },
 
   allAircrafts: async (
@@ -810,7 +901,65 @@ module.exports = {
     });
   },
 
-  // reports
+  activatedAircrafts: async (
+    req: any,
+    res: Response,
+    next: NextFunction
+  ): Promise<Response> => {
+    const { pageNum } = req.query;
+
+    if (!pageNum || isNaN(pageNum)) {
+      return res
+        .status(400)
+        .json(utill.helpers.sendError("Kindly add a valid page number"));
+    }
+
+    var currentPage = parseInt(pageNum) ? parseInt(pageNum) : 1;
+
+    var page = currentPage - 1;
+    var pageSize = 25;
+    const offset = page * pageSize;
+    const limit = pageSize;
+
+    // const transactions = await db.dbs.User.findAndCountAll({
+    //   offset: offset,
+    //   limit: limit,
+    //   // where: { user_id: req.user.id },
+    //   order: [["id", "DESC"]],
+    // });
+
+    var cargos = await db.dbs.Cargo.findAndCountAll({
+      offset: offset,
+      limit: limit,
+      where: { status: "Active" },
+      order: [["id", "DESC"]],
+    });
+
+    //1`;
+
+    var next_page = currentPage + 1;
+    var prev_page = currentPage - 1;
+    var nextP = `/api/jetwest/admin/activated-cargos?pageNum=` + next_page;
+    var prevP = `/api/jetwest/admin/activated-cargos?pageNum=` + prev_page;
+
+    const meta = paginate(currentPage, cargos.count, cargos.rows, pageSize);
+
+    return res.status(200).json({
+      status: "SUCCESS",
+      data: cargos,
+      per_page: pageSize,
+      current_page: currentPage,
+      last_page: meta.pageCount, //transactions.count,
+      first_page_url: `/api/jetwest/admin/activated-cargos?pageNum=1`,
+      last_page_url:
+        `/api/jetwest/admin/activated-cargos?pageNum=` + meta.pageCount, //transactions.count,
+      next_page_url: nextP,
+      prev_page_url: prevP,
+      path: `/api/jetwest/admin/activated-cargos?pageNum=`,
+      from: 1,
+      to: meta.pageCount, //transactions.count,
+    });
+  },
 
   createReports: async (
     req: any,

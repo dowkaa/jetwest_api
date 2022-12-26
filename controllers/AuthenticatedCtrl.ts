@@ -27,13 +27,16 @@ module.exports = {
         last_name: string;
         company_name: string;
         mobile_number: string;
+        verification_status: string;
         is_Admin: number;
         admin_type: string;
         company_address: string;
         companyFounded: string;
         ratePerkg: string;
         country: string;
+        roles: string;
         state: string;
+        permissions?: {};
         type: string;
       }
     >,
@@ -44,6 +47,16 @@ module.exports = {
       where: { user_id: req.user.uuid },
     });
 
+    let permissions;
+
+    if (req.user.is_Admin === 1) {
+      let roles = await db.dbs.Permissions.findOne({
+        where: { uuid: req.user.roles },
+      });
+
+      permissions = roles;
+    }
+
     const user = {
       first_name: req.user.first_name,
       last_name: req.user.last_name,
@@ -53,6 +66,7 @@ module.exports = {
       country: req.user.country,
       mobile_number: req.user.mobile_number,
       company_name: req.user.company_name,
+      verification_status: req.user.verification_status,
       company_address: req.user.company_address,
       is_Admin: req.user.is_Admin,
       admin_type: req.user.admin_type,
@@ -61,6 +75,7 @@ module.exports = {
       ratePerKg: req.user.ratePerkg,
       locked: req.user.locked,
       activated: req.user.activated,
+      permissions,
       Directors,
     };
     return res.status(200).json({ user });

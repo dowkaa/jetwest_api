@@ -28,6 +28,8 @@ var User = (sequelize: any, type: any) => {
     company_address: Sequelize.STRING,
     reg_status: Sequelize.STRING,
     companyFounded: Sequelize.STRING,
+    verification_status: Sequelize.STRING,
+    profileDoc: Sequelize.STRING,
     type: Sequelize.STRING,
     ratePerKg: Sequelize.DOUBLE,
     otp: Sequelize.STRING,

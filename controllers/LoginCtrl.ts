@@ -80,7 +80,7 @@ module.exports = {
         console.log({ error });
       }
 
-      await utill.helpers.deactivateOtp(email);
+      utill.helpers.deactivateOtp(email);
 
       await user.save();
 
@@ -118,16 +118,14 @@ module.exports = {
       let random = utill.uuid();
 
       const token = signTokens(user, random);
-      return res
-        .status(200)
-        .json({
-          success: {
-            token,
-            email: user.email,
-            login_status: user.reg_status,
-            account_type: user.type,
-          },
-        });
+      return res.status(200).json({
+        success: {
+          token,
+          email: user.email,
+          login_status: user.reg_status,
+          account_type: user.type,
+        },
+      });
     }
 
     return res.status(400).json({

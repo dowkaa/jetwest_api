@@ -190,6 +190,7 @@ module.exports = {
     await user.save();
     const option = {
       name: `${user.first_name} ${user.last_name}`,
+      email: user.email,
     };
     utillz.verifySuccess.sendMail(option);
 
@@ -212,6 +213,7 @@ module.exports = {
     const schema = utillz.Joi.object()
       .keys({
         organisation: utillz.Joi.string().required(),
+        profileDoc: utillz.Joi.string().allow(""),
         company_name: utillz.Joi.string().required(),
         company_address: utillz.Joi.string().required(),
         companyFounded: utillz.Joi.string().required(),
@@ -245,6 +247,7 @@ module.exports = {
 
     user.company_name = req.body.company_name;
     user.organisation = req.body.organisation;
+    user.profileDoc = req.body.profileDoc;
     user.reg_status = "step-3";
     user.company_address = req.body.company_address;
     user.companyFounded = req.body.companyFounded;
@@ -540,6 +543,7 @@ module.exports = {
     business.status = 2;
     await business.save();
     user.reg_status = "completed";
+    user.verification_status = "in progress";
     await user.save();
 
     return res
