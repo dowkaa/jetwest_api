@@ -462,7 +462,7 @@ module.exports = {
       name,
       status: "Active",
       description: "Admin permissions",
-      permissions,
+      permissions: JSON.stringify(permissions),
     });
 
     console.log("1223344");
