@@ -12,6 +12,7 @@ var Roles = (sequelize: any, type: any) => {
     name: Sequelize.STRING,
     status: Sequelize.STRING,
     description: Sequelize.STRING,
+    permissions: Sequelize.TEXT,
   });
 };
 

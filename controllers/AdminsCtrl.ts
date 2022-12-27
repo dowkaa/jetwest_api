@@ -17,7 +17,7 @@ module.exports = {
         last_name: utill.Joi.string().required(),
         email: utill.Joi.string().required(),
         password: utill.Joi.string().required(),
-        role_id: utill.Joi.string().required(),
+        role_id: utill.Joi.array().required(),
       })
       .unknown();
 
@@ -72,8 +72,10 @@ module.exports = {
       last_name,
       email,
       password: utill.bcrypt.hashSync(password),
+      is_Admin: 1,
       status: "Active",
-      roles: role.description,
+      admin_type: role.name,
+      roles: role.permissions,
     });
 
     const option = {
@@ -94,6 +96,15 @@ module.exports = {
       .json(utill.helpers.sendSuccess("Admin user added successfully"));
   },
 
+  allPermissions: async (
+    req: any,
+    res: Response,
+    next: NextFunction
+  ): Promise<Response> => {
+    let permissions = await db.dbs.Permissions.findOne();
+
+    return res.status(200).json({ permissions });
+  },
   permissions: async (
     req: any,
     res: Response,
@@ -396,7 +407,7 @@ module.exports = {
     const loginSchema = utill.Joi.object()
       .keys({
         name: utill.Joi.string().required(),
-        permission_id: utill.Joi.string().required(),
+        permissions: utill.Joi.array().required(),
       })
       .unknown();
 
@@ -427,30 +438,31 @@ module.exports = {
         .json(utill.helpers.sendError("Access denied for current admin type"));
     }
 
-    const { name, permission_id } = req.body;
-    let checkPermission = await db.dbs.Permissions.findOne({
-      where: { uuid: permission_id },
-    });
+    const { name, permissions } = req.body;
+    // let checkPermission = await db.dbs.Permissions.findOne({
+    //   where: { uuid: permission_id },
+    // });
 
-    if (!checkPermission) {
-      return res
-        .status(400)
-        .json(utill.helpers.sendError(`Permission does not exist`));
-    }
+    // if (!checkPermission) {
+    //   return res
+    //     .status(400)
+    //     .json(utill.helpers.sendError(`Permission does not exist`));
+    // }
 
-    let checker = await db.dbs.Roles.findOne({ where: { name: name } });
+    // let checker = await db.dbs.Roles.findOne({ where: { name: name } });
 
-    if (checker) {
-      return res
-        .status(400)
-        .json(utill.helpers.sendError(`Role with name ${name} aready exists`));
-    }
+    // if (checker) {
+    //   return res
+    //     .status(400)
+    //     .json(utill.helpers.sendError(`Role with name ${name} aready exists`));
+    // }
 
     await db.dbs.Roles.create({
       uuid: utill.uuid(),
       name,
       status: "Active",
-      description: permission_id,
+      description: "Admin permissions",
+      permissions,
     });
 
     console.log("1223344");

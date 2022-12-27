@@ -69,6 +69,7 @@ router.get(
   [jwtMiddleWare, signatureSigner],
   AdminCtrl.allAdmins
 );
+
 router.get("/all-roles", [jwtMiddleWare, signatureSigner], AdminCtrl.allRoles);
 
 router.get(
@@ -81,5 +82,11 @@ router.get(
   "/activated-cargos",
   [jwtMiddleWare, signatureSigner],
   AdminCtrl.activatedAircrafts
+);
+
+router.get(
+  "/all-permissions",
+  [jwtMiddleWare, signatureSigner],
+  AdminCtrl.allPermissions
 );
 module.exports = router;
