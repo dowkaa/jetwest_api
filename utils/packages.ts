@@ -48,6 +48,7 @@ exports.secondMailer = require("../Mail/secondMail");
 exports.welcome = require("../Mail/welcome");
 exports.contactUs = require("../Mail/contactUs");
 exports.verify = require("../Mail/verify");
+exports.aircraftUpdate = require("../Mail/aircraftUpdate");
 exports.introduction = require("../Mail/Introduction");
 exports.changeAdminPassword = require("../Mail/changeAdminPassword");
 exports.welcome_admin = require("../Mail/welcome_admin");

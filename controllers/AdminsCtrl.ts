@@ -17,6 +17,7 @@ module.exports = {
         last_name: utill.Joi.string().required(),
         email: utill.Joi.string().required(),
         password: utill.Joi.string().required(),
+        roleName: utill.Joi.string().required(),
         role_id: utill.Joi.array().required(),
       })
       .unknown();
@@ -48,7 +49,7 @@ module.exports = {
         .json(utill.helpers.sendError("Access denied for current admin type"));
     }
 
-    const { first_name, last_name, email, password, status, role_id } =
+    const { first_name, last_name, roleName, email, password, role_id } =
       req.body;
 
     let checker = await db.dbs.Users.findOne({ where: { email: email } });
@@ -59,9 +60,11 @@ module.exports = {
         .json(utill.helpers.sendError("User with email already exists"));
     }
 
-    let role = await db.dbs.Roles.findOne({ where: { uuid: role_id } });
+    let roles = await db.dbs.Roles.findAll({
+      where: { uuid: { [Op.in]: role_id } },
+    });
 
-    if (!role) {
+    if (!roles) {
       return res
         .status(400)
         .json(utill.helpers.sendError("Role does not exist"));
@@ -74,19 +77,20 @@ module.exports = {
       password: utill.bcrypt.hashSync(password),
       is_Admin: 1,
       status: "Active",
-      admin_type: role.name,
-      roles: role.permissions,
+      admin_type: roleName,
+      roles: JSON.stringify(roles),
     });
 
     const option = {
       name: `${req.user.first_name} ${req.user.last_name}`,
+      email: email,
       message: `Kindly use the password ${password} to login to the dowkaa admin dashboard by clicking on the button below. Thanks.`,
     };
 
     await db.dbs.AuditLogs.create({
       uuid: utill.uuid(),
       user_id: req.user.uuid,
-      description: `Admin ${req.user.first_name} ${req.user.last_name} added an admin with role ${role.name}`,
+      description: `Admin ${req.user.first_name} ${req.user.last_name} added an admin with role ${roleName}`,
     });
 
     utill.welcome.sendMail(option);
@@ -690,100 +694,124 @@ module.exports = {
     });
   },
 
-  //   activateAircraft: async (
-  //     req: any,
-  //     res: Response,
-  //     next: NextFunction
-  //   ): Promise<Response> => {
-  //     const loginSchema = utill.Joi.object()
-  //       .keys({
-  //         uuid: utill.Joi.string().required(),
-  //         owner_id: utill.Joi.string().required(),
-  //         model: utill.Joi.string().required(),
-  //         payload: utill.Joi.string().required(),
-  //         areasOfCoverage: utill.Joi.string().required(),
-  //         monthly_flight_time: utill.Joi.string().required(),
-  //         weekly_flight_time: utill.Joi.string().required(),
-  //         daily_flight_time: utill.Joi.string().required(),
-  //         aircraft_registration: utill.Joi.string().required(),
-  //         airworthiness_cert_url: utill.Joi.string().required(),
-  //         airworthiness_cert_exp_date: utill.Joi.string().required(),
-  //         noise_cert_url: utill.Joi.string().required(),
-  //         noise_cert_exp_date: utill.Joi.string().required(),
-  //         insurance_cert_url: utill.Joi.string().required(),
-  //         insurance_cert_exp_date: utill.Joi.string().required(),
-  //         registration_cert_url: utill.Joi.string().required(),
-  //         registration_cert_exp_date: utill.Joi.string().required(),
-  //         maintenance_program_url: utill.Joi.string().required(),
-  //         mmel: utill.Joi.string().required(),
-  //         ops_manual: utill.Joi.string().required(),
-  //         status: utill.Joi.string().required(),
-  //       })
-  //       .unknown();
+  activateAircraft: async (
+    req: any,
+    res: Response,
+    next: NextFunction
+  ): Promise<Response> => {
+    const loginSchema = utill.Joi.object()
+      .keys({
+        cargo_id: utill.Joi.string().required(),
+        airworthiness_cert_status: utill.Joi.string().required(),
+        noise_cert_status: utill.Joi.string().required(),
+        insurance_cert_status: utill.Joi.string().required(),
+        registration_cert_status: utill.Joi.string().required(),
+        maintenance_program_status: utill.Joi.string().required(),
+        mmel_status: utill.Joi.string().required(),
+        ops_manual_status: utill.Joi.string().required(),
+        status: utill.Joi.string().required(),
+        note: utill.Joi.string().required(),
+      })
+      .unknown();
 
-  //     const validate = loginSchema.validate(req.body);
+    const validate = loginSchema.validate(req.body);
 
-  //     if (validate.error != null) {
-  //       const errorMessage = validate.error.details
-  //         .map((i: any) => i.message)
-  //         .join(".");
-  //       return res.status(400).json(utill.helpers.sendError(errorMessage));
-  //     }
+    if (validate.error != null) {
+      const errorMessage = validate.error.details
+        .map((i: any) => i.message)
+        .join(".");
+      return res.status(400).json(utill.helpers.sendError(errorMessage));
+    }
 
-  //     let user = await db.dbs.Users.findOne({ where: { uuid: req.user.uuid } });
+    const {
+      cargo_id,
+      airworthiness_cert_status,
+      noise_cert_status,
+      insurance_cert_status,
+      registration_cert_status,
+      maintenance_program_status,
+      mmel_status,
+      ops_manual_status,
+      status,
+      note,
+    } = req.body;
 
-  //     if (parseInt(user.is_Admin) != 1) {
-  //       return res
-  //         .status(400)
-  //         .json(
-  //           utill.helpers.sendError(
-  //             "Unauthorised access, Kindly contact system admin"
-  //           )
-  //         );
-  //     }
+    let user = await db.dbs.Users.findOne({ where: { uuid: req.user.uuid } });
 
-  //     if (
-  //       !(
-  //         user.admin_type === "Flight Operator" ||
-  //         user.admin_type === "Super Admin"
-  //       )
-  //     ) {
-  //       return res
-  //         .status(400)
-  //         .json(utill.helpers.sendError("Access denied for current admin type"));
-  //     }
+    if (parseInt(user.is_Admin) != 1) {
+      return res
+        .status(400)
+        .json(
+          utill.helpers.sendError(
+            "Unauthorised access, Kindly contact system admin"
+          )
+        );
+    }
 
-  //     let cargo = await db.dbs.Cargo.findOne({ where: { uuid: cargo_id } });
+    if (
+      !(
+        user.admin_type === "Flight Operator" ||
+        user.admin_type === "Super Admin"
+      )
+    ) {
+      return res
+        .status(400)
+        .json(utill.helpers.sendError("Access denied for current admin type"));
+    }
 
-  //     if (!cargo) {
-  //       return res
-  //         .status(400)
-  //         .json(utill.helpers.sendError("Aircraft not found"));
-  //     }
+    let cargo = await db.dbs.Cargo.findOne({ where: { uuid: cargo_id } });
 
-  //     await db.dbs.AuditLogs.create({
-  //       uuid: utill.uuid(),
-  //       user_id: req.user.uuid,
-  //       description: `Admin ${req.user.first_name} ${
-  //         req.user.last_name
-  //       } updated the status of aircraft with id ${cargo.uuid} from ${
-  //         cargo.status
-  //       } to ${status === "Deactivate" ? "Inactive" : "Activated"}
-  // `,
-  //     });
+    if (!cargo) {
+      return res
+        .status(400)
+        .json(utill.helpers.sendError("Aircraft not found"));
+    }
 
-  //     if (status === "Deactivate") {
-  //       cargo.status = "Inactive";
-  //       await cargo.save();
-  //     } else {
-  //       cargo.status = "Activated";
-  //       await cargo.save();
-  //     }
+    await db.dbs.AuditLogs.create({
+      uuid: utill.uuid(),
+      user_id: req.user.uuid,
+      description: `Admin ${req.user.first_name} ${
+        req.user.last_name
+      } updated the status of aircraft with id ${cargo.uuid} from ${
+        cargo.status
+      } to ${status === "Deactivate" ? "Inactive" : "Activated"}
+with note ${note}`,
+    });
 
-  //     return res
-  //       .status(200)
-  //       .json(utill.helpers.sendSuccess("Aircraft successfully activated"));
-  //   },
+    if (status === "Deactivate") {
+      cargo.status = "Inactive";
+      await cargo.save();
+    } else {
+      cargo.status = "Activated";
+      await cargo.save();
+    }
+
+    cargo.airworthiness_cert_status = airworthiness_cert_status;
+    cargo.noise_cert_status = noise_cert_status;
+    cargo.insurance_cert_status = insurance_cert_status;
+    cargo.registration_cert_status = registration_cert_status;
+    cargo.maintenance_program_status = maintenance_program_status;
+    cargo.mmel_status = mmel_status;
+    cargo.ops_manual_status = ops_manual_status;
+    cargo.note = note;
+    await cargo.save();
+
+    let aircraftOwner = await db.dbs.Users.findOne({
+      where: { uuid: cargo.owner_id },
+    });
+
+    const option = {
+      email: aircraftOwner.email,
+      message: note,
+      name: aircraftOwner.first_name + " " + aircraftOwner.last_name,
+    };
+
+    utill.aircraftUpdate.sendMail(option);
+
+    return res
+      .status(200)
+      .json(utill.helpers.sendSuccess("Aircraft successfully activated"));
+  },
 
   AgentAircrafts: async (
     req: any,
@@ -866,6 +894,16 @@ module.exports = {
       from: 1,
       to: meta.pageCount, //transactions.count,
     });
+  },
+
+  nonPaginatedRoles: async (
+    req: any,
+    res: Response,
+    next: NextFunction
+  ): Promise<Response> => {
+    let roles = await db.dbs.Roles.findAll();
+
+    return res.status(200).json({ roles });
   },
 
   singleAircraft: async (

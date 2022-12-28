@@ -46,11 +46,11 @@ router.get(
   AdminCtrl.allAircrafts
 );
 
-// router.get(
-//   "/activate-aircraft",
-//   [jwtMiddleWare, signatureSigner],
-//   AdminCtrl.activateAircraft
-// );
+router.post(
+  "/activate-aircraft",
+  [jwtMiddleWare, signatureSigner],
+  AdminCtrl.activateAircraft
+);
 
 router.get(
   "/agent-aircrafts",
@@ -71,6 +71,12 @@ router.get(
 );
 
 router.get("/all-roles", [jwtMiddleWare, signatureSigner], AdminCtrl.allRoles);
+
+router.get(
+  "/non-paginated-roles",
+  [jwtMiddleWare, signatureSigner],
+  AdminCtrl.nonPaginatedRoles
+);
 
 router.get(
   "/decline-cargos",
