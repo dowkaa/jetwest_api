@@ -17,8 +17,7 @@ module.exports = {
         last_name: utill.Joi.string().required(),
         email: utill.Joi.string().required(),
         password: utill.Joi.string().required(),
-        roleName: utill.Joi.string().required(),
-        role_id: utill.Joi.array().required(),
+        role_id: utill.Joi.string().required(),
       })
       .unknown();
 
@@ -49,8 +48,7 @@ module.exports = {
         .json(utill.helpers.sendError("Access denied for current admin type"));
     }
 
-    const { first_name, last_name, roleName, email, password, role_id } =
-      req.body;
+    const { first_name, last_name, email, password, role_id } = req.body;
 
     let checker = await db.dbs.Users.findOne({ where: { email: email } });
 
@@ -61,7 +59,7 @@ module.exports = {
     }
 
     let roles = await db.dbs.Roles.findAll({
-      where: { uuid: { [Op.in]: role_id } },
+      where: { uuid: role_id },
     });
 
     if (!roles) {
@@ -77,8 +75,8 @@ module.exports = {
       password: utill.bcrypt.hashSync(password),
       is_Admin: 1,
       status: "Active",
-      admin_type: roleName,
-      roles: JSON.stringify(roles),
+      admin_type: roles.name,
+      roles: JSON.stringify(roles.permission),
     });
 
     const option = {
@@ -90,7 +88,7 @@ module.exports = {
     await db.dbs.AuditLogs.create({
       uuid: utill.uuid(),
       user_id: req.user.uuid,
-      description: `Admin ${req.user.first_name} ${req.user.last_name} added an admin with role ${roleName}`,
+      description: `Admin ${req.user.first_name} ${req.user.last_name} added an admin with role ${roles.name}`,
     });
 
     utill.welcome.sendMail(option);
