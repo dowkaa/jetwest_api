@@ -30,6 +30,7 @@ module.exports = {
         verification_status: string;
         is_Admin: number;
         admin_type: string;
+        reg_status: string;
         company_address: string;
         companyFounded: string;
         ratePerkg: string;
@@ -73,7 +74,9 @@ module.exports = {
       companyFounded: req.user.companyFounded,
       type: req.user.type,
       ratePerKg: req.user.ratePerkg,
+      login_status: req.user.reg_status,
       locked: req.user.locked,
+      account_type: req.user.is_Admin === 1 ? "Admin" : null,
       activated: req.user.activated,
       permissions,
       Directors,

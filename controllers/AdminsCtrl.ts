@@ -692,23 +692,33 @@ module.exports = {
     });
   },
 
-  activateAircraft: async (
-    req: any,
-    res: Response,
-    next: NextFunction
-  ): Promise<Response> => {
+  activateAircraft: async (req: any, res: Response, next: NextFunction) => {
     const loginSchema = utill.Joi.object()
       .keys({
         cargo_id: utill.Joi.string().required(),
+        aircraft_type_checked: utill.Joi.boolean().required(),
+        payload_checked: utill.Joi.boolean().required(),
+        ops_spec_checked: utill.Joi.boolean().required(),
+        flight_hrs_checked: utill.Joi.boolean().required(),
+        aircraft_registration_checked: utill.Joi.boolean().required(),
         airworthiness_cert_status: utill.Joi.string().required(),
+        airworthiness_cert_exp_checked: utill.Joi.boolean().required(),
+        note: utill.Joi.string().required(),
+
         noise_cert_status: utill.Joi.string().required(),
+        noise_cert_exp_checked: utill.Joi.boolean().required(),
         insurance_cert_status: utill.Joi.string().required(),
+        insurance_cert_exp_checked: utill.Joi.boolean().required(),
         registration_cert_status: utill.Joi.string().required(),
+        registration_cert_exp_checked: utill.Joi.boolean().required(),
+        noteOne: utill.Joi.string().required(),
+
         maintenance_program_status: utill.Joi.string().required(),
         mmel_status: utill.Joi.string().required(),
         ops_manual_status: utill.Joi.string().required(),
+        driveLink: utill.Joi.string().required(),
         status: utill.Joi.string().required(),
-        note: utill.Joi.string().required(),
+        noteTwo: utill.Joi.string().required(),
       })
       .unknown();
 
@@ -732,6 +742,18 @@ module.exports = {
       ops_manual_status,
       status,
       note,
+      aircraft_type_checked,
+      payload_checked,
+      ops_spec_checked,
+      flight_hrs_checked,
+      aircraft_registration_checked,
+      airworthiness_cert_exp_checked,
+      noise_cert_exp_checked,
+      insurance_cert_exp_checked,
+      registration_cert_exp_checked,
+      noteOne,
+      driveLink,
+      noteTwo,
     } = req.body;
 
     let user = await db.dbs.Users.findOne({ where: { uuid: req.user.uuid } });
@@ -756,6 +778,8 @@ module.exports = {
         .status(400)
         .json(utill.helpers.sendError("Access denied for current admin type"));
     }
+    console.log("kkkkkkkk");
+    // return;
 
     let cargo = await db.dbs.Cargo.findOne({ where: { uuid: cargo_id } });
 
@@ -776,12 +800,34 @@ module.exports = {
 with note ${note}`,
     });
 
+    let aircraftOwner = await db.dbs.Users.findOne({
+      where: { uuid: cargo.owner_id },
+    });
+
     if (status === "Deactivate") {
       cargo.status = "Inactive";
       await cargo.save();
+
+      const option = {
+        email: aircraftOwner.email,
+        message:
+          "Dear esteemed client, we regret to inform you that your aircraft is was not approved on our system, kindly go through the documents shared and make necessary updates as we will love to have you join us",
+        name: aircraftOwner.first_name + " " + aircraftOwner.last_name,
+      };
+
+      utill.aircraftUpdate.sendMail(option);
     } else {
       cargo.status = "Activated";
       await cargo.save();
+
+      const option = {
+        email: aircraftOwner.email,
+        message:
+          "Dear esteemed client, your aircraft documents have been reviewed and we are happy to inform you that your aircraft qualifies to be a part of our aircrafts. Thanks.",
+        name: aircraftOwner.first_name + " " + aircraftOwner.last_name,
+      };
+
+      utill.aircraftUpdate.sendMail(option);
     }
 
     cargo.airworthiness_cert_status = airworthiness_cert_status;
@@ -792,19 +838,19 @@ with note ${note}`,
     cargo.mmel_status = mmel_status;
     cargo.ops_manual_status = ops_manual_status;
     cargo.note = note;
+    cargo.aircraft_type_checked = aircraft_type_checked;
+    // cargo.payload_checked = payload_checked;
+    cargo.ops_spec_checked = ops_spec_checked;
+    cargo.flight_hrs_checked = flight_hrs_checked;
+    cargo.aircraft_registration_checked = aircraft_registration_checked;
+    cargo.airworthiness_cert_exp_checked = airworthiness_cert_exp_checked;
+    cargo.noise_cert_exp_checked = noise_cert_exp_checked;
+    cargo.insurance_cert_exp_checked = insurance_cert_exp_checked;
+    cargo.registration_cert_exp_checked = registration_cert_exp_checked;
+    cargo.noteOne = noteOne;
+    cargo.driveLink = driveLink;
+    cargo.noteTwo = noteTwo;
     await cargo.save();
-
-    let aircraftOwner = await db.dbs.Users.findOne({
-      where: { uuid: cargo.owner_id },
-    });
-
-    const option = {
-      email: aircraftOwner.email,
-      message: note,
-      name: aircraftOwner.first_name + " " + aircraftOwner.last_name,
-    };
-
-    utill.aircraftUpdate.sendMail(option);
 
     return res
       .status(200)

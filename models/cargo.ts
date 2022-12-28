@@ -37,6 +37,20 @@ var Cargos = (sequelize: any, type: any) => {
     ops_manual_status: Sequelize.STRING,
     status: Sequelize.STRING,
     note: Sequelize.TEXT,
+
+    aircraft_type_checked: Sequelize.BOOLEAN,
+    // payload_checked: Sequelize.BOOLEAN,
+    ops_spec_checked: Sequelize.BOOLEAN,
+    flight_hrs_checked: Sequelize.BOOLEAN,
+    aircraft_registration_checked: Sequelize.BOOLEAN,
+    airworthiness_cert_exp_checked: Sequelize.BOOLEAN,
+    noise_cert_exp_checked: Sequelize.BOOLEAN,
+    insurance_cert_exp_checked: Sequelize.BOOLEAN,
+    registration_cert_exp_checked: Sequelize.BOOLEAN,
+
+    noteOne: Sequelize.TEXT,
+    driveLink: Sequelize.STRING,
+    noteTwo: Sequelize.BOOLEAN,
   });
 };
 
