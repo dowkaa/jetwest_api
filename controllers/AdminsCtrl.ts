@@ -537,40 +537,75 @@ module.exports = {
 
   allRoles: async (req: any, res: Response, next: NextFunction) => {
     // let userList: any = [];
+    const { pageNum } = req.query;
 
-    var completed = await db.dbs.sequelize
-      .query(
-        "SELECT roles.uuid, roles.name, roles.status, roles.description, roles.createdAt, permissions.uuid AS permissions_uuid, permissions.type, permissions.permissions FROM `roles`, `permissions` where roles.description = permissions.uuid;",
-        {
-          type: QueryTypes.SELECT,
-        }
-      )
-      .then((objs: any) => {
-        let userList: any = [];
-        objs.forEach((obj: any) => {
-          let role_id = obj.uuid;
-          let name = obj.name;
-          let status = obj.status;
-          let description = obj.description;
-          let permissions_uuid = obj.permissions_uuid;
-          let type = obj.type;
-          let permissions = obj.permissions;
-          userList.push({
-            role_id,
-            name,
-            status,
-            description,
-            permissions_uuid,
-            type,
-            permissions,
-          });
-        });
+    if (!pageNum || isNaN(pageNum)) {
+      return res
+        .status(400)
+        .json(utill.helpers.sendError("Kindly add a valid page number"));
+    }
 
-        return res.status(200).json({
-          status: "SUCCESS",
-          data: userList,
-        });
-      });
+    var currentPage = parseInt(pageNum) ? parseInt(pageNum) : 1;
+
+    var page = currentPage - 1;
+    var pageSize = 25;
+    const offset = page * pageSize;
+    const limit = pageSize;
+
+    // const transactions = await db.dbs.User.findAndCountAll({
+    //   offset: offset,
+    //   limit: limit,
+    //   // where: { user_id: req.user.id },
+    //   order: [["id", "DESC"]],
+    // });
+
+    let user = await db.dbs.Users.findOne({ where: { uuid: req.user.uuid } });
+
+    if (parseInt(user.is_Admin) != 1) {
+      return res
+        .status(400)
+        .json(
+          utill.helpers.sendError(
+            "Unauthorised access, Kindly contact system admin"
+          )
+        );
+    }
+
+    if (!(user.admin_type === "Super Admin")) {
+      return res
+        .status(400)
+        .json(utill.helpers.sendError("Access denied for current admin type"));
+    }
+
+    var roles = await db.dbs.Roles.findAndCountAll({
+      offset: offset,
+      limit: limit,
+      order: [["id", "DESC"]],
+    });
+
+    //1`;
+
+    var next_page = currentPage + 1;
+    var prev_page = currentPage - 1;
+    var nextP = `/api/jetwest/admin/all-roles?pageNum=` + next_page;
+    var prevP = `/api/jetwest/admin/all-roles?pageNum=` + prev_page;
+
+    const meta = paginate(currentPage, roles.count, roles.rows, pageSize);
+
+    return res.status(200).json({
+      status: "SUCCESS",
+      data: roles,
+      per_page: pageSize,
+      current_page: currentPage,
+      last_page: meta.pageCount, //transactions.count,
+      first_page_url: `/api/jetwest/admin/all-roles?pageNum=1`,
+      last_page_url: `/api/jetwest/admin/all-roles?pageNum=` + meta.pageCount, //transactions.count,
+      next_page_url: nextP,
+      prev_page_url: prevP,
+      path: `/api/jetwest/admin/all-roles?pageNum=`,
+      from: 1,
+      to: meta.pageCount, //transactions.count,
+    });
   },
 
   allAircrafts: async (
@@ -655,77 +690,100 @@ module.exports = {
     });
   },
 
-  activateAircraft: async (
-    req: any,
-    res: Response,
-    next: NextFunction
-  ): Promise<Response> => {
-    let { cargo_id, type } = req.query;
+  //   activateAircraft: async (
+  //     req: any,
+  //     res: Response,
+  //     next: NextFunction
+  //   ): Promise<Response> => {
+  //     const loginSchema = utill.Joi.object()
+  //       .keys({
+  //         uuid: utill.Joi.string().required(),
+  //         owner_id: utill.Joi.string().required(),
+  //         model: utill.Joi.string().required(),
+  //         payload: utill.Joi.string().required(),
+  //         areasOfCoverage: utill.Joi.string().required(),
+  //         monthly_flight_time: utill.Joi.string().required(),
+  //         weekly_flight_time: utill.Joi.string().required(),
+  //         daily_flight_time: utill.Joi.string().required(),
+  //         aircraft_registration: utill.Joi.string().required(),
+  //         airworthiness_cert_url: utill.Joi.string().required(),
+  //         airworthiness_cert_exp_date: utill.Joi.string().required(),
+  //         noise_cert_url: utill.Joi.string().required(),
+  //         noise_cert_exp_date: utill.Joi.string().required(),
+  //         insurance_cert_url: utill.Joi.string().required(),
+  //         insurance_cert_exp_date: utill.Joi.string().required(),
+  //         registration_cert_url: utill.Joi.string().required(),
+  //         registration_cert_exp_date: utill.Joi.string().required(),
+  //         maintenance_program_url: utill.Joi.string().required(),
+  //         mmel: utill.Joi.string().required(),
+  //         ops_manual: utill.Joi.string().required(),
+  //         status: utill.Joi.string().required(),
+  //       })
+  //       .unknown();
 
-    let user = await db.dbs.Users.findOne({ where: { uuid: req.user.uuid } });
+  //     const validate = loginSchema.validate(req.body);
 
-    if (parseInt(user.is_Admin) != 1) {
-      return res
-        .status(400)
-        .json(
-          utill.helpers.sendError(
-            "Unauthorised access, Kindly contact system admin"
-          )
-        );
-    }
+  //     if (validate.error != null) {
+  //       const errorMessage = validate.error.details
+  //         .map((i: any) => i.message)
+  //         .join(".");
+  //       return res.status(400).json(utill.helpers.sendError(errorMessage));
+  //     }
 
-    if (
-      !(
-        user.admin_type === "Flight Operator" ||
-        user.admin_type === "Super Admin"
-      )
-    ) {
-      return res
-        .status(400)
-        .json(utill.helpers.sendError("Access denied for current admin type"));
-    }
+  //     let user = await db.dbs.Users.findOne({ where: { uuid: req.user.uuid } });
 
-    if (!(cargo_id && type)) {
-      return res
-        .status(400)
-        .json(
-          utill.helpers.sendError(
-            "Kindly add a valid aircraft id and valid type"
-          )
-        );
-    }
+  //     if (parseInt(user.is_Admin) != 1) {
+  //       return res
+  //         .status(400)
+  //         .json(
+  //           utill.helpers.sendError(
+  //             "Unauthorised access, Kindly contact system admin"
+  //           )
+  //         );
+  //     }
 
-    let cargo = await db.dbs.Cargo.findOne({ where: { uuid: cargo_id } });
+  //     if (
+  //       !(
+  //         user.admin_type === "Flight Operator" ||
+  //         user.admin_type === "Super Admin"
+  //       )
+  //     ) {
+  //       return res
+  //         .status(400)
+  //         .json(utill.helpers.sendError("Access denied for current admin type"));
+  //     }
 
-    if (!cargo) {
-      return res
-        .status(400)
-        .json(utill.helpers.sendError("Aircraft not found"));
-    }
+  //     let cargo = await db.dbs.Cargo.findOne({ where: { uuid: cargo_id } });
 
-    await db.dbs.AuditLogs.create({
-      uuid: utill.uuid(),
-      user_id: req.user.uuid,
-      description: `Admin ${req.user.first_name} ${
-        req.user.last_name
-      } updated the status of aircraft with id ${cargo.uuid} from ${
-        cargo.status
-      } to ${type === "Deactivate" ? "Inactive" : "Activated"}
-`,
-    });
+  //     if (!cargo) {
+  //       return res
+  //         .status(400)
+  //         .json(utill.helpers.sendError("Aircraft not found"));
+  //     }
 
-    if (type === "Deactivate") {
-      cargo.status = "Inactive";
-      await cargo.save();
-    } else {
-      cargo.status = "Activated";
-      await cargo.save();
-    }
+  //     await db.dbs.AuditLogs.create({
+  //       uuid: utill.uuid(),
+  //       user_id: req.user.uuid,
+  //       description: `Admin ${req.user.first_name} ${
+  //         req.user.last_name
+  //       } updated the status of aircraft with id ${cargo.uuid} from ${
+  //         cargo.status
+  //       } to ${status === "Deactivate" ? "Inactive" : "Activated"}
+  // `,
+  //     });
 
-    return res
-      .status(200)
-      .json(utill.helpers.sendSuccess("Aircraft successfully activated"));
-  },
+  //     if (status === "Deactivate") {
+  //       cargo.status = "Inactive";
+  //       await cargo.save();
+  //     } else {
+  //       cargo.status = "Activated";
+  //       await cargo.save();
+  //     }
+
+  //     return res
+  //       .status(200)
+  //       .json(utill.helpers.sendSuccess("Aircraft successfully activated"));
+  //   },
 
   AgentAircrafts: async (
     req: any,

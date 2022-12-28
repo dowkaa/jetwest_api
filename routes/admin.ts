@@ -46,11 +46,11 @@ router.get(
   AdminCtrl.allAircrafts
 );
 
-router.get(
-  "/activate-aircraft",
-  [jwtMiddleWare, signatureSigner],
-  AdminCtrl.activateAircraft
-);
+// router.get(
+//   "/activate-aircraft",
+//   [jwtMiddleWare, signatureSigner],
+//   AdminCtrl.activateAircraft
+// );
 
 router.get(
   "/agent-aircrafts",
