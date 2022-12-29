@@ -58,7 +58,7 @@ module.exports = {
         .json(utill.helpers.sendError("User with email already exists"));
     }
 
-    let roles = await db.dbs.Roles.findAll({
+    let roles = await db.dbs.Roles.findOne({
       where: { uuid: role_id },
     });
 
@@ -69,6 +69,7 @@ module.exports = {
     }
 
     await db.dbs.Users.create({
+      uuid: utill.uuid(),
       first_name,
       last_name,
       email,
@@ -76,7 +77,7 @@ module.exports = {
       is_Admin: 1,
       status: "Active",
       admin_type: roles.name,
-      roles: JSON.stringify(roles.permission),
+      roles: roles.permissions,
     });
 
     const option = {
