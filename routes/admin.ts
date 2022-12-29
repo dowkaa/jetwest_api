@@ -95,4 +95,10 @@ router.get(
   [jwtMiddleWare, signatureSigner],
   AdminCtrl.allPermissions
 );
+
+router.post(
+  "/update-admin",
+  [jwtMiddleWare, signatureSigner],
+  AdminCtrl.updateAdmin
+);
 module.exports = router;

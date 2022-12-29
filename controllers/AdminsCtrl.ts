@@ -81,7 +81,7 @@ module.exports = {
     });
 
     const option = {
-      name: `${req.user.first_name} ${req.user.last_name}`,
+      name: `${first_name} ${last_name}`,
       email: email,
       message: `Kindly use the password ${password} to login to the dowkaa admin dashboard by clicking on the button below. Thanks.`,
     };
@@ -860,6 +860,126 @@ with note ${note}`,
           `Aircraft successfully ${status.toLowerCase()}`
         )
       );
+  },
+
+  updateAdmin: async (
+    req: any,
+    res: Response,
+    next: NextFunction
+  ): Promise<Response> => {
+    const loginSchema = utill.Joi.object()
+      .keys({
+        role_id: utill.Joi.string().allow(""),
+        first_name: utill.Joi.string().allow(""),
+        last_name: utill.Joi.string().allow(""),
+        status: utill.Joi.string().allow(""),
+        password: utill.Joi.string().allow(""),
+        email: utill.Joi.string().required(),
+      })
+      .unknown();
+
+    const validate = loginSchema.validate(req.body);
+
+    if (validate.error != null) {
+      const errorMessage = validate.error.details
+        .map((i: any) => i.message)
+        .join(".");
+      return res.status(400).json(utill.helpers.sendError(errorMessage));
+    }
+
+    const { email, password, status, role_id, first_name, last_name } =
+      req.body;
+
+    let admin = await db.dbs.Users.findOne({
+      where: { uuid: req.user.uuid },
+    });
+
+    if (parseInt(admin.is_Admin) != 1) {
+      return res
+        .status(400)
+        .json(
+          utill.helpers.sendError(
+            "Unauthorised access, Kindly contact system admin"
+          )
+        );
+    }
+
+    if (admin.admin_type !== "Super Admin") {
+      return res
+        .status(400)
+        .json(utill.helpers.sendError("Access denied for current admin user"));
+    }
+
+    let user = await db.dbs.Users.findOne({ where: { email: email } });
+
+    if (!user) {
+      return res.status(400).json(utill.helpers.sendError("Admin not found"));
+    }
+
+    if (password) {
+      user.password = utill.bcrypt.hashSync(password);
+      await user.save();
+    }
+
+    if (role_id) {
+      let role = await db.dbs.Roles.findOne({ where: { uuid: role_id } });
+
+      if (!role) {
+        return res.status(400).json(utill.helpers.sendError("Role not found"));
+      }
+
+      console.log({ role: role.permissions });
+
+      user.admin_type = role.name;
+      user.roles = role.permissions;
+      user.role_id = role_id;
+      await user.save();
+    }
+
+    if (first_name && last_name) {
+      user.first_name = first_name;
+      user.last_name = last_name;
+      await user.save();
+    }
+    if (status) {
+      user.status = status;
+      await user.save();
+    }
+    let option;
+
+    if (role_id && password) {
+      let role = await db.dbs.Roles.findOne({ where: { uuid: role_id } });
+      option = {
+        name: `${first_name} ${last_name}`,
+        email: email,
+        message: `Dear Admin, this is to inform you that your account has been updated with details first name ${first_name}, last name ${last_name}, password ${password}, role ${role.name}  and status ${status}`,
+      };
+    } else if (role_id && !password) {
+      let role = await db.dbs.Roles.findOne({ where: { uuid: role_id } });
+      option = {
+        name: `${first_name} ${last_name}`,
+        email: email,
+        message: `Dear Admin, this is to inform you that your account has been updated with details first name ${first_name}, last name ${last_name}, , role ${role.name}  and status ${status}`,
+      };
+    } else if (!role_id && password) {
+      option = {
+        name: `${first_name} ${last_name}`,
+        email: email,
+        message: `Dear Admin, this is to inform you that your account has been updated with details first name ${first_name}, last name ${last_name}, password ${password}, and status ${status}`,
+      };
+    } else {
+      option = {
+        name: `${first_name} ${last_name}`,
+        email: email,
+        message: `Dear Admin, this is to inform you that your account has been updated with details first name ${first_name}, last name ${last_name}, and status ${status}`,
+      };
+    }
+
+    utill.adminUpdate.sendMail(option);
+
+    return res
+      .status(200)
+      .json(utill.helpers.sendSuccess("Admin data updated successfully"));
   },
 
   AgentAircrafts: async (

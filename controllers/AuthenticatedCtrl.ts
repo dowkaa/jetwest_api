@@ -27,6 +27,7 @@ module.exports = {
         last_name: string;
         company_name: string;
         mobile_number: string;
+        role_id: string;
         verification_status: string;
         is_Admin: number;
         admin_type: string;
@@ -69,6 +70,7 @@ module.exports = {
       company_name: req.user.company_name,
       verification_status: req.user.verification_status,
       company_address: req.user.company_address,
+      role_id: req.user.role_id,
       is_Admin: req.user.is_Admin,
       admin_type: req.user.admin_type,
       companyFounded: req.user.companyFounded,

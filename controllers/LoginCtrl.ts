@@ -103,6 +103,17 @@ module.exports = {
         });
       }
 
+      if (user.is_Admin === 1) {
+        if (user.status !== "Active") {
+          return res.status(400).json({
+            status: "ERROR",
+            code: "01",
+            message:
+              "Your account has been deactivated, kindly contact super admin",
+          });
+        }
+      }
+
       const opt = {
         name: `${user.first_name} ${user.last_name}`,
         email: user.email,

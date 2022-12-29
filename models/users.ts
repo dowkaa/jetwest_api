@@ -27,6 +27,7 @@ var User = (sequelize: any, type: any) => {
     airport: Sequelize.STRING,
     company_address: Sequelize.STRING,
     reg_status: Sequelize.STRING,
+    role_id: Sequelize.STRING,
     companyFounded: Sequelize.STRING,
     verification_status: Sequelize.STRING,
     profileDoc: Sequelize.STRING,
