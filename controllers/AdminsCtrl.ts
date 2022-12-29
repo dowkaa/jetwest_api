@@ -717,7 +717,7 @@ module.exports = {
         maintenance_program_status: utill.Joi.boolean().required(),
         mmel_status: utill.Joi.boolean().required(),
         ops_manual_status: utill.Joi.boolean().required(),
-        driveLink: utill.Joi.string().required(),
+        driveLink: utill.Joi.string().allow(""),
         status: utill.Joi.string().required(),
         noteTwo: utill.Joi.string().required(),
       })
@@ -805,7 +805,7 @@ with note ${note}`,
       where: { uuid: cargo.owner_id },
     });
 
-    if (status === "Deactivate") {
+    if (status === "Deactivated") {
       cargo.status = "Inactive";
       await cargo.save();
 
@@ -855,7 +855,11 @@ with note ${note}`,
 
     return res
       .status(200)
-      .json(utill.helpers.sendSuccess("Aircraft successfully activated"));
+      .json(
+        utill.helpers.sendSuccess(
+          `Aircraft successfully ${status.toLowerCase()}`
+        )
+      );
   },
 
   AgentAircrafts: async (
