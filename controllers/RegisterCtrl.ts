@@ -126,14 +126,13 @@ module.exports = {
         otp: code,
       };
 
-      await utillz.helpers.deactivateOtp(email);
-
       if (notification_type == "email") {
         utillz.welcome.sendMail(option);
         utillz.verify.sendMail(option);
       } else {
         sms.send(mobile, option.message);
       }
+      utillz.helpers.deactivateOtp(email);
 
       return res.status(200).json({
         success: {

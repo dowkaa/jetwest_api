@@ -76,6 +76,7 @@ module.exports = {
       password: utill.bcrypt.hashSync(password),
       is_Admin: 1,
       status: "Active",
+      type: "Admin",
       admin_type: roles.name,
       roles: roles.permissions,
     });

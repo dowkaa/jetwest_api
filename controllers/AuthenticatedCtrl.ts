@@ -32,12 +32,14 @@ module.exports = {
         is_Admin: number;
         admin_type: string;
         reg_status: string;
-        company_address: string;
         companyFounded: string;
         ratePerkg: string;
         country: string;
+        organisation: string;
+        company_address: string;
         roles: string;
         state: string;
+        profileDoc: string;
         permissions?: {};
         type: string;
       }
@@ -59,15 +61,21 @@ module.exports = {
       permissions = roles;
     }
 
+    let BusinessCompliance = await db.dbs.BusinessCompliance.findOne({
+      where: { user_id: req.user.uuid },
+    });
+
     const user = {
       first_name: req.user.first_name,
       last_name: req.user.last_name,
       customer_id: req.user.customer_id,
       username: req.user.username,
+      organisation: req.user.organisation,
       email: req.user.email,
       country: req.user.country,
       mobile_number: req.user.mobile_number,
       company_name: req.user.company_name,
+      profileDoc: req.user.profileDoc,
       verification_status: req.user.verification_status,
       company_address: req.user.company_address,
       role_id: req.user.role_id,
@@ -81,6 +89,7 @@ module.exports = {
       account_type: req.user.is_Admin === 1 ? "Admin" : null,
       activated: req.user.activated,
       permissions,
+      BusinessCompliance,
       Directors,
     };
     return res.status(200).json({ user });
