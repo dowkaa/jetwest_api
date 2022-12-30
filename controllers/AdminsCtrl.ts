@@ -2169,7 +2169,7 @@ with note ${note}`,
     const loginSchema = utill.Joi.object()
       .keys({
         user_id: utill.Joi.string().required(),
-        state: utill.Joi.boolean().required(),
+        state: utill.Joi.string().required(),
       })
       .unknown();
 

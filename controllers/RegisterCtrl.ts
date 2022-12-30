@@ -544,7 +544,7 @@ module.exports = {
     business.status = 2;
     await business.save();
     user.reg_status = "completed";
-    user.verification_status = "in progress";
+    user.verification_status = "In progress";
     await user.save();
 
     return res

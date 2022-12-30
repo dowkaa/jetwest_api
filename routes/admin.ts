@@ -159,7 +159,7 @@ router.get(
 );
 
 // compliance
-// Agents
+// shippers
 router.get(
   "/all-shippers",
   [jwtMiddleWare, signatureSigner],
