@@ -268,8 +268,10 @@ module.exports = {
     }
 
     if (
-      user.admin_type !== "Flight Operator" ||
-      user.admin_type !== "Super Admin"
+      !(
+        user.admin_type === "Flight Operator" ||
+        user.admin_type === "Super Admin"
+      )
     ) {
       return res
         .status(400)
@@ -315,6 +317,197 @@ module.exports = {
       .json(
         utill.helpers.sendSuccess("You have successfully scheduled a flight")
       );
+  },
+
+  allScheduledFlights: async (
+    req: any,
+    res: Response,
+    next: NextFunction
+  ): Promise<Response> => {
+    // let allFlights = await db.dbs.ScheduleFlights.findAll({});
+
+    // return res.status(200).json({ allFlights });
+
+    const { pageNum } = req.query;
+
+    if (!pageNum || isNaN(pageNum)) {
+      return res
+        .status(400)
+        .json(utill.helpers.sendError("Kindly add a valid page number"));
+    }
+
+    var currentPage = parseInt(pageNum) ? parseInt(pageNum) : 1;
+
+    var page = currentPage - 1;
+    var pageSize = 25;
+    const offset = page * pageSize;
+    const limit = pageSize;
+
+    let allFlights = await db.dbs.ScheduleFlights.findAndCountAll({
+      offset: offset,
+      limit: limit,
+      order: [["id", "DESC"]],
+    });
+
+    var next_page = currentPage + 1;
+    var prev_page = currentPage - 1;
+    var nextP = `/api/jetwest/admin/all-scheduled-flights?pageNum=` + next_page;
+    var prevP = `/api/jetwest/admin/all-scheduled-flights?pageNum=` + prev_page;
+
+    const meta = paginate(
+      currentPage,
+      allFlights.count,
+      allFlights.rows,
+      pageSize
+    );
+
+    return res.status(200).json({
+      status: "SUCCESS",
+      data: allFlights,
+      per_page: pageSize,
+      current_page: currentPage,
+      last_page: meta.pageCount, //transactions.count,
+      first_page_url: `/api/jetwest/admin/all-scheduled-flights?pageNum=1`,
+      last_page_url:
+        `/api/jetwest/admin/all-scheduled-flights?pageNum=` + meta.pageCount, //transactions.count,
+      next_page_url: nextP,
+      prev_page_url: prevP,
+      path: `/api/jetwest/admin/all-scheduled-flights?pageNum=`,
+      from: 1,
+      to: meta.pageCount, //transactions.count,
+    });
+  },
+
+  flightsInProgress: async (
+    req: any,
+    res: Response,
+    next: NextFunction
+  ): Promise<Response> => {
+    // let flights = await db.dbs.ScheduleFlights.findAll({
+    //   where: { status: "In progress" },
+    // });
+
+    // return res.status(200).json({ data: flights });
+
+    const { pageNum } = req.query;
+
+    if (!pageNum || isNaN(pageNum)) {
+      return res
+        .status(400)
+        .json(utill.helpers.sendError("Kindly add a valid page number"));
+    }
+
+    var currentPage = parseInt(pageNum) ? parseInt(pageNum) : 1;
+
+    var page = currentPage - 1;
+    var pageSize = 25;
+    const offset = page * pageSize;
+    const limit = pageSize;
+
+    let flights = await db.dbs.ScheduleFlights.findAndCountAll({
+      offset: offset,
+      limit: limit,
+      where: { status: "In progress" },
+      order: [["id", "DESC"]],
+    });
+
+    var next_page = currentPage + 1;
+    var prev_page = currentPage - 1;
+    var nextP = `/api/jetwest/admin/flights-in-progress?pageNum=` + next_page;
+    var prevP = `/api/jetwest/admin/flights-in-progress?pageNum=` + prev_page;
+
+    const meta = paginate(currentPage, flights.count, flights.rows, pageSize);
+
+    return res.status(200).json({
+      status: "SUCCESS",
+      data: flights,
+      per_page: pageSize,
+      current_page: currentPage,
+      last_page: meta.pageCount, //transactions.count,
+      first_page_url: `/api/jetwest/admin/flights-in-progress?pageNum=1`,
+      last_page_url:
+        `/api/jetwest/admin/flights-in-progress?pageNum=` + meta.pageCount, //transactions.count,
+      next_page_url: nextP,
+      prev_page_url: prevP,
+      path: `/api/jetwest/admin/flights-in-progress?pageNum=`,
+      from: 1,
+      to: meta.pageCount, //transactions.count,
+    });
+  },
+
+  flightsCompleted: async (
+    req: any,
+    res: Response,
+    next: NextFunction
+  ): Promise<Response> => {
+    // let flights = await db.dbs.ScheduleFlights.findAll({
+    //   where: { status: "completed" },
+    // });
+    // return res.status(200).json({ data: flights });
+
+    const { pageNum } = req.query;
+
+    if (!pageNum || isNaN(pageNum)) {
+      return res
+        .status(400)
+        .json(utill.helpers.sendError("Kindly add a valid page number"));
+    }
+
+    var currentPage = parseInt(pageNum) ? parseInt(pageNum) : 1;
+
+    var page = currentPage - 1;
+    var pageSize = 25;
+    const offset = page * pageSize;
+    const limit = pageSize;
+
+    let flights = await db.dbs.ScheduleFlights.findAndCountAll({
+      offset: offset,
+      limit: limit,
+      where: { status: "In progress" },
+      order: [["id", "DESC"]],
+    });
+
+    var next_page = currentPage + 1;
+    var prev_page = currentPage - 1;
+    var nextP = `/api/jetwest/admin/completed-flights?pageNum=` + next_page;
+    var prevP = `/api/jetwest/admin/completed-flights?pageNum=` + prev_page;
+
+    const meta = paginate(currentPage, flights.count, flights.rows, pageSize);
+
+    return res.status(200).json({
+      status: "SUCCESS",
+      data: flights,
+      per_page: pageSize,
+      current_page: currentPage,
+      last_page: meta.pageCount, //transactions.count,
+      first_page_url: `/api/jetwest/admin/completed-flights?pageNum=1`,
+      last_page_url:
+        `/api/jetwest/admin/completed-flights?pageNum=` + meta.pageCount, //transactions.count,
+      next_page_url: nextP,
+      prev_page_url: prevP,
+      path: `/api/jetwest/admin/completed-flights?pageNum=`,
+      from: 1,
+      to: meta.pageCount, //transactions.count,
+    });
+  },
+
+  singleFlight: async (
+    req: any,
+    res: Response,
+    next: NextFunction
+  ): Promise<Response> => {
+    let uuid = req.query.uuid;
+
+    if (!uuid) {
+      return res
+        .status(400)
+        .json(utill.helpers.sendError("Kindly add a valid search parameter"));
+    }
+    let flights = await db.dbs.ScheduleFlights.findOne({
+      where: { uuid: uuid },
+    });
+
+    return res.status(200).json({ data: flights });
   },
 
   createDestination: async (
@@ -501,21 +694,12 @@ module.exports = {
     const offset = page * pageSize;
     const limit = pageSize;
 
-    // const transactions = await db.dbs.User.findAndCountAll({
-    //   offset: offset,
-    //   limit: limit,
-    //   // where: { user_id: req.user.id },
-    //   order: [["id", "DESC"]],
-    // });
-
     var admin = await db.dbs.Users.findAndCountAll({
       offset: offset,
       limit: limit,
       where: { is_admin: 1 },
       order: [["id", "DESC"]],
     });
-
-    //1`;
 
     var next_page = currentPage + 1;
     var prev_page = currentPage - 1;
@@ -541,7 +725,6 @@ module.exports = {
   },
 
   allRoles: async (req: any, res: Response, next: NextFunction) => {
-    // let userList: any = [];
     const { pageNum } = req.query;
 
     if (!pageNum || isNaN(pageNum)) {
@@ -556,13 +739,6 @@ module.exports = {
     var pageSize = 25;
     const offset = page * pageSize;
     const limit = pageSize;
-
-    // const transactions = await db.dbs.User.findAndCountAll({
-    //   offset: offset,
-    //   limit: limit,
-    //   // where: { user_id: req.user.id },
-    //   order: [["id", "DESC"]],
-    // });
 
     let user = await db.dbs.Users.findOne({ where: { uuid: req.user.uuid } });
 
@@ -831,6 +1007,17 @@ with note ${note}`,
       };
 
       utill.aircraftUpdate.sendMail(option);
+
+      await db.dbs.AircraftAuditLog.create({
+        uuid: utill.uuid(),
+        user_id: req.user.uuid,
+        flight_reg: cargo.flight_reg,
+        activated_date: utill.moment().format("YYYY-MM-DD HH:mm:ss"),
+        scheduled_date: utill
+          .moment()
+          .add(3, "months")
+          .format("YYYY-MM-DD HH:mm:ss"),
+      });
     }
 
     cargo.airworthiness_cert_status = airworthiness_cert_status;
@@ -862,6 +1049,172 @@ with note ${note}`,
           `Aircraft successfully ${status.toLowerCase()}`
         )
       );
+  },
+
+  allAircraftReports: async (
+    req: any,
+    res: Response,
+    next: NextFunction
+  ): Promise<Response> => {
+    // let reports = await db.dbs.AircraftAuditLog.findAll({});
+
+    // return res.status(200).json({ reports });
+
+    const { pageNum } = req.query;
+
+    if (!pageNum || isNaN(pageNum)) {
+      return res
+        .status(400)
+        .json(utill.helpers.sendError("Kindly add a valid page number"));
+    }
+
+    var currentPage = parseInt(pageNum) ? parseInt(pageNum) : 1;
+
+    var page = currentPage - 1;
+    var pageSize = 25;
+    const offset = page * pageSize;
+    const limit = pageSize;
+
+    let reports = await db.dbs.AircraftAuditLog.findAndCountAll({
+      offset: offset,
+      limit: limit,
+      order: [["id", "DESC"]],
+    });
+
+    var next_page = currentPage + 1;
+    var prev_page = currentPage - 1;
+    var nextP = `/api/jetwest/admin/all-aircraft-reports?pageNum=` + next_page;
+    var prevP = `/api/jetwest/admin/all-aircraft-reports?pageNum=` + prev_page;
+
+    const meta = paginate(currentPage, reports.count, reports.rows, pageSize);
+
+    return res.status(200).json({
+      status: "SUCCESS",
+      data: reports,
+      per_page: pageSize,
+      current_page: currentPage,
+      last_page: meta.pageCount, //transactions.count,
+      first_page_url: `/api/jetwest/admin/all-aircraft-reports?pageNum=1`,
+      last_page_url:
+        `/api/jetwest/admin/all-aircraft-reports?pageNum=` + meta.pageCount, //transactions.count,
+      next_page_url: nextP,
+      prev_page_url: prevP,
+      path: `/api/jetwest/admin/all-aircraft-reports?pageNum=`,
+      from: 1,
+      to: meta.pageCount, //transactions.count,
+    });
+  },
+
+  singleAircraftReport: async (
+    req: any,
+    res: Response,
+    next: NextFunction
+  ): Promise<Response> => {
+    let uuid = req.query.uuid;
+
+    if (!uuid) {
+      return res
+        .status(400)
+        .json(utill.helpers.sendError("Kindly add a valid id"));
+    }
+
+    let report = await db.dbs.AircraftAuditLog.findOne({
+      where: { uuid: uuid },
+    });
+
+    if (!report) {
+      return res.status(400).json(utill.helpers.sendError("Report not found"));
+    }
+
+    return res.status(200).json({ report });
+  },
+
+  addAirAudit: async (
+    req: any,
+    res: Response,
+    next: NextFunction
+  ): Promise<Response> => {
+    const loginSchema = utill.Joi.object()
+      .keys({
+        report_id: utill.Joi.string().allow(""),
+        audit_report_url: utill.Joi.string().allow(""),
+        observations: utill.Joi.string().allow(""),
+      })
+      .unknown();
+
+    const validate = loginSchema.validate(req.body);
+
+    if (validate.error != null) {
+      const errorMessage = validate.error.details
+        .map((i: any) => i.message)
+        .join(".");
+      return res.status(400).json(utill.helpers.sendError(errorMessage));
+    }
+
+    const { report_id, audit_report_url, observations } = req.body;
+
+    let report = await db.dbs.AircraftAuditLog.findOne({
+      where: { uuid: report_id },
+    });
+
+    report.report_url = audit_report_url;
+    report.description = observations;
+    await report.save();
+
+    return res
+      .status(200)
+      .json(
+        utill.helpers.sendSuccess("Successfully updated aircraft audit report")
+      );
+  },
+
+  deleteAircraft: async (
+    req: any,
+    res: Response,
+    next: NextFunction
+  ): Promise<Response> => {
+    let { uuid } = req.query;
+
+    let user = await db.dbs.Users.findOne({ where: { uuid: req.user.uuid } });
+
+    if (parseInt(user.is_Admin) != 1) {
+      return res
+        .status(400)
+        .json(
+          utill.helpers.sendError(
+            "Unauthorised access, Kindly contact system admin"
+          )
+        );
+    }
+
+    console.log("=======================");
+
+    if (
+      !(
+        user.admin_type === "Flight Operator" ||
+        user.admin_type === "Super Admin"
+      )
+    ) {
+      return res
+        .status(400)
+        .json(utill.helpers.sendError("Access denied for current admin type"));
+    }
+
+    if (!uuid) {
+      return res
+        .status(400)
+        .json(utill.helpers.sendError("Kindly add a valid aircraft ID"));
+    }
+
+    var cargos = await db.dbs.Cargo.findOne({
+      where: { uuid: uuid },
+    });
+
+    await cargos.destroy();
+
+    return res
+      .status(200)
+      .json(utill.helpers.sendSuccess("Aircraft successfully deleted"));
   },
 
   updateAdmin: async (
@@ -1313,5 +1666,560 @@ with note ${note}`,
     return res
       .status(200)
       .json(utill.helpers.sendSuccess("Report created successfully"));
+  },
+
+  // compliance
+  // shippers
+  allShippers: async (
+    req: any,
+    res: Response,
+    next: NextFunction
+  ): Promise<Response> => {
+    const { pageNum } = req.query;
+
+    if (!pageNum || isNaN(pageNum)) {
+      return res
+        .status(400)
+        .json(utill.helpers.sendError("Kindly add a valid page number"));
+    }
+
+    var currentPage = parseInt(pageNum) ? parseInt(pageNum) : 1;
+
+    var page = currentPage - 1;
+    var pageSize = 25;
+    const offset = page * pageSize;
+    const limit = pageSize;
+
+    let shippers = await db.dbs.Users.findAndCountAll({
+      offset: offset,
+      limit: limit,
+      where: { type: "Shipper" },
+      order: [["id", "DESC"]],
+    });
+
+    var next_page = currentPage + 1;
+    var prev_page = currentPage - 1;
+    var nextP = `/api/jetwest/admin/all-shippers?pageNum=` + next_page;
+    var prevP = `/api/jetwest/admin/all-shippers?pageNum=` + prev_page;
+
+    const meta = paginate(currentPage, shippers.count, shippers.rows, pageSize);
+
+    return res.status(200).json({
+      status: "SUCCESS",
+      data: shippers,
+      per_page: pageSize,
+      current_page: currentPage,
+      last_page: meta.pageCount, //transactions.count,
+      first_page_url: `/api/jetwest/admin/all-shippers?pageNum=1`,
+      last_page_url:
+        `/api/jetwest/admin/all-shippers?pageNum=` + meta.pageCount, //transactions.count,
+      next_page_url: nextP,
+      prev_page_url: prevP,
+      path: `/api/jetwest/admin/all-shippers?pageNum=`,
+      from: 1,
+      to: meta.pageCount, //transactions.count,
+    });
+  },
+
+  allActivatedShippers: async (
+    req: any,
+    res: Response,
+    next: NextFunction
+  ): Promise<Response> => {
+    const { pageNum } = req.query;
+
+    if (!pageNum || isNaN(pageNum)) {
+      return res
+        .status(400)
+        .json(utill.helpers.sendError("Kindly add a valid page number"));
+    }
+
+    var currentPage = parseInt(pageNum) ? parseInt(pageNum) : 1;
+
+    var page = currentPage - 1;
+    var pageSize = 25;
+    const offset = page * pageSize;
+    const limit = pageSize;
+
+    let activatedShippers = await db.dbs.Users.findAndCountAll({
+      offset: offset,
+      limit: limit,
+      where: { type: "Shipper", verification_status: "completed" },
+      order: [["id", "DESC"]],
+    });
+
+    var next_page = currentPage + 1;
+    var prev_page = currentPage - 1;
+    var nextP = `/api/jetwest/admin/activated-shippers?pageNum=` + next_page;
+    var prevP = `/api/jetwest/admin/activated-shippers?pageNum=` + prev_page;
+
+    const meta = paginate(
+      currentPage,
+      activatedShippers.count,
+      activatedShippers.rows,
+      pageSize
+    );
+
+    return res.status(200).json({
+      status: "SUCCESS",
+      data: activatedShippers,
+      per_page: pageSize,
+      current_page: currentPage,
+      last_page: meta.pageCount, //transactions.count,
+      first_page_url: `/api/jetwest/admin/activated-shippers?pageNum=1`,
+      last_page_url:
+        `/api/jetwest/admin/activated-shippers?pageNum=` + meta.pageCount, //transactions.count,
+      next_page_url: nextP,
+      prev_page_url: prevP,
+      path: `/api/jetwest/admin/activated-shippers?pageNum=`,
+      from: 1,
+      to: meta.pageCount, //transactions.count,
+    });
+  },
+
+  allDeclinedShippers: async (
+    req: any,
+    res: Response,
+    next: NextFunction
+  ): Promise<Response> => {
+    const { pageNum } = req.query;
+
+    if (!pageNum || isNaN(pageNum)) {
+      return res
+        .status(400)
+        .json(utill.helpers.sendError("Kindly add a valid page number"));
+    }
+
+    var currentPage = parseInt(pageNum) ? parseInt(pageNum) : 1;
+
+    var page = currentPage - 1;
+    var pageSize = 25;
+    const offset = page * pageSize;
+    const limit = pageSize;
+
+    let declinedShippers = await db.dbs.Users.findAndCountAll({
+      offset: offset,
+      limit: limit,
+      where: { type: "Shipper", verification_status: "declined" },
+      order: [["id", "DESC"]],
+    });
+
+    var next_page = currentPage + 1;
+    var prev_page = currentPage - 1;
+    var nextP = `/api/jetwest/admin/declined-shippers?pageNum=` + next_page;
+    var prevP = `/api/jetwest/admin/declined-shippers?pageNum=` + prev_page;
+
+    const meta = paginate(
+      currentPage,
+      declinedShippers.count,
+      declinedShippers.rows,
+      pageSize
+    );
+
+    return res.status(200).json({
+      status: "SUCCESS",
+      data: declinedShippers,
+      per_page: pageSize,
+      current_page: currentPage,
+      last_page: meta.pageCount, //transactions.count,
+      first_page_url: `/api/jetwest/admin/declined-shippers?pageNum=1`,
+      last_page_url:
+        `/api/jetwest/admin/declined-shippers?pageNum=` + meta.pageCount, //transactions.count,
+      next_page_url: nextP,
+      prev_page_url: prevP,
+      path: `/api/jetwest/admin/declined-shippers?pageNum=`,
+      from: 1,
+      to: meta.pageCount, //transactions.count,
+    });
+  },
+
+  // carriers
+
+  allCarriers: async (
+    req: any,
+    res: Response,
+    next: NextFunction
+  ): Promise<Response> => {
+    const { pageNum } = req.query;
+
+    if (!pageNum || isNaN(pageNum)) {
+      return res
+        .status(400)
+        .json(utill.helpers.sendError("Kindly add a valid page number"));
+    }
+
+    var currentPage = parseInt(pageNum) ? parseInt(pageNum) : 1;
+
+    var page = currentPage - 1;
+    var pageSize = 25;
+    const offset = page * pageSize;
+    const limit = pageSize;
+
+    let carriers = await db.dbs.Users.findAndCountAll({
+      offset: offset,
+      limit: limit,
+      where: { type: "Carrier" },
+      order: [["id", "DESC"]],
+    });
+
+    var next_page = currentPage + 1;
+    var prev_page = currentPage - 1;
+    var nextP = `/api/jetwest/admin/all-carriers?pageNum=` + next_page;
+    var prevP = `/api/jetwest/admin/all-carriers?pageNum=` + prev_page;
+
+    const meta = paginate(currentPage, carriers.count, carriers.rows, pageSize);
+
+    return res.status(200).json({
+      status: "SUCCESS",
+      data: carriers,
+      per_page: pageSize,
+      current_page: currentPage,
+      last_page: meta.pageCount, //transactions.count,
+      first_page_url: `/api/jetwest/admin/all-carriers?pageNum=1`,
+      last_page_url:
+        `/api/jetwest/admin/all-carriers?pageNum=` + meta.pageCount, //transactions.count,
+      next_page_url: nextP,
+      prev_page_url: prevP,
+      path: `/api/jetwest/admin/all-carriers?pageNum=`,
+      from: 1,
+      to: meta.pageCount, //transactions.count,
+    });
+  },
+
+  allActivatedCarriers: async (
+    req: any,
+    res: Response,
+    next: NextFunction
+  ): Promise<Response> => {
+    const { pageNum } = req.query;
+
+    if (!pageNum || isNaN(pageNum)) {
+      return res
+        .status(400)
+        .json(utill.helpers.sendError("Kindly add a valid page number"));
+    }
+
+    var currentPage = parseInt(pageNum) ? parseInt(pageNum) : 1;
+
+    var page = currentPage - 1;
+    var pageSize = 25;
+    const offset = page * pageSize;
+    const limit = pageSize;
+
+    let activatedCarriers = await db.dbs.Users.findAndCountAll({
+      offset: offset,
+      limit: limit,
+      where: { type: "Carrier", verification_status: "completed" },
+      order: [["id", "DESC"]],
+    });
+
+    var next_page = currentPage + 1;
+    var prev_page = currentPage - 1;
+    var nextP = `/api/jetwest/admin/activated-carriers?pageNum=` + next_page;
+    var prevP = `/api/jetwest/admin/activated-carriers?pageNum=` + prev_page;
+
+    const meta = paginate(
+      currentPage,
+      activatedCarriers.count,
+      activatedCarriers.rows,
+      pageSize
+    );
+
+    return res.status(200).json({
+      status: "SUCCESS",
+      data: activatedCarriers,
+      per_page: pageSize,
+      current_page: currentPage,
+      last_page: meta.pageCount, //transactions.count,
+      first_page_url: `/api/jetwest/admin/activated-carriers?pageNum=1`,
+      last_page_url:
+        `/api/jetwest/admin/activated-carriers?pageNum=` + meta.pageCount, //transactions.count,
+      next_page_url: nextP,
+      prev_page_url: prevP,
+      path: `/api/jetwest/admin/activated-carriers?pageNum=`,
+      from: 1,
+      to: meta.pageCount, //transactions.count,
+    });
+  },
+
+  allDeclinedCarriers: async (
+    req: any,
+    res: Response,
+    next: NextFunction
+  ): Promise<Response> => {
+    const { pageNum } = req.query;
+
+    if (!pageNum || isNaN(pageNum)) {
+      return res
+        .status(400)
+        .json(utill.helpers.sendError("Kindly add a valid page number"));
+    }
+
+    var currentPage = parseInt(pageNum) ? parseInt(pageNum) : 1;
+
+    var page = currentPage - 1;
+    var pageSize = 25;
+    const offset = page * pageSize;
+    const limit = pageSize;
+
+    let declinedCarriers = await db.dbs.Users.findAndCountAll({
+      offset: offset,
+      limit: limit,
+      where: { type: "Carrier", verification_status: "declined" },
+      order: [["id", "DESC"]],
+    });
+
+    var next_page = currentPage + 1;
+    var prev_page = currentPage - 1;
+    var nextP = `/api/jetwest/admin/declined-carriers?pageNum=` + next_page;
+    var prevP = `/api/jetwest/admin/declined-carriers?pageNum=` + prev_page;
+
+    const meta = paginate(
+      currentPage,
+      declinedCarriers.count,
+      declinedCarriers.rows,
+      pageSize
+    );
+
+    return res.status(200).json({
+      status: "SUCCESS",
+      data: declinedCarriers,
+      per_page: pageSize,
+      current_page: currentPage,
+      last_page: meta.pageCount, //transactions.count,
+      first_page_url: `/api/jetwest/admin/declined-carriers?pageNum=1`,
+      last_page_url:
+        `/api/jetwest/admin/declined-carriers?pageNum=` + meta.pageCount, //transactions.count,
+      next_page_url: nextP,
+      prev_page_url: prevP,
+      path: `/api/jetwest/admin/declined-carriers?pageNum=`,
+      from: 1,
+      to: meta.pageCount, //transactions.count,
+    });
+  },
+
+  // Agents
+  allAgents: async (
+    req: any,
+    res: Response,
+    next: NextFunction
+  ): Promise<Response> => {
+    const { pageNum } = req.query;
+
+    if (!pageNum || isNaN(pageNum)) {
+      return res
+        .status(400)
+        .json(utill.helpers.sendError("Kindly add a valid page number"));
+    }
+
+    var currentPage = parseInt(pageNum) ? parseInt(pageNum) : 1;
+
+    var page = currentPage - 1;
+    var pageSize = 25;
+    const offset = page * pageSize;
+    const limit = pageSize;
+
+    let agents = await db.dbs.Users.findAndCountAll({
+      offset: offset,
+      limit: limit,
+      where: { type: "Agent" },
+      order: [["id", "DESC"]],
+    });
+
+    var next_page = currentPage + 1;
+    var prev_page = currentPage - 1;
+    var nextP = `/api/jetwest/admin/all-agents?pageNum=` + next_page;
+    var prevP = `/api/jetwest/admin/all-agents?pageNum=` + prev_page;
+
+    const meta = paginate(currentPage, agents.count, agents.rows, pageSize);
+
+    return res.status(200).json({
+      status: "SUCCESS",
+      data: agents,
+      per_page: pageSize,
+      current_page: currentPage,
+      last_page: meta.pageCount, //transactions.count,
+      first_page_url: `/api/jetwest/admin/all-agents?pageNum=1`,
+      last_page_url: `/api/jetwest/admin/all-agents?pageNum=` + meta.pageCount, //transactions.count,
+      next_page_url: nextP,
+      prev_page_url: prevP,
+      path: `/api/jetwest/admin/all-agents?pageNum=`,
+      from: 1,
+      to: meta.pageCount, //transactions.count,
+    });
+  },
+
+  allActivatedAgents: async (
+    req: any,
+    res: Response,
+    next: NextFunction
+  ): Promise<Response> => {
+    const { pageNum } = req.query;
+
+    if (!pageNum || isNaN(pageNum)) {
+      return res
+        .status(400)
+        .json(utill.helpers.sendError("Kindly add a valid page number"));
+    }
+
+    var currentPage = parseInt(pageNum) ? parseInt(pageNum) : 1;
+
+    var page = currentPage - 1;
+    var pageSize = 25;
+    const offset = page * pageSize;
+    const limit = pageSize;
+
+    let activatedAgents = await db.dbs.Users.findAndCountAll({
+      offset: offset,
+      limit: limit,
+      where: { type: "Agent", verification_status: "completed" },
+      order: [["id", "DESC"]],
+    });
+
+    var next_page = currentPage + 1;
+    var prev_page = currentPage - 1;
+    var nextP = `/api/jetwest/admin/activated-agents?pageNum=` + next_page;
+    var prevP = `/api/jetwest/admin/activated-agents?pageNum=` + prev_page;
+
+    const meta = paginate(
+      currentPage,
+      activatedAgents.count,
+      activatedAgents.rows,
+      pageSize
+    );
+
+    return res.status(200).json({
+      status: "SUCCESS",
+      data: activatedAgents,
+      per_page: pageSize,
+      current_page: currentPage,
+      last_page: meta.pageCount, //transactions.count,
+      first_page_url: `/api/jetwest/admin/activated-agents?pageNum=1`,
+      last_page_url:
+        `/api/jetwest/admin/activated-agents?pageNum=` + meta.pageCount, //transactions.count,
+      next_page_url: nextP,
+      prev_page_url: prevP,
+      path: `/api/jetwest/admin/activated-agents?pageNum=`,
+      from: 1,
+      to: meta.pageCount, //transactions.count,
+    });
+  },
+
+  allDeclinedAgents: async (
+    req: any,
+    res: Response,
+    next: NextFunction
+  ): Promise<Response> => {
+    const { pageNum } = req.query;
+
+    if (!pageNum || isNaN(pageNum)) {
+      return res
+        .status(400)
+        .json(utill.helpers.sendError("Kindly add a valid page number"));
+    }
+
+    var currentPage = parseInt(pageNum) ? parseInt(pageNum) : 1;
+
+    var page = currentPage - 1;
+    var pageSize = 25;
+    const offset = page * pageSize;
+    const limit = pageSize;
+
+    let declinedAgents = await db.dbs.Users.findAndCountAll({
+      offset: offset,
+      limit: limit,
+      where: { type: "Agent", verification_status: "declined" },
+      order: [["id", "DESC"]],
+    });
+
+    var next_page = currentPage + 1;
+    var prev_page = currentPage - 1;
+    var nextP = `/api/jetwest/admin/declined-agents?pageNum=` + next_page;
+    var prevP = `/api/jetwest/admin/declined-agents?pageNum=` + prev_page;
+
+    const meta = paginate(
+      currentPage,
+      declinedAgents.count,
+      declinedAgents.rows,
+      pageSize
+    );
+
+    return res.status(200).json({
+      status: "SUCCESS",
+      data: declinedAgents,
+      per_page: pageSize,
+      current_page: currentPage,
+      last_page: meta.pageCount, //transactions.count,
+      first_page_url: `/api/jetwest/admin/declined-agents?pageNum=1`,
+      last_page_url:
+        `/api/jetwest/admin/declined-agents?pageNum=` + meta.pageCount, //transactions.count,
+      next_page_url: nextP,
+      prev_page_url: prevP,
+      path: `/api/jetwest/admin/declined-agents?pageNum=`,
+      from: 1,
+      to: meta.pageCount, //transactions.count,
+    });
+  },
+
+  activateDeactivateUser: async (
+    req: any,
+    res: Response,
+    next: NextFunction
+  ): Promise<Response> => {
+    const loginSchema = utill.Joi.object()
+      .keys({
+        user_id: utill.Joi.string().required(),
+        state: utill.Joi.boolean().required(),
+      })
+      .unknown();
+
+    const validate = loginSchema.validate(req.body);
+
+    if (validate.error != null) {
+      const errorMessage = validate.error.details
+        .map((i: any) => i.message)
+        .join(".");
+      return res.status(400).json(utill.helpers.sendError(errorMessage));
+    }
+
+    const { user_id, state } = req.body;
+
+    let user = await db.dbs.Users.findOne({ where: { uuid: user_id } });
+
+    if (!user) {
+      return res.status(400).json(utill.helpers.sendError("User not found"));
+    }
+
+    user.verification_status = state;
+    await user.save();
+
+    return res
+      .status(200)
+      .json(utill.helpers.sendSuccess("User status updated successfully"));
+  },
+
+  deleteUser: async (
+    req: any,
+    res: Response,
+    next: NextFunction
+  ): Promise<Response> => {
+    let uuid = req.query.uuid;
+    if (!uuid) {
+      return res
+        .status(400)
+        .json(utill.helpers.sendError("Kindly add a valid search parameter"));
+    }
+
+    let user = await db.dbs.Users.findOne({ where: { uuid: uuid } });
+
+    if (!user) {
+      return res.status(400).json(utill.helpers.sendError("User not found"));
+    }
+
+    await user.destroy();
+
+    return res
+      .status(200)
+      .json(utill.helpers.sendSuccess("User successfully deleted"));
   },
 };

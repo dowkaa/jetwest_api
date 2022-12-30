@@ -161,6 +161,8 @@ module.exports = {
         );
     }
 
+    let num = "5N" + "-" + util.helpers.generateClientId(6);
+
     const {
       model,
       payload,
@@ -190,6 +192,7 @@ module.exports = {
       areasOfCoverage,
       monthly_flight_time,
       weekly_flight_time,
+      flight_reg: num,
       daily_flight_time,
       aircraft_registration,
       airworthiness_cert_url,

@@ -16,6 +16,7 @@ var Cargos = (sequelize: any, type: any) => {
     monthly_flight_time: Sequelize.STRING,
     weekly_flight_time: Sequelize.STRING,
     daily_flight_time: Sequelize.STRING,
+    flight_reg: Sequelize.STRING,
     aircraft_registration: Sequelize.STRING,
     airworthiness_cert_url: Sequelize.STRING,
     airworthiness_cert_status: Sequelize.STRING,

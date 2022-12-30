@@ -45,6 +45,10 @@ dbs.Oauth = require("../models/oauth")(sequelize, Sequelizes);
 dbs.CompanyInfo = require("../models/company_info")(sequelize, Sequelizes);
 dbs.Faqs = require("../models/faqs")(sequelize, Sequelizes);
 dbs.Testimonials = require("../models/testimonials")(sequelize, Sequelizes);
+dbs.AircraftAuditLog = require("../models/aircraftAudit")(
+  sequelize,
+  Sequelizes
+);
 dbs.ShipmentRoutes = require("../models/shipment_route")(sequelize, Sequelizes);
 dbs.Quotes = require("../models/quotes")(sequelize, Sequelizes);
 dbs.Promotions = require("../models/promotions")(sequelize, Sequelizes);

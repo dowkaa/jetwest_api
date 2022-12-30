@@ -101,4 +101,130 @@ router.post(
   [jwtMiddleWare, signatureSigner],
   AdminCtrl.updateAdmin
 );
+
+// schedule flights
+
+router.post(
+  "/schedule-flight",
+  [jwtMiddleWare, signatureSigner],
+  AdminCtrl.scheduleFlights
+);
+
+router.get(
+  "/all-scheduled-flights",
+  [jwtMiddleWare, signatureSigner],
+  AdminCtrl.allScheduledFlights
+);
+
+router.get(
+  "/flights-in-progress",
+  [jwtMiddleWare, signatureSigner],
+  AdminCtrl.flightsInProgress
+);
+
+router.get(
+  "/completed-flights",
+  [jwtMiddleWare, signatureSigner],
+  AdminCtrl.flightsCompleted // allAircraftReports
+);
+
+router.get(
+  "/single-flight",
+  [jwtMiddleWare, signatureSigner],
+  AdminCtrl.singleFlight
+);
+// aircraft reports
+router.get(
+  "/all-aircraft-reports",
+  [jwtMiddleWare, signatureSigner],
+  AdminCtrl.allAircraftReports
+);
+
+router.get(
+  "/single-aircraft-report",
+  [jwtMiddleWare, signatureSigner],
+  AdminCtrl.singleAircraftReport
+);
+
+router.post(
+  "/add-aircraft-report",
+  [jwtMiddleWare, signatureSigner],
+  AdminCtrl.addAirAudit
+);
+
+router.get(
+  "/delete-aircraft",
+  [jwtMiddleWare, signatureSigner],
+  AdminCtrl.deleteAircraft
+);
+
+// compliance
+// Agents
+router.get(
+  "/all-shippers",
+  [jwtMiddleWare, signatureSigner],
+  AdminCtrl.allShippers
+);
+
+router.get(
+  "/activated-shippers",
+  [jwtMiddleWare, signatureSigner],
+  AdminCtrl.allActivatedShippers
+);
+
+router.get(
+  "/declined-shippers",
+  [jwtMiddleWare, signatureSigner],
+  AdminCtrl.allDeclinedShippers
+);
+
+// carriers
+router.get(
+  "/all-carriers",
+  [jwtMiddleWare, signatureSigner],
+  AdminCtrl.allCarriers
+);
+
+router.get(
+  "/activated-carriers",
+  [jwtMiddleWare, signatureSigner],
+  AdminCtrl.allActivatedCarriers
+);
+
+router.get(
+  "/declined-carriers",
+  [jwtMiddleWare, signatureSigner],
+  AdminCtrl.allDeclinedCarriers
+);
+
+// Agents
+router.get(
+  "/all-agents",
+  [jwtMiddleWare, signatureSigner],
+  AdminCtrl.allAgents
+);
+
+router.get(
+  "/activated-agents",
+  [jwtMiddleWare, signatureSigner],
+  AdminCtrl.allActivatedAgents
+);
+
+router.get(
+  "/declined-agents",
+  [jwtMiddleWare, signatureSigner],
+  AdminCtrl.allDeclinedAgents
+);
+
+router.post(
+  "/activate-deactiave-users",
+  [jwtMiddleWare, signatureSigner],
+  AdminCtrl.activateDeactivateUser
+);
+
+router.get(
+  "/delete-user",
+  [jwtMiddleWare, signatureSigner],
+  AdminCtrl.deleteUser
+);
 module.exports = router;
