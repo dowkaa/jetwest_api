@@ -994,7 +994,11 @@ with note ${note}`,
         name: aircraftOwner.first_name + " " + aircraftOwner.last_name,
       };
 
-      utill.aircraftUpdate.sendMail(option);
+      try {
+        utill.aircraftUpdate.sendMail(option);
+      } catch (error) {
+        console.log({ error });
+      }
     } else {
       cargo.status = "Activated";
       await cargo.save();
@@ -1006,7 +1010,11 @@ with note ${note}`,
         name: aircraftOwner.first_name + " " + aircraftOwner.last_name,
       };
 
-      utill.aircraftUpdate.sendMail(option);
+      try {
+        utill.aircraftUpdate.sendMail(option);
+      } catch (error) {
+        console.log({ error });
+      }
 
       await db.dbs.AircraftAuditLog.create({
         uuid: utill.uuid(),
@@ -1020,16 +1028,16 @@ with note ${note}`,
       });
     }
 
-    cargo.airworthiness_cert_status = airworthiness_cert_status;
-    cargo.noise_cert_status = noise_cert_status;
-    cargo.insurance_cert_status = insurance_cert_status;
-    cargo.registration_cert_status = registration_cert_status;
-    cargo.maintenance_program_status = maintenance_program_status;
-    cargo.mmel_status = mmel_status;
-    cargo.ops_manual_status = ops_manual_status;
+    cargo.airworthiness_cert_checked = airworthiness_cert_status;
+    cargo.noise_cert_checked = noise_cert_status;
+    cargo.insurance_cert_checked = insurance_cert_status;
+    cargo.registration_cert_checked = registration_cert_status;
+    cargo.maintenance_program_checked = maintenance_program_status;
+    cargo.mmel_checked = mmel_status;
+    cargo.ops_manual_checked = ops_manual_status;
     cargo.note = note;
     cargo.aircraft_type_checked = aircraft_type_checked;
-    // cargo.payload_checked = payload_checked;
+    cargo.payload_checked = payload_checked;
     cargo.ops_spec_checked = ops_spec_checked;
     cargo.flight_hrs_checked = flight_hrs_checked;
     cargo.aircraft_registration_checked = aircraft_registration_checked;
