@@ -463,7 +463,7 @@ module.exports = {
     let flights = await db.dbs.ScheduleFlights.findAndCountAll({
       offset: offset,
       limit: limit,
-      where: { status: "In progress" },
+      where: { status: "completed" },
       order: [["id", "DESC"]],
     });
 
