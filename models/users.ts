@@ -12,6 +12,7 @@ var User = (sequelize: any, type: any) => {
     first_name: Sequelize.STRING,
     last_name: Sequelize.STRING,
     customer_id: Sequelize.STRING,
+    organisation: Sequelize.STRING,
     username: Sequelize.STRING,
     email: Sequelize.STRING,
     country: Sequelize.STRING,
