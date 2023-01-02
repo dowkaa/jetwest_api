@@ -597,6 +597,65 @@ module.exports = {
       );
   },
 
+  allShipmentRoutes: async (
+    req: any,
+    res: Response,
+    next: NextFunction
+  ): Promise<Response> => {
+    // let data = await db.dbs.ShipmentRoutes.findAll({});
+
+    // return res.status(200).json({ destinations: data });
+
+    const { pageNum } = req.query;
+
+    if (!pageNum || isNaN(pageNum)) {
+      return res
+        .status(400)
+        .json(utill.helpers.sendError("Kindly add a valid page number"));
+    }
+
+    var currentPage = parseInt(pageNum) ? parseInt(pageNum) : 1;
+
+    var page = currentPage - 1;
+    var pageSize = 25;
+    const offset = page * pageSize;
+    const limit = pageSize;
+
+    let destinations = await db.dbs.ShipmentRoutes.findAndCountAll({
+      offset: offset,
+      limit: limit,
+      order: [["id", "DESC"]],
+    });
+
+    var next_page = currentPage + 1;
+    var prev_page = currentPage - 1;
+    var nextP = `/api/jetwest/admin/all-destinations?pageNum=` + next_page;
+    var prevP = `/api/jetwest/admin/all-destinations?pageNum=` + prev_page;
+
+    const meta = paginate(
+      currentPage,
+      destinations.count,
+      destinations.rows,
+      pageSize
+    );
+
+    return res.status(200).json({
+      status: "SUCCESS",
+      data: destinations,
+      per_page: pageSize,
+      current_page: currentPage,
+      last_page: meta.pageCount, //transactions.count,
+      first_page_url: `/api/jetwest/admin/all-destinations?pageNum=1`,
+      last_page_url:
+        `/api/jetwest/admin/all-destinations?pageNum=` + meta.pageCount, //transactions.count,
+      next_page_url: nextP,
+      prev_page_url: prevP,
+      path: `/api/jetwest/admin/all-destinations?pageNum=`,
+      from: 1,
+      to: meta.pageCount, //transactions.count,
+    });
+  },
+
   createNewRole: async (
     req: any,
     res: Response,

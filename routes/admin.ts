@@ -227,4 +227,10 @@ router.get(
   [jwtMiddleWare, signatureSigner],
   AdminCtrl.deleteUser
 );
+
+router.get(
+  "/all-destinations",
+  [jwtMiddleWare, signatureSigner],
+  AdminCtrl.allShipmentRoutes
+);
 module.exports = router;
