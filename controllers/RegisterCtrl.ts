@@ -214,7 +214,7 @@ module.exports = {
     const schema = utillz.Joi.object()
       .keys({
         organisation: utillz.Joi.string().required(),
-        profileDoc: utillz.Joi.string().allow(""),
+        profileDoc: utillz.Joi.string().required(),
         company_name: utillz.Joi.string().required(),
         company_address: utillz.Joi.string().required(),
         companyFounded: utillz.Joi.string().required(),

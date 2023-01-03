@@ -72,10 +72,27 @@ dbs.ScheduleFlights = require("../models/shedule_flights")(
   sequelize,
   Sequelizes
 );
+dbs.Destinations = require("../models/destinations")(sequelize, Sequelizes);
 dbs.BusinessCompliance = require("../models/business_compliance")(
   sequelize,
   Sequelizes
 );
 dbs.ShippingItems = require("../models/shipping_data")(sequelize, Sequelizes);
+
+dbs.BusinessCompliance.belongsTo(dbs.Users, {
+  foreignKey: "user_id",
+  uniqueKey: "uuid",
+  // as: "business_compliance",
+});
+
+dbs.Users.hasOne(dbs.BusinessCompliance, {
+  foreignKey: "user_id",
+  // as: "business_compliance",
+});
+
+dbs.Users.hasOne(dbs.Directors, {
+  foreignKey: "user_id",
+  // as: "business_compliance",
+});
 
 exports.dbs = dbs;

@@ -233,4 +233,64 @@ router.get(
   [jwtMiddleWare, signatureSigner],
   AdminCtrl.allShipmentRoutes
 );
+
+// logistics
+router.get(
+  "/all-shipments",
+  [jwtMiddleWare, signatureSigner],
+  AdminCtrl.allShipments
+);
+router.get(
+  "/single-shipment",
+  [jwtMiddleWare, signatureSigner],
+  AdminCtrl.singleShipment
+);
+router.get(
+  "/pending-shipment",
+  [jwtMiddleWare, signatureSigner],
+  AdminCtrl.pendingShipments
+);
+router.get(
+  "/enroute-shipments",
+  [jwtMiddleWare, signatureSigner],
+  AdminCtrl.enrouteShipments
+);
+
+router.get(
+  "/completed-shipments",
+  [jwtMiddleWare, signatureSigner],
+  AdminCtrl.completedShipments
+);
+
+router.get("/all-users", [jwtMiddleWare, signatureSigner], AdminCtrl.allUsers);
+
+// routes
+
+router.post(
+  "/create-route",
+  [jwtMiddleWare, signatureSigner],
+  AdminCtrl.createRoute
+);
+
+router.post(
+  "/update-route",
+  [jwtMiddleWare, signatureSigner],
+  AdminCtrl.updateRoute
+);
+router.get(
+  "/all-routes",
+  [jwtMiddleWare, signatureSigner],
+  AdminCtrl.allRoutes
+);
+
+router.get(
+  "/delete-route",
+  [jwtMiddleWare, signatureSigner],
+  AdminCtrl.deleteRoute
+);
+router.get(
+  "/single-route",
+  [jwtMiddleWare, signatureSigner],
+  AdminCtrl.singleRoute
+);
 module.exports = router;

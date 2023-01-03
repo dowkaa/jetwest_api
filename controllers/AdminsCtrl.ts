@@ -233,9 +233,9 @@ module.exports = {
   ): Promise<Response> => {
     const loginSchema = utill.Joi.object()
       .keys({
-        departure_station: utill.Joi.string().required(),
+        departure_station: utill.Joi.string().required(), // e.g name of state
         departure_date: utill.Joi.string().required(),
-        destination_station: utill.Joi.string().required(),
+        destination_station: utill.Joi.string().required(), // e.g name of state
         flight_reg: utill.Joi.string().required(),
         arrival_date: utill.Joi.string().required(),
         scheduled_payload: utill.Joi.string().required(),
@@ -289,6 +289,14 @@ module.exports = {
       departure_date,
       destination_station,
     } = req.body;
+
+    let aircraftChecker = await db.dbs.Cargo.findOne({where: {flight_reg: flight_reg}});
+
+    if(!aircraftChecker){
+      return res
+        .status(400)
+        .json(utill.helpers.sendError("Aircraft with provided flight registration id not found"));
+    }
 
     await db.dbs.ScheduleFlights.create({
       uuid: utill.uuid(),
@@ -518,7 +526,7 @@ module.exports = {
     const loginSchema = utill.Joi.object()
       .keys({
         country: utill.Joi.string().required(),
-        destination_name: utill.Joi.string().required(),
+        destination_name: utill.Joi.string().required(), // state
         code: utill.Joi.string().required(),
         name_of_airport: utill.Joi.string().required(),
         groundHandler: utill.Joi.string().required(),
@@ -571,13 +579,12 @@ module.exports = {
         .json(utill.helpers.sendError("Access denied for current admin type"));
     }
 
-    let data = await db.dbs.ShipmentRoutes.create({
+    let data = await db.dbs.Destinations.create({
       uuid: utill.uuid(),
       country,
-      ratePerKg: 10,
-      destination_name,
+      state: destination_name,
       code,
-      route: name_of_airport,
+      name_of_airport,
       groundHandler,
       email,
       phone_number,
@@ -651,6 +658,341 @@ module.exports = {
       next_page_url: nextP,
       prev_page_url: prevP,
       path: `/api/jetwest/admin/all-destinations?pageNum=`,
+      from: 1,
+      to: meta.pageCount, //transactions.count,
+    });
+  },
+
+  createRoute: async (
+    req: any,
+    res: Response,
+    next: NextFunction
+  ): Promise<Response> => {
+    const loginSchema = utill.Joi.object()
+      .keys({
+        departure: utill.Joi.string().required(), // this is a destination e.g Lagos
+        destination: utill.Joi.string().required(), // this is a destination e.g Port Harcourt
+        dollarPerKg: utill.Joi.number().required(),
+        dailyExchangeRate: utill.Joi.number().required(),
+        value: utill.Joi.number().required(),
+        tax: utill.Joi.string().required(),
+        interest: utill.Joi.number().required(),
+        surcharge: utill.Joi.number().required(),
+      })
+      .unknown();
+
+    const validate = loginSchema.validate(req.body);
+
+    if (validate.error != null) {
+      const errorMessage = validate.error.details
+        .map((i: any) => i.message)
+        .join(".");
+      return res.status(400).json(utill.helpers.sendError(errorMessage));
+    }
+
+    let user = await db.dbs.Users.findOne({ where: { uuid: req.user.uuid } });
+
+    if (parseInt(user.is_Admin) != 1) {
+      return res
+        .status(400)
+        .json(
+          utill.helpers.sendError(
+            "Unauthorised access, Kindly contact system admin"
+          )
+        );
+    }
+
+    if (
+      !(
+        user.admin_type === "Flight Operator" ||
+        user.admin_type === "Super Admin"
+      )
+    ) {
+      return res
+        .status(400)
+        .json(utill.helpers.sendError("Access denied for current admin type"));
+    }
+
+    const {
+      departure,
+      destination,
+      dollarPerKg,
+      dailyExchangeRate,
+      value,
+      tax,
+      interest,
+      surcharge,
+    } = req.body;
+
+    // chec if departure exists on destination tables
+    let departureCheck = await db.dbs.Destinations.findOne({
+      where: { state: departure },
+    });
+
+    let destinationCheck = await db.dbs.Destinations.findOne({
+      where: { state: destination },
+    });
+
+    if (!destinationCheck) {
+      return res
+        .status(400)
+        .json(utill.helpers.sendError("Destination not found"));
+    }
+
+    if (!departureCheck) {
+      return res
+        .status(400)
+        .json(utill.helpers.sendError("Departure not found"));
+    }
+    // chec if destination exists on destination tables
+
+    await db.dbs.ShipmentRoutes.create({
+      uuid: utill.uuid(),
+      route: departure + " to " + destination,
+      ratePerKg: dollarPerKg,
+      sur_charge: surcharge,
+      tax: tax,
+      departure,
+      destination,
+      dailyExchangeRate,
+      value,
+      interest,
+      groundHandler: destinationCheck.groundHandler,
+      email: destinationCheck.email,
+      phone_number: destinationCheck.phone_number,
+      destination_name: destination,
+      departure_airport: departureCheck.name_of_airport,
+      destination_airport: destinationCheck.name_of_airport
+    });
+
+    await db.dbs.AuditLogs.create({
+      uuid: utill.uuid(),
+      user_id: req.user.uuid,
+      description: `Admin ${req.user.first_name} ${req.user.last_name} created a route with departure ${departure} and destination $
+      ${destination}`,
+    });
+
+    const option = {
+      name: `${req.user.first_name} ${req.user.last_name}`,
+      email: req.user.email,
+      message: "This is to inform you that you have been assigned to ",
+    };
+
+    return res
+      .status(200)
+      .json(utill.helpers.sendSuccess("Route created successfully"));
+  },
+  updateRoute: async (
+    req: any,
+    res: Response,
+    next: NextFunction
+  ): Promise<Response> => {
+    const loginSchema = utill.Joi.object()
+      .keys({
+        route_id: utill.Joi.string().required(),
+        departure: utill.Joi.string().required(),
+        destination: utill.Joi.string().required(),
+        dollarPerKg: utill.Joi.number().required(),
+        dailyExchangeRate: utill.Joi.number().required(),
+        value: utill.Joi.number().required(),
+        tax: utill.Joi.string().required(),
+        interest: utill.Joi.number().required(),
+        surcharge: utill.Joi.number().required(),
+        groundHandler: utill.Joi.string().required(),
+        email: utill.Joi.string().required(),
+        phone_number: utill.Joi.string().required(),
+      })
+      .unknown();
+
+    const validate = loginSchema.validate(req.body);
+
+    if (validate.error != null) {
+      const errorMessage = validate.error.details
+        .map((i: any) => i.message)
+        .join(".");
+      return res.status(400).json(utill.helpers.sendError(errorMessage));
+    }
+
+    let user = await db.dbs.Users.findOne({ where: { uuid: req.user.uuid } });
+
+    if (parseInt(user.is_Admin) != 1) {
+      return res
+        .status(400)
+        .json(
+          utill.helpers.sendError(
+            "Unauthorised access, Kindly contact system admin"
+          )
+        );
+    }
+
+    if (
+      !(
+        user.admin_type === "Flight Operator" ||
+        user.admin_type === "Super Admin"
+      )
+    ) {
+      return res
+        .status(400)
+        .json(utill.helpers.sendError("Access denied for current admin type"));
+    }
+
+    const {
+      departure,
+      destination,
+      route_id,
+      dollarPerKg,
+      dailyExchangeRate,
+      value,
+      tax,
+      groundHandler,
+      email,
+      phone_number,
+      interest,
+      surcharge,
+    } = req.body;
+
+    let route = await db.dbs.ShipmentRoutes.findOne({
+      where: { uuid: route_id },
+    });
+
+    if (!route) {
+      return res.status(400).json(utill.helpers.sendError("Route not found"));
+    }
+
+    // await db.dbs.ShipmentRoutes.create({
+    route.route = departure + " " + destination;
+    route.ratePerKg = dollarPerKg;
+    route.sur_charge = surcharge;
+    route.tax = tax;
+    route.departure = departure;
+    route.dailyExchangeRate = dailyExchangeRate;
+    route.value = value;
+    route.interest = interest;
+    route.groundHandler = groundHandler;
+    route.email = email;
+    route.phone_number = phone_number;
+    route.destination_name = destination;
+    await route.save();
+    // });
+
+    await db.dbs.AuditLogs.create({
+      uuid: utill.uuid(),
+      user_id: req.user.uuid,
+      description: `Admin ${req.user.first_name} ${
+        req.user.last_name
+      } updated a route with uuid ${route.uuid} with data ${JSON.stringify(
+        req.body
+      )}`,
+    });
+
+    return res
+      .status(200)
+      .json(utill.helpers.sendSuccess("Route updated successfully"));
+  },
+
+  deleteRoute: async (
+    req: any,
+    res: Response,
+    next: NextFunction
+  ): Promise<Response> => {
+    let uuid = req.query.uuid;
+    if (!uuid) {
+      return res
+        .status(400)
+        .json(utill.helpers.sendError("Kindly add a valid route id"));
+    }
+
+    let route = await db.dbs.ShipmentRoutes.findOne({ where: { uuid: uuid } });
+
+    if (!route) {
+      return res.status(400).json(utill.helpers.sendError("Route not found"));
+    }
+
+    await route.destroy();
+
+    await db.dbs.AuditLogs.create({
+      uuid: utill.uuid(),
+      user_id: req.user.uuid,
+      description: `Admin ${req.user.first_name} ${
+        req.user.last_name
+      } deleted a route with uuid ${route.uuid} and data ${JSON.stringify(
+        route
+      )}`,
+    });
+
+    return res
+      .status(200)
+      .json(
+        utill.helpers.sendSuccess(
+          `Route with uuid ${uuid} deleted successfully`
+        )
+      );
+  },
+
+  singleRoute: async (
+    req: any,
+    res: Response,
+    next: NextFunction
+  ): Promise<Response> => {
+    let uuid = req.query.uuid;
+    if (!uuid) {
+      return res
+        .status(400)
+        .json(utill.helpers.sendError("Kindly add a valid route id"));
+    }
+
+    let route = await db.dbs.ShipmentRoutes.findOne({ where: { uuid: uuid } });
+
+    if (!route) {
+      return res.status(400).json(utill.helpers.sendError("Route not found"));
+    }
+
+    return res.status(200).json({ route });
+  },
+  allRoutes: async (
+    req: any,
+    res: Response,
+    next: NextFunction
+  ): Promise<Response> => {
+    const { pageNum } = req.query;
+
+    if (!pageNum || isNaN(pageNum)) {
+      return res
+        .status(400)
+        .json(utill.helpers.sendError("Kindly add a valid page number"));
+    }
+
+    var currentPage = parseInt(pageNum) ? parseInt(pageNum) : 1;
+
+    var page = currentPage - 1;
+    var pageSize = 25;
+    const offset = page * pageSize;
+    const limit = pageSize;
+
+    var routes = await db.dbs.ShipmentRoutes.findAndCountAll({
+      offset: offset,
+      limit: limit,
+      order: [["id", "DESC"]],
+    });
+
+    var next_page = currentPage + 1;
+    var prev_page = currentPage - 1;
+    var nextP = `/api/jetwest/admin/all-routes?pageNum=` + next_page;
+    var prevP = `/api/jetwest/admin/all-routes?pageNum=` + prev_page;
+
+    const meta = paginate(currentPage, routes.count, routes.rows, pageSize);
+
+    return res.status(200).json({
+      status: "SUCCESS",
+      data: routes,
+      per_page: pageSize,
+      current_page: currentPage,
+      last_page: meta.pageCount, //transactions.count,
+      first_page_url: `/api/jetwest/admin/all-routes?pageNum=1`,
+      last_page_url: `/api/jetwest/admin/all-routes?pageNum=` + meta.pageCount, //transactions.count,
+      next_page_url: nextP,
+      prev_page_url: prevP,
+      path: `/api/jetwest/admin/all-routes?pageNum=`,
       from: 1,
       to: meta.pageCount, //transactions.count,
     });
@@ -2288,5 +2630,352 @@ with note ${note}`,
     return res
       .status(200)
       .json(utill.helpers.sendSuccess("User successfully deleted"));
+  },
+
+  // logistics
+  allShipments: async (
+    req: any,
+    res: Response,
+    next: NextFunction
+  ): Promise<Response> => {
+    // let status = await db.dbs.ShippingItems.findAll({})
+    const { pageNum } = req.query;
+
+    if (!pageNum || isNaN(pageNum)) {
+      return res
+        .status(400)
+        .json(utill.helpers.sendError("Kindly add a valid page number"));
+    }
+
+    var currentPage = parseInt(pageNum) ? parseInt(pageNum) : 1;
+
+    var page = currentPage - 1;
+    var pageSize = 25;
+    const offset = page * pageSize;
+    const limit = pageSize;
+    ``;
+
+    let allShipments = await db.dbs.ShippingItems.findAndCountAll({
+      offset: offset,
+      limit: limit,
+      order: [["id", "DESC"]],
+    });
+
+    var next_page = currentPage + 1;
+    var prev_page = currentPage - 1;
+    var nextP = `/api/jetwest/admin/all-shipments?pageNum=` + next_page;
+    var prevP = `/api/jetwest/admin/all-shipments?pageNum=` + prev_page;
+
+    const meta = paginate(
+      currentPage,
+      allShipments.count,
+      allShipments.rows,
+      pageSize
+    );
+
+    return res.status(200).json({
+      status: "SUCCESS",
+      data: allShipments,
+      per_page: pageSize,
+      current_page: currentPage,
+      last_page: meta.pageCount, //transactions.count,
+      first_page_url: `/api/jetwest/admin/all-shipments?pageNum=1`,
+      last_page_url:
+        `/api/jetwest/admin/all-shipments?pageNum=` + meta.pageCount, //transactions.count,
+      next_page_url: nextP,
+      prev_page_url: prevP,
+      path: `/api/jetwest/admin/all-shipments?pageNum=`,
+      from: 1,
+      to: meta.pageCount, //transactions.count,
+    });
+  },
+
+  singleShipment: async (
+    req: any,
+    res: Response,
+    next: NextFunction
+  ): Promise<Response> => {
+    let uuid = req.query.uuid;
+
+    if (!uuid) {
+      return res
+        .status(400)
+        .json(utill.helpers.sendError("Kindly add a valid search param"));
+    }
+
+    let shipment = await db.dbs.ShippingItems.findOne({
+      where: { uuid: uuid },
+    });
+
+    if (!shipment) {
+      return res
+        .status(400)
+        .json(utill.helpers.sendError("No shipment with this uuid found"));
+    }
+
+    return res.status(200).json({ shipment });
+  },
+
+  singleUser: async (
+    req: any,
+    res: Response,
+    next: NextFunction
+  ): Promise<Response> => {
+    let uuid = req.query.uuid;
+
+    if (!uuid) {
+      return res
+        .status(400)
+        .json(utill.helpers.sendError("Kindly add a valid search param"));
+    }
+
+    let user = await db.dbs.Users.findOne({ where: { uuid: uuid } });
+    if (!user) {
+      return res
+        .status(400)
+        .json(utill.helpers.sendError("No user with this email found"));
+    }
+
+    let business = await db.dbs.BusinessCompliance.findaAll({
+      where: { user_id: user.uuid },
+    });
+    let director = await db.dbs.Directors.findAll({
+      where: { user_id: user.uuid },
+    });
+    let cargos = await db.dbs.Cargo.findAll({ where: { owner_id: user.uuid } });
+    let shipments = await db.dbs.ShippingItems.findAll({
+      where: { user_id: user.uuid },
+    });
+
+    return res
+      .status(200)
+      .json({ user, business, director, cargos, shipments });
+  },
+
+  pendingShipments: async (
+    req: any,
+    res: Response,
+    next: NextFunction
+  ): Promise<Response> => {
+    const { pageNum } = req.query;
+
+    if (!pageNum || isNaN(pageNum)) {
+      return res
+        .status(400)
+        .json(utill.helpers.sendError("Kindly add a valid page number"));
+    }
+
+    var currentPage = parseInt(pageNum) ? parseInt(pageNum) : 1;
+
+    var page = currentPage - 1;
+    var pageSize = 25;
+    const offset = page * pageSize;
+    const limit = pageSize;
+
+    let pendingShipments = await db.dbs.ShippingItems.findAndCountAll({
+      offset: offset,
+      limit: limit,
+      where: { status: "pending" },
+      order: [["id", "DESC"]],
+    });
+
+    var next_page = currentPage + 1;
+    var prev_page = currentPage - 1;
+    var nextP = `/api/jetwest/admin/pending-shipments?pageNum=` + next_page;
+    var prevP = `/api/jetwest/admin/pending-shipments?pageNum=` + prev_page;
+
+    const meta = paginate(
+      currentPage,
+      pendingShipments.count,
+      pendingShipments.rows,
+      pageSize
+    );
+
+    return res.status(200).json({
+      status: "SUCCESS",
+      data: pendingShipments,
+      per_page: pageSize,
+      current_page: currentPage,
+      last_page: meta.pageCount, //transactions.count,
+      first_page_url: `/api/jetwest/admin/pending-shipments?pageNum=1`,
+      last_page_url:
+        `/api/jetwest/admin/pending-shipments?pageNum=` + meta.pageCount, //transactions.count,
+      next_page_url: nextP,
+      prev_page_url: prevP,
+      path: `/api/jetwest/admin/pending-shipments?pageNum=`,
+      from: 1,
+      to: meta.pageCount, //transactions.count,
+    });
+  },
+
+  enrouteShipments: async (
+    req: any,
+    res: Response,
+    next: NextFunction
+  ): Promise<Response> => {
+    const { pageNum } = req.query;
+
+    if (!pageNum || isNaN(pageNum)) {
+      return res
+        .status(400)
+        .json(utill.helpers.sendError("Kindly add a valid page number"));
+    }
+
+    var currentPage = parseInt(pageNum) ? parseInt(pageNum) : 1;
+
+    var page = currentPage - 1;
+    var pageSize = 25;
+    const offset = page * pageSize;
+    const limit = pageSize;
+
+    let enrouteShipments = await db.dbs.ShippingItems.findAndCountAll({
+      offset: offset,
+      limit: limit,
+      where: { status: "enroute" },
+      order: [["id", "DESC"]],
+    });
+
+    var next_page = currentPage + 1;
+    var prev_page = currentPage - 1;
+    var nextP = `/api/jetwest/admin/enroute-shipments?pageNum=` + next_page;
+    var prevP = `/api/jetwest/admin/enroute-shipments?pageNum=` + prev_page;
+
+    const meta = paginate(
+      currentPage,
+      enrouteShipments.count,
+      enrouteShipments.rows,
+      pageSize
+    );
+
+    return res.status(200).json({
+      status: "SUCCESS",
+      data: enrouteShipments,
+      per_page: pageSize,
+      current_page: currentPage,
+      last_page: meta.pageCount, //transactions.count,
+      first_page_url: `/api/jetwest/admin/enroute-shipments?pageNum=1`,
+      last_page_url:
+        `/api/jetwest/admin/enroute-shipments?pageNum=` + meta.pageCount, //transactions.count,
+      next_page_url: nextP,
+      prev_page_url: prevP,
+      path: `/api/jetwest/admin/enroute-shipments?pageNum=`,
+      from: 1,
+      to: meta.pageCount, //transactions.count,
+    });
+  },
+
+  completedShipments: async (
+    req: any,
+    res: Response,
+    next: NextFunction
+  ): Promise<Response> => {
+    const { pageNum } = req.query;
+
+    if (!pageNum || isNaN(pageNum)) {
+      return res
+        .status(400)
+        .json(utill.helpers.sendError("Kindly add a valid page number"));
+    }
+
+    var currentPage = parseInt(pageNum) ? parseInt(pageNum) : 1;
+
+    var page = currentPage - 1;
+    var pageSize = 25;
+    const offset = page * pageSize;
+    const limit = pageSize;
+
+    let enrouteShipments = await db.dbs.ShippingItems.findAndCountAll({
+      offset: offset,
+      limit: limit,
+      where: { status: "completed" },
+      order: [["id", "DESC"]],
+    });
+
+    var next_page = currentPage + 1;
+    var prev_page = currentPage - 1;
+    var nextP = `/api/jetwest/admin/completed-shipments?pageNum=` + next_page;
+    var prevP = `/api/jetwest/admin/completed-shipments?pageNum=` + prev_page;
+
+    const meta = paginate(
+      currentPage,
+      enrouteShipments.count,
+      enrouteShipments.rows,
+      pageSize
+    );
+
+    return res.status(200).json({
+      status: "SUCCESS",
+      data: enrouteShipments,
+      per_page: pageSize,
+      current_page: currentPage,
+      last_page: meta.pageCount, //transactions.count,
+      first_page_url: `/api/jetwest/admin/completed-shipments?pageNum=1`,
+      last_page_url:
+        `/api/jetwest/admin/completed-shipments?pageNum=` + meta.pageCount, //transactions.count,
+      next_page_url: nextP,
+      prev_page_url: prevP,
+      path: `/api/jetwest/admin/completed-shipments?pageNum=`,
+      from: 1,
+      to: meta.pageCount, //transactions.count,
+    });
+  },
+
+  // users
+
+  allUsers: async (
+    req: any,
+    res: Response,
+    next: NextFunction
+  ): Promise<Response> => {
+    const { pageNum } = req.query;
+
+    if (!pageNum || isNaN(pageNum)) {
+      return res
+        .status(400)
+        .json(utill.helpers.sendError("Kindly add a valid page number"));
+    }
+
+    var currentPage = parseInt(pageNum) ? parseInt(pageNum) : 1;
+
+    var page = currentPage - 1;
+    var pageSize = 25;
+    const offset = page * pageSize;
+    const limit = pageSize;
+
+    let allUsers = await db.dbs.Users.findAndCountAll({
+      offset: offset,
+      limit: limit,
+      order: [["id", "DESC"]],
+      include: [
+        {
+          model: db.dbs.BusinessCompliance,
+        },
+        {
+          model: db.dbs.Directors,
+        },
+      ],
+    });
+
+    var next_page = currentPage + 1;
+    var prev_page = currentPage - 1;
+    var nextP = `/api/jetwest/admin/all-users?pageNum=` + next_page;
+    var prevP = `/api/jetwest/admin/all-users?pageNum=` + prev_page;
+
+    const meta = paginate(currentPage, allUsers.count, allUsers.rows, pageSize);
+
+    return res.status(200).json({
+      status: "SUCCESS",
+      data: allUsers,
+      per_page: pageSize,
+      current_page: currentPage,
+      last_page: meta.pageCount, //transactions.count,
+      first_page_url: `/api/jetwest/admin/all-users?pageNum=1`,
+      last_page_url: `/api/jetwest/admin/all-users?pageNum=` + meta.pageCount, //transactions.count,
+      next_page_url: nextP,
+      prev_page_url: prevP,
+      path: `/api/jetwest/admin/all-users?pageNum=`,
+      from: 1,
+      to: meta.pageCount, //transactions.count,
+    });
   },
 };

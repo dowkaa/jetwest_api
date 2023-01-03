@@ -11,7 +11,11 @@ var Destinations = (sequelize: any, type: any) => {
     uuid: Sequelize.STRING,
     state: Sequelize.STRING,
     country: Sequelize.STRING,
-    take_off: Sequelize.STRING,
+    code: Sequelize.STRING,
+    name_of_airport: Sequelize.STRING,
+    groundHandler: Sequelize.STRING,
+    email: Sequelize.STRING,
+    phone_number: Sequelize.STRING,
   });
 };
 
