@@ -15,14 +15,13 @@ var ShipmentRoute = (sequelize: any, type: any) => {
     tax: Sequelize.DOUBLE,
     country: Sequelize.STRING,
     destination_name: Sequelize.STRING,
-    code: Sequelize.STRING,
     departure: Sequelize.STRING,
     dailyExchangeRate: Sequelize.STRING,
     destination: Sequelize.STRING,
     value: Sequelize.STRING,
     interest: Sequelize.STRING,
     departure_airport: Sequelize.STRING,
-      destination_airport: Sequelize.STRING,
+    destination_airport: Sequelize.STRING,
   });
 };
 

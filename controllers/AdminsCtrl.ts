@@ -290,12 +290,18 @@ module.exports = {
       destination_station,
     } = req.body;
 
-    let aircraftChecker = await db.dbs.Cargo.findOne({where: {flight_reg: flight_reg}});
+    let aircraftChecker = await db.dbs.Cargo.findOne({
+      where: { flight_reg: flight_reg },
+    });
 
-    if(!aircraftChecker){
+    if (!aircraftChecker) {
       return res
         .status(400)
-        .json(utill.helpers.sendError("Aircraft with provided flight registration id not found"));
+        .json(
+          utill.helpers.sendError(
+            "Aircraft with provided flight registration id not found"
+          )
+        );
     }
 
     await db.dbs.ScheduleFlights.create({
@@ -744,6 +750,16 @@ module.exports = {
         .status(400)
         .json(utill.helpers.sendError("Departure not found"));
     }
+
+    let checker = await db.dbs.ShipmentRoutes.findOne({
+      where: { departure: departure, destination_name: destination },
+    });
+
+    if (checker) {
+      return res
+        .status(400)
+        .json(utill.helpers.sendError("Route already created"));
+    }
     // chec if destination exists on destination tables
 
     await db.dbs.ShipmentRoutes.create({
@@ -762,7 +778,7 @@ module.exports = {
       phone_number: destinationCheck.phone_number,
       destination_name: destination,
       departure_airport: departureCheck.name_of_airport,
-      destination_airport: destinationCheck.name_of_airport
+      destination_airport: destinationCheck.name_of_airport,
     });
 
     await db.dbs.AuditLogs.create({
@@ -860,7 +876,7 @@ module.exports = {
     }
 
     // await db.dbs.ShipmentRoutes.create({
-    route.route = departure + " " + destination;
+    route.route = departure + " to " + destination;
     route.ratePerKg = dollarPerKg;
     route.sur_charge = surcharge;
     route.tax = tax;
