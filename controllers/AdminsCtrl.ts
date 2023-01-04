@@ -682,7 +682,7 @@ module.exports = {
         dailyExchangeRate: utill.Joi.number().required(),
         value: utill.Joi.number().required(),
         tax: utill.Joi.string().required(),
-        interest: utill.Joi.number().required(),
+        insurance: utill.Joi.number().required(),
         surcharge: utill.Joi.number().required(),
       })
       .unknown();
@@ -726,7 +726,7 @@ module.exports = {
       dailyExchangeRate,
       value,
       tax,
-      interest,
+      insurance,
       surcharge,
     } = req.body;
 
@@ -772,7 +772,7 @@ module.exports = {
       destination,
       dailyExchangeRate,
       value,
-      interest,
+      insurance,
       groundHandler: destinationCheck.groundHandler,
       email: destinationCheck.email,
       phone_number: destinationCheck.phone_number,

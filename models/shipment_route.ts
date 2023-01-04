@@ -19,7 +19,7 @@ var ShipmentRoute = (sequelize: any, type: any) => {
     dailyExchangeRate: Sequelize.STRING,
     destination: Sequelize.STRING,
     value: Sequelize.STRING,
-    interest: Sequelize.STRING,
+    insurance: Sequelize.STRING,
     departure_airport: Sequelize.STRING,
     destination_airport: Sequelize.STRING,
   });
