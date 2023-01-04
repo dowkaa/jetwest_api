@@ -965,6 +965,41 @@ module.exports = {
 
     return res.status(200).json({ route });
   },
+
+  addUserNote: async (
+    req: any,
+    res: Response,
+    next: NextFunction
+  ): Promise<Response> => {
+    const loginSchema = utill.Joi.object()
+      .keys({
+        user_id: utill.Joi.string().required(),
+        note: utill.Joi.string().required(),
+      })
+      .unknown();
+
+    const validate = loginSchema.validate(req.body);
+
+    if (validate.error != null) {
+      const errorMessage = validate.error.details
+        .map((i: any) => i.message)
+        .join(".");
+      return res.status(400).json(utill.helpers.sendError(errorMessage));
+    }
+
+    const { user_id, note } = req.body;
+
+    let user = await db.dbs.Users.findOne({ where: { uuid: user_id } });
+
+    if (!user) {
+      return res.status(400).json(utill.helpers.sendError("User not found"));
+    }
+
+    user.notes = note;
+    await user.save();
+
+    return res.status(200).json(utill.helpers.sendSuccess("User updated successfully"))
+  },
   allRoutes: async (
     req: any,
     res: Response,

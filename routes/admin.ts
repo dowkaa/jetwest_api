@@ -263,6 +263,11 @@ router.get(
 );
 
 router.get("/all-users", [jwtMiddleWare, signatureSigner], AdminCtrl.allUsers);
+router.post(
+  "/update-user-note",
+  [jwtMiddleWare, signatureSigner],
+  AdminCtrl.addUserNote
+);
 
 // routes
 
