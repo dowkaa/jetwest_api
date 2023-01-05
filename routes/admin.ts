@@ -234,6 +234,11 @@ router.get(
   AdminCtrl.allShipmentRoutes
 );
 
+router.get(
+  "/unpaginated-destinations",
+  [jwtMiddleWare, signatureSigner],
+  AdminCtrl.allDestinations
+);
 // logistics
 router.get(
   "/all-shipments",
@@ -267,6 +272,11 @@ router.post(
   "/update-user-note",
   [jwtMiddleWare, signatureSigner],
   AdminCtrl.addUserNote
+);
+router.get(
+  "/single-user",
+  [jwtMiddleWare, signatureSigner],
+  AdminCtrl.singleUser
 );
 
 // routes

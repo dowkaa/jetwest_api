@@ -32,6 +32,8 @@ var BusinessCompliance = (sequelize: any, type: any) => {
     memorandumOf_guidance_url: Sequelize.STRING,
     memorandumOf_guidance_url_status: Sequelize.STRING,
     status: Sequelize.INTEGER,
+    notes: Sequelize.TEXT,
+    getStarted: Sequelize.TEXT,
   });
 };
 

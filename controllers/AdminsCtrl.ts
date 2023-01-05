@@ -572,8 +572,6 @@ module.exports = {
         );
     }
 
-    console.log({ adminType: user.admin_type });
-
     if (
       !(
         user.admin_type === "Flight Operator" ||
@@ -583,6 +581,20 @@ module.exports = {
       return res
         .status(400)
         .json(utill.helpers.sendError("Access denied for current admin type"));
+    }
+
+    let checker = await db.dbs.Destinations.findOne({
+      where: { state: destination_name, name_of_airport: name_of_airport },
+    });
+
+    if (checker) {
+      return res
+        .status(400)
+        .json(
+          utill.helpers.sendError(
+            `Destination with state ${destination_name} and airport ${name_of_airport} already created`
+          )
+        );
     }
 
     let data = await db.dbs.Destinations.create({
@@ -610,6 +622,16 @@ module.exports = {
       );
   },
 
+  allDestinations: async (
+    req: any,
+    res: Response,
+    next: NextFunction
+  ): Promise<Response> => {
+    let destinations = await db.dbs.Destinations.findAll();
+
+    return res.status(200).json({ destinations });
+  },
+
   allShipmentRoutes: async (
     req: any,
     res: Response,
@@ -634,7 +656,7 @@ module.exports = {
     const offset = page * pageSize;
     const limit = pageSize;
 
-    let destinations = await db.dbs.ShipmentRoutes.findAndCountAll({
+    let destinations = await db.dbs.Destinations.findAndCountAll({
       offset: offset,
       limit: limit,
       order: [["id", "DESC"]],
@@ -974,7 +996,11 @@ module.exports = {
     const loginSchema = utill.Joi.object()
       .keys({
         user_id: utill.Joi.string().required(),
-        note: utill.Joi.string().required(),
+        directors_note: utill.Joi.string().required(),
+        director_id: utill.Joi.string().required(),
+        business_compliance_note: utill.Joi.string().required(),
+        getStarted_note: utill.Joi.string().required(),
+        about_note: utill.Joi.string().required(),
       })
       .unknown();
 
@@ -987,7 +1013,14 @@ module.exports = {
       return res.status(400).json(utill.helpers.sendError(errorMessage));
     }
 
-    const { user_id, note } = req.body;
+    const {
+      user_id,
+      about_note,
+      directors_note,
+      director_id,
+      business_compliance_note,
+      getStarted_note,
+    } = req.body;
 
     let user = await db.dbs.Users.findOne({ where: { uuid: user_id } });
 
@@ -995,10 +1028,30 @@ module.exports = {
       return res.status(400).json(utill.helpers.sendError("User not found"));
     }
 
-    user.notes = note;
+    let business = await db.dbs.BusinessCompliance.findOne({
+      where: { user_id: user.uuid },
+    });
+
+    if (business) {
+      business.notes = business_compliance_note;
+      business.getStarted = getStarted_note;
+      await business.save();
+    }
+    let director = await db.dbs.Directors.findOne({
+      where: { uuid: director_id },
+    });
+
+    if (director) {
+      director.notes = directors_note;
+      await director.save();
+    }
+
+    user.notes = about_note;
     await user.save();
 
-    return res.status(200).json(utill.helpers.sendSuccess("User updated successfully"))
+    return res
+      .status(200)
+      .json(utill.helpers.sendSuccess("User updated successfully"));
   },
   allRoutes: async (
     req: any,
@@ -2787,7 +2840,7 @@ with note ${note}`,
         .json(utill.helpers.sendError("No user with this email found"));
     }
 
-    let business = await db.dbs.BusinessCompliance.findaAll({
+    let business = await db.dbs.BusinessCompliance.findAll({
       where: { user_id: user.uuid },
     });
     let director = await db.dbs.Directors.findAll({

@@ -20,6 +20,7 @@ var Directors = (sequelize: any, type: any) => {
     address: Sequelize.STRING,
     country: Sequelize.STRING,
     mobile_number: Sequelize.STRING,
+    notes: Sequelize.TEXT,
   });
 };
 
