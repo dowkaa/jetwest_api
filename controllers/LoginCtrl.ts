@@ -114,6 +114,14 @@ module.exports = {
         }
       }
 
+      if (user.verification_status === "declined") {
+        return res.status(400).json({
+          status: "ERROR",
+          code: "01",
+          message: "Your account has been declined, kindly contact support",
+        });
+      }
+
       const opt = {
         name: `${user.first_name} ${user.last_name}`,
         email: user.email,

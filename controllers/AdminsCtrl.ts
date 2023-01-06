@@ -834,11 +834,8 @@ module.exports = {
         dailyExchangeRate: utill.Joi.number().required(),
         value: utill.Joi.number().required(),
         tax: utill.Joi.string().required(),
-        interest: utill.Joi.number().required(),
+        insurance: utill.Joi.number().required(),
         surcharge: utill.Joi.number().required(),
-        groundHandler: utill.Joi.string().required(),
-        email: utill.Joi.string().required(),
-        phone_number: utill.Joi.string().required(),
       })
       .unknown();
 
@@ -882,10 +879,7 @@ module.exports = {
       dailyExchangeRate,
       value,
       tax,
-      groundHandler,
-      email,
-      phone_number,
-      interest,
+      insurance,
       surcharge,
     } = req.body;
 
@@ -905,10 +899,7 @@ module.exports = {
     route.departure = departure;
     route.dailyExchangeRate = dailyExchangeRate;
     route.value = value;
-    route.interest = interest;
-    route.groundHandler = groundHandler;
-    route.email = email;
-    route.phone_number = phone_number;
+    route.insurance = insurance;
     route.destination_name = destination;
     await route.save();
     // });
