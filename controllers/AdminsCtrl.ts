@@ -833,7 +833,7 @@ module.exports = {
         dollarPerKg: utill.Joi.number().required(),
         dailyExchangeRate: utill.Joi.number().required(),
         value: utill.Joi.number().required(),
-        tax: utill.Joi.string().required(),
+        tax: utill.Joi.number().required(),
         insurance: utill.Joi.number().required(),
         surcharge: utill.Joi.number().required(),
       })
