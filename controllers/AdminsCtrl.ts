@@ -304,6 +304,16 @@ module.exports = {
         );
     }
 
+    let data = await db.dbs.Destinations.findOne({
+      where: { state: departure_station },
+    });
+
+    if (!data) {
+      return res
+        .status(400)
+        .json(utill.helpers.sendError("Destination does not exist"));
+    }
+
     await db.dbs.ScheduleFlights.create({
       uuid: utill.uuid(),
       user_id: req.user.registrationId,
@@ -317,6 +327,9 @@ module.exports = {
       arrival_date,
       departure_date,
       destination_station,
+      groundHandler: data.groundHandler,
+      email: data.email,
+      phone_number: data.phone_number,
     });
 
     await db.dbs.AuditLogs.create({

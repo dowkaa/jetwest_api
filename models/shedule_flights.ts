@@ -20,6 +20,9 @@ var ScheduleFlights = (sequelize: any, type: any) => {
     stoa: Sequelize.STRING,
     status: Sequelize.STRING,
     duration: Sequelize.STRING,
+    groundHandler: Sequelize.STRING,
+    email: Sequelize.STRING,
+    phone_number: Sequelize.STRING,
   });
 };
 
