@@ -20,4 +20,22 @@ routere.post(
   TransactionsCtrl.initializeTransaction
 );
 
+routere.post(
+  "/validate-payment",
+  [jwtMiddleWaree, signature],
+  TransactionsCtrl.paystackPayment
+);
+
+routere.get(
+  "/initialize-payment",
+  [jwtMiddleWaree, signature],
+  TransactionsCtrl.initializeTransaction
+);
+
+routere.get(
+  "/all-transactions",
+  [jwtMiddleWaree, signature],
+  TransactionsCtrl.allTransactions
+);
+
 module.exports = routere;

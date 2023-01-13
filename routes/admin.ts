@@ -102,6 +102,8 @@ router.post(
   AdminCtrl.updateAdmin
 );
 
+router.get("/all-unpaginated-aircrafts", AdminCtrl.unpaginatedAircrafts);
+
 // schedule flights
 
 router.post(
@@ -307,5 +309,18 @@ router.get(
   "/single-route",
   [jwtMiddleWare, signatureSigner],
   AdminCtrl.singleRoute
+);
+
+// update flight
+router.post(
+  "/update-atd",
+  [jwtMiddleWare, signatureSigner],
+  AdminCtrl.updateATD
+);
+
+router.post(
+  "/update-blockTime",
+  [jwtMiddleWare, signatureSigner],
+  AdminCtrl.updateBlockTime
 );
 module.exports = router;

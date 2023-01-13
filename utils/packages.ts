@@ -34,6 +34,8 @@ exports.jwt_decode = require("jwt-decode");
 // cron jobs
 exports.firstMail = require("../Queues/first_mail");
 exports.secondMail = require("../Queues/second_mail");
+exports.scheduleItem = require("../Queues/schedule_item");
+exports.updateScheduled = require("../Queues/update_scheduled_flight");
 exports.initialize = require("../Queues/initialize");
 
 // Controller directories

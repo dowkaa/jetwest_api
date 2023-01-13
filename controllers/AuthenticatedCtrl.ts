@@ -449,14 +449,6 @@ module.exports = {
       shipment_num = util.helpers.generateReftId(10);
     }
 
-    let route = await db.dbs.ShipmentRoutes.findOne({
-      where: { route: routes },
-    });
-
-    if (!route) {
-      return res.status(400).json(util.helpers.sendError("Route not found"));
-    }
-
     for (const item of items) {
       let price;
       const {
@@ -475,6 +467,49 @@ module.exports = {
         content,
       } = item;
 
+      let v = await db.dbs.ScheduleFlights.findOne({
+        departure_station: pickup_location,
+        destination_station: destination,
+      });
+
+      let route = await db.dbs.ShipmentRoutes.findOne({
+        where: { route: routes },
+      });
+
+      if (!route) {
+        return res.status(400).json(util.helpers.sendError("Route not found"));
+      }
+
+      if (v.status !== "pending") {
+        return res
+          .status(400)
+          .json(util.helpers.sendError("Flight not available"));
+      }
+
+      if (!v) {
+        return res
+          .status(400)
+          .json(
+            util.helpers.sendError(
+              "flight with pick up and destination stations not available"
+            )
+          );
+      }
+
+      let cargo = await db.dbs.Cargo.findOne({
+        where: { flight_reg: v.flight_reg },
+      });
+
+      if (!cargo) {
+        return res
+          .status(400)
+          .json(
+            util.helpers.sendError(
+              `Aircraft with flight registration number ${v.flight_reg} not found`
+            )
+          );
+      }
+
       let chargeable_weight;
       let volumetric_weight =
         (parseInt(width) * parseInt(height) * parseInt(length)) / 5000;
@@ -484,64 +519,51 @@ module.exports = {
           ? volumetric_weight
           : parseInt(weight);
 
-      if (promo_code) {
-        let checkPromo = await util.helpers.checkPromo(promo_code);
-
-        if (checkPromo.message != "Promo is currently ongoing") {
-          return res
-            .status(400)
-            .json(util.helpers.sendError(checkPromo.message));
-        }
-
-        let discount = checkPromo.checker.percentage;
-
-        if (category === "fragile") {
-          price =
-            chargeable_weight *
-            (chargeable_weight * 0.3) *
-            route.ratePerKg *
-            (parseInt(discount) / 100);
-        } else {
-          price =
-            chargeable_weight * route.ratePerKg * (parseInt(discount) / 100);
-        }
+      if (category === "fragile") {
+        price = chargeable_weight * parseFloat(route.ratePerKg);
+        let price1 = price * parseFloat(route.sur_charge);
+        let price2 = price * parseFloat(route.tax);
+        let price3 = price * parseFloat(route.insurance);
+        let totalPrice = price + price1 + price2 + price3;
+        price = totalPrice;
       } else {
-        if (category === "fragile") {
-          price =
-            chargeable_weight * (chargeable_weight * 0.3) * route.ratePerKg;
-        } else {
-          price = chargeable_weight * route.ratePerKg;
-        }
+        price = chargeable_weight * parseFloat(route.ratePerKg);
+        let price1 = price * parseFloat(route.sur_charge);
+        let price2 = price * parseFloat(route.tax);
+        let totalPrice = price + price1 + price2;
+        price = totalPrice;
       }
 
-      // let reference = util.helpers.generateReftId(10);
-
       if (parseInt(weight) > volumetric_weight) {
-        // if (parseFloat(cargo.available_capacity) - parseFloat(weight) < 0) {
-        //   return res
-        //     .status(400)
-        //     .json(
-        //       util.helpers.sendError(
-        //         "Cannot book shipment cargo capacity not enough"
-        //       )
-        //     );
-        // }
-        // cargo.available_capacity =
-        //   parseFloat(cargo.available_capacity) - parseFloat(weight);
-        // await cargo.save();
+        if (parseFloat(v.available_capacity) - parseFloat(weight) < 0) {
+          return res
+            .status(400)
+            .json(
+              util.helpers.sendError(
+                "Cannot book shipment aircraft capacity not enough"
+              )
+            );
+        }
+        v.available_capacity =
+          parseFloat(v.available_capacity) - parseFloat(weight);
+        v.totalAmount = parseFloat(v.totalAmount) + price;
+        v.taw = parseFloat(v.taw) + parseFloat(weight);
+        await v.save();
       } else {
-        // if (parseFloat(cargo.available_capacity) - volumetric_weight < 0) {
-        //   return res
-        //     .status(400)
-        //     .json(
-        //       util.helpers.sendError(
-        //         "Cannot book shipment cargo capacity not enough"
-        //       )
-        //     );
-        // }
-        // cargo.available_capacity =
-        //   parseFloat(cargo.available_capacity) - volumetric_weight;
-        // await cargo.save();
+        if (parseFloat(v.available_capacity) - volumetric_weight < 0) {
+          return res
+            .status(400)
+            .json(
+              util.helpers.sendError(
+                "Cannot book shipment aircraft capacity not enough"
+              )
+            );
+        }
+        v.available_capacity =
+          parseFloat(v.available_capacity) - parseFloat(weight);
+        v.taw = parseFloat(v.taw) + parseFloat(weight);
+        v.totalAmount = parseFloat(v.totalAmount) + price;
+        await v.save();
       }
 
       let status = await db.dbs.ShippingItems.create({
@@ -551,12 +573,13 @@ module.exports = {
         agent_id,
         shipment_num,
         pickup_location,
+        cargo_id: cargo.uuid,
         destination,
         depature_date,
         width,
         height,
-        sur_charge: 10,
-        taxes: 10,
+        sur_charge: route.sur_charge,
+        taxes: route.tax,
         status: "pending",
         shipment_routeId: route.uuid,
         scan_code,
@@ -566,7 +589,9 @@ module.exports = {
         price: price,
         category,
         promo_code: promo_code ? promo_code : null,
-        value,
+        shipperName: req.user.first_name + " " + req.user.last_name,
+        shipperNum: req.user.customer_id,
+        no_of_bags: items.length,
         content,
         reciever_firstname,
         reciever_lastname,

@@ -239,9 +239,9 @@ module.exports = {
         flight_reg: utill.Joi.string().required(),
         arrival_date: utill.Joi.string().required(),
         scheduled_payload: utill.Joi.string().required(),
-        stod: utill.Joi.string().required(),
+        stod_hour: utill.Joi.string().required(),
+        stod_minute: utill.Joi.string().required(),
         stoa: utill.Joi.string().required(),
-        status: utill.Joi.string().required(),
         duration: utill.Joi.string().required(),
       })
       .unknown();
@@ -277,12 +277,23 @@ module.exports = {
         .status(400)
         .json(utill.helpers.sendError("Access denied for current admin type"));
     }
+
+    let date = new Date();
+    let yr = date.getFullYear();
+    let month = date.getMonth();
+    let mm;
+    if (month === 0) {
+      mm = "01";
+    } else {
+      mm = month;
+    }
+    let day = date.getDate();
     const {
       departure_station,
       flight_reg,
-      stod,
+      stod_hour,
+      stod_minute,
       stoa,
-      status,
       duration,
       scheduled_payload,
       arrival_date,
@@ -293,6 +304,16 @@ module.exports = {
     let aircraftChecker = await db.dbs.Cargo.findOne({
       where: { flight_reg: flight_reg },
     });
+
+    if (parseInt(aircraftChecker.payload) < parseInt(scheduled_payload)) {
+      return res
+        .status(400)
+        .json(
+          utill.helpers.sendError(
+            "scheduled payload cannot be greater than aircraft capacity"
+          )
+        );
+    }
 
     if (!aircraftChecker) {
       return res
@@ -305,7 +326,7 @@ module.exports = {
     }
 
     let data = await db.dbs.Destinations.findOne({
-      where: { state: departure_station },
+      where: { state: destination_station },
     });
 
     if (!data) {
@@ -314,16 +335,45 @@ module.exports = {
         .json(utill.helpers.sendError("Destination does not exist"));
     }
 
+    let total =
+      yr +
+      "-" +
+      mm +
+      "-" +
+      day +
+      " " +
+      stod_hour +
+      ":" +
+      stod_minute +
+      ":" +
+      "00";
+
+    let checker = await db.dbs.ScheduleFlights.findOne({
+      departure_station: departure_station,
+      destination_station: destination_station,
+    });
+
+    if (checker) {
+      return res
+        .status(400)
+        .json(
+          utill.helpers.sendError(
+            "Flight with departure station and destination station already exists"
+          )
+        );
+    }
+
     await db.dbs.ScheduleFlights.create({
       uuid: utill.uuid(),
       user_id: req.user.registrationId,
       departure_station,
       flight_reg,
-      stod,
+      stod: total,
       stoa,
-      status,
+      status: "pending",
       duration,
       scheduled_payload,
+      available_capacity: parseFloat(scheduled_payload),
       arrival_date,
       departure_date,
       destination_station,
@@ -344,6 +394,79 @@ module.exports = {
       .json(
         utill.helpers.sendSuccess("You have successfully scheduled a flight")
       );
+  },
+
+  routeEstimate: async (
+    req: any,
+    res: Response,
+    next: NextFunction
+  ): Promise<Response> => {
+    const loginSchema = utill.Joi.object()
+      .keys({
+        route_id: utill.Joi.string().required(),
+        ratePerKg: utill.Joi.number().required(),
+        daily_exchange_rate: utill.Joi.number().required(),
+        tax: utill.Joi.number().required(),
+        insurance: utill.Joi.number().required(),
+        sur_charge: utill.Joi.number().required(),
+      })
+      .unknown();
+
+    const validate = loginSchema.validate(req.body);
+
+    if (validate.error != null) {
+      const errorMessage = validate.error.details
+        .map((i: any) => i.message)
+        .join(".");
+      return res.status(400).json(utill.helpers.sendError(errorMessage));
+    }
+
+    const {
+      route_id,
+      ratePerKg,
+      daily_exchange_rate,
+      tax,
+      insurance,
+      sur_charge,
+    } = req.body;
+
+    let route = await db.dbs.ShipmentRoutes.findOne({
+      where: { uuid: route_id },
+    });
+
+    if (!route) {
+      return res.status(400).json(utill.helpers.sendError("route not found"));
+    }
+
+    route.ratePerKg = ratePerKg;
+    route.sur_charge = sur_charge;
+    route.tax = tax;
+    route.dailyExchangeRate = daily_exchange_rate;
+    route.insurance = insurance;
+
+    await db.dbs.AuditLogs.create({
+      uuid: utill.uuid(),
+      user_id: req.user.uuid,
+      description: `Admin ${req.user.first_name} ${
+        req.user.last_name
+      } updated route with uuid ${route_id} with payload ${JSON.stringify(
+        req.body
+      )}`,
+    });
+
+    return res
+      .status(200)
+      .json(utill.helpers.sendSuccess("Route successfully updated"));
+  },
+
+  unpaginatedAircrafts: async (
+    req: any,
+    res: Response,
+    next: NextFunction
+  ): Promise<Response> => {
+    let aircrafts = await db.dbs.Cargo.findAll();
+
+    return res.status(200).json({ aircrafts });
   },
 
   allScheduledFlights: async (
@@ -516,6 +639,96 @@ module.exports = {
       from: 1,
       to: meta.pageCount, //transactions.count,
     });
+  },
+
+  updateATD: async (
+    req: any,
+    res: Response,
+    next: NextFunction
+  ): Promise<Response> => {
+    const loginSchema = utill.Joi.object()
+      .keys({
+        flight_id: utill.Joi.string().required(),
+        atd: utill.Joi.string().required(),
+      })
+      .unknown();
+
+    const validate = loginSchema.validate(req.body);
+
+    if (validate.error != null) {
+      const errorMessage = validate.error.details
+        .map((i: any) => i.message)
+        .join(".");
+      return res.status(400).json(utill.helpers.sendError(errorMessage));
+    }
+
+    const { flight_id, atd } = req.body;
+
+    let flight = await db.dbs.ScheduleFlights.findOne({
+      where: { uuid: flight_id },
+    });
+
+    if (!flight) {
+      return res.status(400).json(utill.helpers.sendError("Flight not found"));
+    }
+
+    if (flight.status !== "In progress") {
+      return res.status(400).json(utill.helpers.sendError("Not allowed"));
+    }
+
+    flight.atd = atd;
+    flight.status = "Almost completed";
+    await flight.save();
+
+    return res
+      .status(200)
+      .json(utill.helpers.sendSuccess("Flight ATD updated successfully"));
+  },
+
+  updateBlockTime: async (
+    req: any,
+    res: Response,
+    next: NextFunction
+  ): Promise<Response> => {
+    const loginSchema = utill.Joi.object()
+      .keys({
+        flight_id: utill.Joi.string().required(),
+        block_time: utill.Joi.string().required(),
+        tat: utill.Joi.string().required(),
+      })
+      .unknown();
+
+    const validate = loginSchema.validate(req.body);
+
+    if (validate.error != null) {
+      const errorMessage = validate.error.details
+        .map((i: any) => i.message)
+        .join(".");
+      return res.status(400).json(utill.helpers.sendError(errorMessage));
+    }
+
+    const { flight_id, block_time, tat } = req.body;
+
+    let flight = await db.dbs.ScheduleFlights.findOne({
+      where: { uuid: flight_id },
+    });
+
+    if (!flight) {
+      return res.status(400).json(utill.helpers.sendError("Flight not found"));
+    }
+
+    if (flight.status !== "Almost completed") {
+      return res.status(400).json(utill.helpers.sendError("Not allowed"));
+    }
+
+    flight.block_time = block_time;
+    flight.tat = tat;
+    flight.status = "completed";
+    await flight.save();
+
+    return res
+      .status(200)
+      .json(utill.helpers.sendSuccess("Flight successfully completed"));
   },
 
   singleFlight: async (
