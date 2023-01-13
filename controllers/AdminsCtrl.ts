@@ -405,6 +405,126 @@ module.exports = {
       );
   },
 
+  updateScheduledFlight: async (
+    req: any,
+    res: Response,
+    next: NextFunction
+  ): Promise<Response> => {
+    const loginSchema = utill.Joi.object()
+      .keys({
+        flight_id: utill.Joi.string().required(),
+        departure_station: utill.Joi.string().required(), // e.g name of state
+        departure_date: utill.Joi.string().required(),
+        destination_station: utill.Joi.string().required(), // e.g name of state
+        flight_reg: utill.Joi.string().required(),
+        arrival_date: utill.Joi.string().required(),
+        scheduled_payload: utill.Joi.string().required(),
+        stod_hour: utill.Joi.string().required(),
+        stod_minute: utill.Joi.string().required(),
+        stoa: utill.Joi.string().required(),
+        duration: utill.Joi.string().required(),
+      })
+      .unknown();
+
+    const validate = loginSchema.validate(req.body);
+
+    if (validate.error != null) {
+      const errorMessage = validate.error.details
+        .map((i: any) => i.message)
+        .join(".");
+      return res.status(400).json(utill.helpers.sendError(errorMessage));
+    }
+
+    const {
+      flight_id,
+      departure_station,
+      departure_date,
+      destination_station,
+      flight_reg,
+      arrival_date,
+      scheduled_payload,
+      stod_hour,
+      stod_minute,
+      stoa,
+      duration,
+    } = req.body;
+
+    let checker = await db.dbs.ScheduleFlights.findOne({
+      where: { uuid: flight_id },
+    });
+
+    if (!checker) {
+      return res
+        .status(400)
+        .json(utill.helpers.sendError("flight with uuid not found"));
+    }
+
+    if (checker.status !== "pending") {
+      return res
+        .status(400)
+        .json(
+          utill.helpers.sendError(
+            "flight cannot be updated as current flight is in progress"
+          )
+        );
+    }
+
+    let date = new Date();
+    let yr = date.getFullYear();
+    let month = date.getMonth();
+    let mm;
+    if (month === 0) {
+      mm = "01";
+    } else {
+      mm = month;
+    }
+    let day = date.getDate();
+
+    let total =
+      yr +
+      "-" +
+      mm +
+      "-" +
+      day +
+      " " +
+      stod_hour +
+      ":" +
+      stod_minute +
+      ":" +
+      "00";
+
+    checker.departure_station = departure_station;
+    checker.flight_reg = flight_reg;
+    checker.stod = total;
+    checker.stoa = stoa;
+    checker.duration = duration;
+    checker.scheduled_payload = scheduled_payload;
+    checker.available_capacity = parseFloat(scheduled_payload);
+    checker.arrival_date = arrival_date;
+    checker.departure_date = departure_date;
+    checker.destination_station = destination_station;
+    await checker.save();
+
+    await db.dbs.AuditLogs.create({
+      uuid: utill.uuid(),
+      user_id: req.user.uuid,
+      description: `Admin ${req.user.first_name} ${
+        req.user.last_name
+      } updated a flight scheduled for arrival date of ${arrival_date} with data ${JSON.stringify(
+        req.body
+      )}
+`,
+    });
+
+    return res
+      .status(200)
+      .json(
+        utill.helpers.sendSuccess(
+          "You have successfully updated a scheduled flight"
+        )
+      );
+  },
+
   routeEstimate: async (
     req: any,
     res: Response,

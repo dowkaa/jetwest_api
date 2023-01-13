@@ -112,6 +112,8 @@ router.post(
   AdminCtrl.scheduleFlights
 );
 
+router.post("/update-scheduled-flight", [jwtMiddleWare, signatureSigner], AdminCtrl.updateScheduledFlight)
+
 router.get(
   "/all-scheduled-flights",
   [jwtMiddleWare, signatureSigner],
