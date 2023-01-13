@@ -66,6 +66,7 @@ dbs.Directors = require("../models/directors")(sequelize, Sequelizes);
 dbs.Transactions = require("../models/transactions")(sequelize, Sequelizes);
 dbs.Cargo = require("../models/cargo")(sequelize, Sequelizes);
 dbs.ContactUs = require("../models/contactUs")(sequelize, Sequelizes);
+dbs.LoadedBags = require("../models/loaded_bags")(sequelize, Sequelizes);
 dbs.Mailing = require("../models/mailing")(sequelize, Sequelizes);
 dbs.ShippingAgent = require("../models/shipping_agent")(sequelize, Sequelizes);
 dbs.ScheduleFlights = require("../models/shedule_flights")(

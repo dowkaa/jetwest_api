@@ -352,11 +352,13 @@ module.exports = {
       ":" +
       "00";
 
-    let checker = await db.dbs.ScheduleFlights.findOne({where: {
-      departure_station: departure_station,
-      destination_station: destination_station,
-      // stod: total,
-    }});
+    let checker = await db.dbs.ScheduleFlights.findOne({
+      where: {
+        departure_station: departure_station,
+        destination_station: destination_station,
+        // stod: total,
+      },
+    });
 
     if (checker) {
       return res
@@ -3617,12 +3619,44 @@ with note ${note}`,
       if (status) {
         status.progress = "loaded";
         await status.save();
+
+        await db.dbs.LoadedBags.create({
+          uuid: utill.uuid(),
+          flight_reg: allLogistics[0].flight_reg,
+          shipping_items_uuid: allLogistics[0].shipping_items_uuid,
+          schedule_flights_uuid: allLogistics[0].schedule_flights_uuid,
+          departure_date: allLogistics[0].departure_date,
+          takeoff_airport: allLogistics[0].takeoff_airport,
+          shipperName: allLogistics[0].shipperName,
+          destination_airport: allLogistics[0].destination_airport,
+          departure_station: allLogistics[0].departure_station,
+          destination_station: allLogistics[0].destination_station,
+          status: allLogistics[0].status,
+          stoa: allLogistics[0].stoa,
+          stod: allLogistics[0].stod,
+          taw: allLogistics[0].taw,
+          no_of_bags: allLogistics[0].no_of_bags,
+          shipping_items_createdAt: new Date(
+            allLogistics[0].shipping_items_createdAt
+          )
+            .toISOString()
+            .split("T")
+            .toString()
+            .replace("000Z", ""),
+          schedule_flights_createdAt: new Date(
+            allLogistics[0].schedule_flights_createdAt
+          )
+            .toISOString()
+            .split("T")
+            .toString()
+            .replace("000Z", ""),
+        });
       }
       return res
         .status(200)
         .json(
           utill.helpers.sendSuccess(
-            `Allowed to load into aircraft with flight number ${allLogistics.flight_reg}`
+            `Allowed to load into aircraft with flight number ${allLogistics[0].flight_reg}`
           )
         );
     }
