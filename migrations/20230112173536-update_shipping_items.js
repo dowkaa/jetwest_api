@@ -12,6 +12,11 @@ module.exports = {
         type: Sequelize.STRING,
       }),
       queryInterface.addColumn("shipping_items", "no_of_bags", {
+        allowNull: false,
+        defaultValue: 0,
+        type: Sequelize.INTEGER,
+      }),
+      queryInterface.addColumn("shipping_items", "flight_id", {
         allowNull: true,
         type: Sequelize.STRING,
       }),

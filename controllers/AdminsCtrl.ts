@@ -329,6 +329,10 @@ module.exports = {
       where: { state: destination_station },
     });
 
+    let takeOff = await db.dbs.Destinations.findOne({
+      where: { state: departure_station },
+    });
+
     if (!data) {
       return res
         .status(400)
@@ -348,10 +352,11 @@ module.exports = {
       ":" +
       "00";
 
-    let checker = await db.dbs.ScheduleFlights.findOne({
+    let checker = await db.dbs.ScheduleFlights.findOne({where: {
       departure_station: departure_station,
       destination_station: destination_station,
-    });
+      // stod: total,
+    }});
 
     if (checker) {
       return res
@@ -368,6 +373,8 @@ module.exports = {
       user_id: req.user.registrationId,
       departure_station,
       flight_reg,
+      takeoff_airport: takeOff.name_of_airport,
+      destination_airport: data.name_of_airport,
       stod: total,
       stoa,
       status: "pending",
@@ -3298,5 +3305,330 @@ with note ${note}`,
       from: 1,
       to: meta.pageCount, //transactions.count,
     });
+  },
+
+  allOutgoingLogistics: async (
+    req: any,
+    res: Response,
+    next: NextFunction
+  ): Promise<Response> => {
+    let { pageNum, airport } = req.query;
+
+    if (!pageNum || isNaN(pageNum)) {
+      return res
+        .status(400)
+        .json(utill.helpers.sendError("Kindly add a valid page number"));
+    }
+
+    var currentPage = parseInt(pageNum) ? parseInt(pageNum) : 1;
+
+    var pageSize = 25;
+    var page = currentPage - 1;
+    const offset = page * pageSize;
+    const limit = pageSize;
+
+    var next_page = currentPage + 1; // SELECT *, IF(block_height-block > block_height, 0, block_height-block+1) confs_calc, IF(IF(block_height-block > block_height, 0, block_height-block+1) - min_conf >= 0, true, false) available FROM utxo LEFT JOIN bitcoin_confs ON 1 LIMIT 3 OFFSET 3
+    var prev_page;
+    if (currentPage === 1) {
+      prev_page = 1;
+    } else {
+      prev_page = currentPage - 1;
+    }
+    var nextP =
+      "/api/jetwest/admin/all_outgoing_logistics?pageNum=" + next_page;
+    var prevP =
+      "/api/jetwest/admin/all_outgoing_logistics?pageNum=" + prev_page;
+
+    let allLogistics: any = [];
+
+    var completed = await db.dbs.sequelize
+      .query(
+        "SELECT schedule_flights.id, schedule_flights.flight_reg, shipping_items.status, shipping_items.createdAt AS shipping_items_createdAt, shipping_items.uuid AS shipping_items_uuid, schedule_flights.createdAt as schedule_flights_createdAt, schedule_flights.uuid AS schedule_flights_uuid, schedule_flights.departure_date, schedule_flights.destination_airport, schedule_flights.takeoff_airport, schedule_flights.departure_station, schedule_flights.destination_station,schedule_flights.stoa, schedule_flights.stod, schedule_flights.taw, shipping_items.no_of_bags FROM `schedule_flights`, shipping_items WHERE shipping_items.flight_id = schedule_flights.uuid AND schedule_flights.takeoff_airport=:airport  ORDER BY `schedule_flights`.`createdAt` DESC limit :limit offset :offset;",
+        {
+          replacements: {
+            limit: limit,
+            offset: offset,
+            airport: airport,
+          },
+          type: QueryTypes.SELECT,
+        }
+      )
+      .then((objs: any) => {
+        objs.forEach((obj: any) => {
+          var id = obj.id;
+          var flight_reg = obj.flight_reg;
+          var shipping_items_uuid = obj.shipping_items_uuid;
+          var schedule_flights_uuid = obj.schedule_flights_uuid;
+          var departure_date = obj.departure_date;
+          var destination_airport = obj.destination_airport;
+          var takeoff_airport = obj.takeoff_airport;
+          var departure_station = obj.departure_station;
+          var destination_station = obj.destination_station;
+          var stoa = obj.stoa;
+          var stod = obj.stod;
+          var taw = obj.taw;
+          var no_of_bags = obj.no_of_bags;
+          var status = obj.status;
+          var shipping_items_createdAt = obj.shipping_items_createdAt;
+          var schedule_flights_createdAt = obj.schedule_flights_createdAt;
+
+          allLogistics.push({
+            id,
+            flight_reg,
+            shipping_items_uuid,
+            schedule_flights_uuid,
+            departure_date,
+            departure_station,
+            destination_station,
+            takeoff_airport,
+            destination_airport,
+            no_of_bags,
+            status,
+            stoa,
+            stod,
+            taw,
+            shipping_items_createdAt,
+            schedule_flights_createdAt,
+          });
+        });
+      });
+
+    const meta = paginate(
+      currentPage,
+      allLogistics.length,
+      allLogistics,
+      pageSize
+    );
+
+    return res.status(200).json({
+      status: "SUCCESS",
+      data: allLogistics,
+      per_page: pageSize,
+      current_page: currentPage,
+      last_page: meta.pageCount, //transactions.count,
+      first_page_url: `/api/jetwest/admin/all_incoming_logistics?pageNum=1`,
+      last_page_url:
+        "/api/jetwest/transactions/all_outgoing_logistics?pageNum=" +
+        meta.pageCount, //transactions.count,
+      next_page_url: nextP,
+      prev_page_url: prevP,
+      path: "/api/jetwest/admin/all_outgoing_logistics?pageNum=" + pageNum,
+      from: 1,
+      to: meta.pageCount, //transactions.count,
+    });
+  },
+
+  allIncomingLogistics: async (
+    req: any,
+    res: Response,
+    next: NextFunction
+  ): Promise<Response> => {
+    let { pageNum, airport } = req.query;
+
+    if (!pageNum || isNaN(pageNum)) {
+      return res
+        .status(400)
+        .json(utill.helpers.sendError("Kindly add a valid page number"));
+    }
+
+    var currentPage = parseInt(pageNum) ? parseInt(pageNum) : 1;
+
+    var pageSize = 25;
+    var page = currentPage - 1;
+    const offset = page * pageSize;
+    const limit = pageSize;
+
+    var next_page = currentPage + 1; // SELECT *, IF(block_height-block > block_height, 0, block_height-block+1) confs_calc, IF(IF(block_height-block > block_height, 0, block_height-block+1) - min_conf >= 0, true, false) available FROM utxo LEFT JOIN bitcoin_confs ON 1 LIMIT 3 OFFSET 3
+    var prev_page;
+    if (currentPage === 1) {
+      prev_page = 1;
+    } else {
+      prev_page = currentPage - 1;
+    }
+    var nextP =
+      "/api/jetwest/admin/all_incoming_logistics?pageNum=" + next_page;
+    var prevP =
+      "/api/jetwest/admin/all_incoming_logistics?pageNum=" + prev_page;
+
+    let allLogistics: any = [];
+
+    var completed = await db.dbs.sequelize
+      .query(
+        "SELECT schedule_flights.id, schedule_flights.flight_reg, shipping_items.status, shipping_items.createdAt AS shipping_items_createdAt, shipping_items.uuid AS shipping_items_uuid, schedule_flights.createdAt as schedule_flights_createdAt, schedule_flights.uuid AS schedule_flights_uuid, schedule_flights.departure_date, schedule_flights.destination_airport, schedule_flights.takeoff_airport, schedule_flights.departure_station, schedule_flights.destination_station,schedule_flights.stoa, schedule_flights.stod, schedule_flights.taw, shipping_items.no_of_bags FROM `schedule_flights`, shipping_items WHERE shipping_items.flight_id = schedule_flights.uuid AND schedule_flights.destination_airport=:airport  ORDER BY `schedule_flights`.`createdAt` DESC limit :limit offset :offset;",
+        {
+          replacements: {
+            limit: limit,
+            offset: offset,
+            airport: airport,
+          },
+          type: QueryTypes.SELECT,
+        }
+      )
+      .then((objs: any) => {
+        objs.forEach((obj: any) => {
+          var id = obj.id;
+          var flight_reg = obj.flight_reg;
+          var destination_airport = obj.destination_airport;
+          var takeoff_airport = obj.takeoff_airport;
+          var shipping_items_uuid = obj.shipping_items_uuid;
+          var schedule_flights_uuid = obj.schedule_flights_uuid;
+          var departure_date = obj.departure_date;
+          var departure_station = obj.departure_station;
+          var destination_station = obj.destination_station;
+          var stoa = obj.stoa;
+          var stod = obj.stod;
+          var taw = obj.taw;
+          var no_of_bags = obj.no_of_bags;
+          var status = obj.status;
+          var shipping_items_createdAt = obj.shipping_items_createdAt;
+          var schedule_flights_createdAt = obj.schedule_flights_createdAt;
+
+          allLogistics.push({
+            id,
+            flight_reg,
+            shipping_items_uuid,
+            schedule_flights_uuid,
+            departure_date,
+            takeoff_airport,
+            destination_airport,
+            departure_station,
+            destination_station,
+            status,
+            stoa,
+            stod,
+            taw,
+            no_of_bags,
+            shipping_items_createdAt,
+            schedule_flights_createdAt,
+          });
+        });
+      });
+
+    const meta = paginate(
+      currentPage,
+      allLogistics.length,
+      allLogistics,
+      pageSize
+    );
+
+    return res.status(200).json({
+      status: "SUCCESS",
+      data: allLogistics,
+      per_page: pageSize,
+      current_page: currentPage,
+      last_page: meta.pageCount, //transactions.count,
+      first_page_url: `/api/jetwest/admin/all_incoming_logistics?pageNum=1`,
+      last_page_url:
+        "/api/jetwest/transactions/all_incoming_logistics?pageNum=" +
+        meta.pageCount, //transactions.count,
+      next_page_url: nextP,
+      prev_page_url: prevP,
+      path: "/api/jetwest/admin/all_incoming_logistics?pageNum=" + pageNum,
+      from: 1,
+      to: meta.pageCount, //transactions.count,
+    });
+  },
+
+  scanBaggage: async (req: any, res: Response, next: NextFunction) => {
+    let { refId, flight_id } = req.query;
+
+    if (!(refId && flight_id)) {
+      return res
+        .status(400)
+        .json(utill.helpers.sendError("Enter a valid reference id"));
+    }
+
+    let status = await db.dbs.ShippingItems.findOne({
+      where: {
+        booking_reference: refId,
+      },
+    });
+
+    if (!status) {
+      return res
+        .status(400)
+        .json(utill.helpers.sendError("Shipment not found"));
+    }
+
+    let v = await db.dbs.ScheduleFlights.findOne({
+      uuid: status.flight_id,
+    });
+
+    if (!v) {
+      return res.status(400).json(utill.helpers.sendError("flight not found"));
+    }
+
+    let allLogistics: any = [];
+
+    var completed = await db.dbs.sequelize
+      .query(
+        "SELECT schedule_flights.id, schedule_flights.flight_reg, shipping_items.status, shipping_items.createdAt AS shipping_items_createdAt, shipping_items.uuid AS shipping_items_uuid, schedule_flights.createdAt as schedule_flights_createdAt, schedule_flights.uuid AS schedule_flights_uuid, schedule_flights.departure_date, shipping_items.shipperName, schedule_flights.destination_airport, schedule_flights.takeoff_airport, schedule_flights.departure_station, schedule_flights.destination_station,schedule_flights.stoa, schedule_flights.stod, schedule_flights.taw, shipping_items.no_of_bags FROM `schedule_flights`, shipping_items WHERE schedule_flights.uuid=:uuid AND shipping_items.booking_reference=:shipment_ref;",
+        {
+          replacements: {
+            uuid: flight_id,
+            shipment_ref: refId,
+          },
+          type: QueryTypes.SELECT,
+        }
+      )
+      .then((objs: any) => {
+        objs.forEach((obj: any) => {
+          var id = obj.id;
+          var flight_reg = obj.flight_reg;
+          var destination_airport = obj.destination_airport;
+          var takeoff_airport = obj.takeoff_airport;
+          var shipperName = obj.shipperName;
+          var shipping_items_uuid = obj.shipping_items_uuid;
+          var schedule_flights_uuid = obj.schedule_flights_uuid;
+          var departure_date = obj.departure_date;
+          var departure_station = obj.departure_station;
+          var destination_station = obj.destination_station;
+          var stoa = obj.stoa;
+          var stod = obj.stod;
+          var taw = obj.taw;
+          var no_of_bags = obj.no_of_bags;
+          var status = obj.status;
+          var shipping_items_createdAt = obj.shipping_items_createdAt;
+          var schedule_flights_createdAt = obj.schedule_flights_createdAt;
+
+          allLogistics.push({
+            id,
+            flight_reg,
+            shipping_items_uuid,
+            schedule_flights_uuid,
+            departure_date,
+            takeoff_airport,
+            shipperName,
+            destination_airport,
+            departure_station,
+            destination_station,
+            status,
+            stoa,
+            stod,
+            taw,
+            no_of_bags,
+            shipping_items_createdAt,
+            schedule_flights_createdAt,
+          });
+        });
+      });
+
+    if (allLogistics.length > 0) {
+      if (status) {
+        status.progress = "loaded";
+        await status.save();
+      }
+      return res
+        .status(200)
+        .json(
+          utill.helpers.sendSuccess(
+            `Allowed to load into aircraft with flight number ${allLogistics.flight_reg}`
+          )
+        );
+    }
+
+    return res
+      .status(200)
+      .json({ message: "Baggage not found on flight", flight_data: v });
   },
 };

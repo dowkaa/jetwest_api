@@ -323,4 +323,23 @@ router.post(
   [jwtMiddleWare, signatureSigner],
   AdminCtrl.updateBlockTime
 );
+
+// logistics
+router.get(
+  "/all-outgoing-logistics",
+  [jwtMiddleWare, signatureSigner],
+  AdminCtrl.allOutgoingLogistics
+);
+
+router.get(
+  "/all_incoming_logistics",
+  [jwtMiddleWare, signatureSigner],
+  AdminCtrl.allIncomingLogistics
+);
+
+router.get(
+  "/scan-bag",
+  [jwtMiddleWare, signatureSigner],
+  AdminCtrl.scanBaggage
+);
 module.exports = router;

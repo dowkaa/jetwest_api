@@ -378,7 +378,6 @@ module.exports = {
         reciver_mobile: util.Joi.string().required(),
         reciever_primaryMobile: util.Joi.string().required(),
         reciever_secMobile: util.Joi.string().required(),
-        routes: util.Joi.string().required(),
       })
       .unknown();
 
@@ -387,7 +386,7 @@ module.exports = {
     if (validate1.error != null) {
       const errorMessage = validate1.error.details
         .map((i: any) => i.message)
-        .Join(".");
+        .join(".");
       return res.status(400).json(util.helpers.sendError(errorMessage));
     }
 
@@ -429,7 +428,6 @@ module.exports = {
       reciver_mobile,
       reciever_primaryMobile,
       reciever_secMobile,
-      routes,
     } = req.body;
 
     let checker = await db.dbs.Users.findOne({ where: { uuid: agent_id } });
@@ -473,7 +471,7 @@ module.exports = {
       });
 
       let route = await db.dbs.ShipmentRoutes.findOne({
-        where: { route: routes },
+        where: { destination_name: destination },
       });
 
       if (!route) {
@@ -568,6 +566,7 @@ module.exports = {
 
       let status = await db.dbs.ShippingItems.create({
         uuid: util.uuid(),
+        flight_id: v.uuid,
         type,
         user_id: req.user.uuid,
         agent_id,
