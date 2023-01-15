@@ -446,4 +446,56 @@ module.exports = {
 
     return "invalid";
   },
+
+  allPendingShipments: async (
+    req: Request,
+    res: Response,
+    next: NextFunction
+  ) => {
+    let checker = await db.dbs.ScheduleFlights.findAll({
+      where: { status: "pending" },
+    });
+
+    return res.status(200).json({ data: checker });
+  },
+
+  checkFlightAvailability: async (
+    req: any,
+    res: Response,
+    next: NextFunction
+  ) => {
+    const { pickup_location, destination, stod, total_weight } = req.query;
+
+    console.log({ req: req.body });
+
+    let v = await db.dbs.ScheduleFlights.findOne({
+      where: {
+        departure_station: pickup_location,
+        destination_station: destination,
+        stod: stod,
+      },
+    });
+
+    if (!v) {
+      return res
+        .status(400)
+        .json(
+          utilz.helpers.sendError(
+            "Flight for destination and time not available"
+          )
+        );
+    }
+
+    if (v.available_capacity < parseInt(total_weight)) {
+      return res
+        .status(400)
+        .json(
+          utilz.helpers.sendError(
+            "Flight not availbale to carry total weight, kindly book another flight or contact customer support"
+          )
+        );
+    }
+
+    return res.status(200).json(utilz.helpers.sendSuccess("Flight available"));
+  },
 };

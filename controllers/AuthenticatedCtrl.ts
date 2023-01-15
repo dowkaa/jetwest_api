@@ -2,6 +2,7 @@ import { Request, Response, NextFunction } from "express";
 const util = require("../utils/packages");
 const { Op } = require("sequelize");
 import { Query } from "express-serve-static-core";
+import { stdout } from "process";
 const db = require("../database/mysql");
 const { paginate } = require("paginate-info");
 
@@ -371,6 +372,10 @@ module.exports = {
     const itemSchema = util.Joi.object()
       .keys({
         items: util.Joi.array().required(),
+        pickup_location: util.Joi.string().required(),
+        destination: util.Joi.string().required(),
+        total_weight: util.Joi.number().required(),
+        stod: util.Joi.string().required(),
         agent_id: util.Joi.string().allow(""),
         reciever_firstname: util.Joi.string().required(),
         reciever_lastname: util.Joi.string().required(),
@@ -393,10 +398,8 @@ module.exports = {
     const bookingSchema = util.Joi.object()
       .keys({
         type: util.Joi.string().required(),
-        pickup_location: util.Joi.string().required(),
         depature_date: util.Joi.string().required(),
         shipment_ref: util.Joi.string().required(),
-        destination: util.Joi.string().required(),
         width: util.Joi.number().required(),
         length: util.Joi.number().required(),
         weight: util.Joi.number().required(),
@@ -421,6 +424,10 @@ module.exports = {
 
     const {
       items,
+      pickup_location,
+      destination,
+      stod,
+      total_weight,
       agent_id,
       reciever_email,
       reciever_firstname,
@@ -447,12 +454,45 @@ module.exports = {
       shipment_num = util.helpers.generateReftId(10);
     }
 
+    let v = await db.dbs.ScheduleFlights.findOne({
+      where: {
+        departure_station: pickup_location,
+        destination_station: destination,
+        stod: stod,
+      },
+    });
+
+    if (!v) {
+      return res
+        .status(400)
+        .json(
+          util.helpers.sendError(
+            "Flight not available, kindly check up other flights with other stod, or reduce the number of items to be shipped for this flight"
+          )
+        );
+      // if no available flight then save the data to a table for pending luggage and sent mail to admin that will
+    }
+
+    if (v.available_capacity < parseInt(total_weight)) {
+      return res
+        .status(400)
+        .json(
+          util.helpers.sendError(
+            "Flight not availbale to carry total weight, kindly book another flight or contact customer support"
+          )
+        );
+    }
+
+    if (v.status !== "pending") {
+      return res
+        .status(400)
+        .json(util.helpers.sendError("Flight not available"));
+    }
+
     for (const item of items) {
       let price;
       const {
         type,
-        pickup_location,
-        destination,
         width,
         height,
         weight,
@@ -465,33 +505,12 @@ module.exports = {
         content,
       } = item;
 
-      let v = await db.dbs.ScheduleFlights.findOne({
-        departure_station: pickup_location,
-        destination_station: destination,
-      });
-
       let route = await db.dbs.ShipmentRoutes.findOne({
         where: { destination_name: destination },
       });
 
       if (!route) {
         return res.status(400).json(util.helpers.sendError("Route not found"));
-      }
-
-      if (v.status !== "pending") {
-        return res
-          .status(400)
-          .json(util.helpers.sendError("Flight not available"));
-      }
-
-      if (!v) {
-        return res
-          .status(400)
-          .json(
-            util.helpers.sendError(
-              "flight with pick up and destination stations not available"
-            )
-          );
       }
 
       let cargo = await db.dbs.Cargo.findOne({
@@ -521,7 +540,7 @@ module.exports = {
         price = chargeable_weight * parseFloat(route.ratePerKg);
         let price1 = price * parseFloat(route.sur_charge);
         let price2 = price * parseFloat(route.tax);
-        let price3 = price * parseFloat(route.insurance);
+        let price3 = value * parseFloat(route.insurance);
         let totalPrice = price + price1 + price2 + price3;
         price = totalPrice;
       } else {
@@ -571,6 +590,7 @@ module.exports = {
         user_id: req.user.uuid,
         agent_id,
         shipment_num,
+        value,
         pickup_location,
         cargo_id: cargo.uuid,
         destination,

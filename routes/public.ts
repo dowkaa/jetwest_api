@@ -41,6 +41,10 @@ router.get("/routes", HomeCtrl.shipmentRoutes);
 // get in touch
 router.post("/get-in-touch", HomeCtrl.getInTouch);
 
+router.get("/all-pending-flights", HomeCtrl.allPendingShipments);
+
+router.get("/check-flight-availability", HomeCtrl.checkFlightAvailability);
+
 // delete unit test account after successful test
 router.get("/delete-test", Register.deleteAccounts);
 router.get("/update-account", Register.updateAccount);

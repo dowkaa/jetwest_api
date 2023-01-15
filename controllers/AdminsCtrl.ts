@@ -356,7 +356,9 @@ module.exports = {
       where: {
         departure_station: departure_station,
         destination_station: destination_station,
-        // stod: total,
+        stod: {
+          [Op.lt]: utill.moment(total).add(1, "hours").format(),
+        },
       },
     });
 
@@ -365,7 +367,7 @@ module.exports = {
         .status(400)
         .json(
           utill.helpers.sendError(
-            "Flight with departure station and destination station already exists"
+            "Flight with departure station, destination station and stod already exists, kindly add another stod with atleast more than one hour from the previous flight scheduled"
           )
         );
     }
@@ -402,6 +404,51 @@ module.exports = {
       .status(200)
       .json(
         utill.helpers.sendSuccess("You have successfully scheduled a flight")
+      );
+  },
+
+  deleteScheduledFlight: async (
+    req: any,
+    res: Response,
+    next: NextFunction
+  ): Promise<Response> => {
+    let uuid = req.query.uuid;
+
+    if (!uuid) {
+      return res
+        .status(400)
+        .json(utill.helpers.sendError("Kindly add a valid uuid"));
+    }
+
+    let checker = await db.dbs.ScheduleFlights.findOne({
+      where: { uuid: uuid },
+    });
+
+    if (!checker) {
+      return res
+        .status(400)
+        .json(utill.helpers.sendError("flight with uuid not found"));
+    }
+
+    await checker.destroy();
+
+    await db.dbs.AuditLogs.create({
+      uuid: utill.uuid(),
+      user_id: req.user.uuid,
+      description: `Admin ${req.user.first_name} ${
+        req.user.last_name
+      } deleted a flight scheduled for arrival date of ${
+        checker.arrival_date
+      } with data ${JSON.stringify(checker)}
+`,
+    });
+
+    return res
+      .status(200)
+      .json(
+        utill.helpers.sendSuccess(
+          "You have successfully updated a scheduled flight"
+        )
       );
   },
 
