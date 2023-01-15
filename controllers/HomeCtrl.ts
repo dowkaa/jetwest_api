@@ -495,6 +495,7 @@ module.exports = {
         departure_station: pickup_location,
         destination_station: destination,
         stod: stod,
+        status: "pending",
       },
     });
 
