@@ -452,8 +452,22 @@ module.exports = {
     res: Response,
     next: NextFunction
   ) => {
+    const { pickup_location, destination } = req.query;
+    if (!(pickup_location && destination)) {
+      return res
+        .status(400)
+        .json(
+          utilz.helpers.sendError(
+            "Kindly add valid pick up location and destintion"
+          )
+        );
+    }
     let checker = await db.dbs.ScheduleFlights.findAll({
-      where: { status: "pending" },
+      where: {
+        departure_station: pickup_location,
+        destination_station: destination,
+        status: "pending",
+      },
     });
 
     return res.status(200).json({ data: checker });
@@ -466,7 +480,15 @@ module.exports = {
   ) => {
     const { pickup_location, destination, stod, total_weight } = req.query;
 
-    console.log({ req: req.body });
+    if (!(pickup_location && destination && stod && total_weight)) {
+      return res
+        .status(400)
+        .json(
+          utilz.helpers.sendError(
+            "Kindly add valid pick up location, destintion stod and total weight"
+          )
+        );
+    }
 
     let v = await db.dbs.ScheduleFlights.findOne({
       where: {
