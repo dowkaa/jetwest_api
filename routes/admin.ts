@@ -112,7 +112,11 @@ router.post(
   AdminCtrl.scheduleFlights
 );
 
-router.post("/update-scheduled-flight", [jwtMiddleWare, signatureSigner], AdminCtrl.updateScheduledFlight)
+router.post(
+  "/update-scheduled-flight",
+  [jwtMiddleWare, signatureSigner],
+  AdminCtrl.updateScheduledFlight
+);
 
 router.get(
   "/all-scheduled-flights",
@@ -238,11 +242,7 @@ router.get(
   AdminCtrl.allShipmentRoutes
 );
 
-router.get(
-  "/unpaginated-destinations",
-  [jwtMiddleWare, signatureSigner],
-  AdminCtrl.allDestinations
-);
+router.get("/unpaginated-destinations", AdminCtrl.allDestinations);
 // logistics
 router.get(
   "/all-shipments",
