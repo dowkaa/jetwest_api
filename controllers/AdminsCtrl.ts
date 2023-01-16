@@ -2063,6 +2063,16 @@ with note ${note}`,
       where: { uuid: report_id },
     });
 
+    if(!report){
+      return res
+        .status(400)
+        .json(
+          utill.helpers.sendError(
+            "Aircraft report with id not found"
+          )
+        );
+    }
+
     report.report_url = audit_report_url;
     report.description = observations;
     await report.save();
