@@ -235,7 +235,7 @@ router.get(
   [jwtMiddleWare, signatureSigner],
   AdminCtrl.deleteUser
 );
-
+//0599554110 gtb
 router.get(
   "/all-destinations",
   [jwtMiddleWare, signatureSigner],

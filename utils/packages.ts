@@ -35,6 +35,7 @@ exports.jwt_decode = require("jwt-decode");
 exports.firstMail = require("../Queues/first_mail");
 exports.secondMail = require("../Queues/second_mail");
 exports.scheduleItem = require("../Queues/schedule_item");
+exports.transactionValidate = require("../Queues/transaction_validate");
 exports.updateScheduled = require("../Queues/update_scheduled_flight");
 exports.initialize = require("../Queues/initialize");
 

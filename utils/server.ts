@@ -25,6 +25,7 @@ function createServer() {
   const updateUserBalance = new Queue("update-users-balance");
   const getUsers = new Queue("initialize");
   const updateSchedule = new Queue("update_schedule");
+  const transactionValidate = new Queue("transaction_validate");
   const firstSchedule = new Queue("first_schedule");
   const firstMail = new Queue("first_mail");
   const secondMail = new Queue("second_mail");
@@ -34,6 +35,7 @@ function createServer() {
       new BullAdapter(updateUserBalance),
       new BullAdapter(firstMail),
       new BullAdapter(firstSchedule),
+      new BullAdapter(transactionValidate),
       new BullAdapter(updateSchedule),
       new BullAdapter(secondMail),
     ]);
@@ -47,10 +49,10 @@ function createServer() {
   }, 2000);
 
   setTimeout(() => {
-   const option = {};
-   // packages.initialize.processJob(option);
-   packages.scheduleItem.processJob(option);
- }, 2000);
+    const option = {};
+    // packages.initialize.processJob(option);
+    packages.scheduleItem.processJob(option);
+  }, 2000);
 
   app.use(packages.bodyParser.urlencoded({ extended: true }));
   app.use(packages.bodyParser.json());

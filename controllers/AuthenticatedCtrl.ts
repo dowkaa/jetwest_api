@@ -373,6 +373,7 @@ module.exports = {
       .keys({
         items: util.Joi.array().required(),
         pickup_location: util.Joi.string().required(),
+        payment_ref: util.Joi.string().required(),
         destination: util.Joi.string().required(),
         total_weight: util.Joi.number().required(),
         stod: util.Joi.string().required(),
@@ -429,6 +430,7 @@ module.exports = {
       stod,
       total_weight,
       agent_id,
+      payment_ref,
       reciever_email,
       reciever_firstname,
       reciever_lastname,
@@ -620,6 +622,14 @@ module.exports = {
         reciever_secMobile,
       });
     }
+
+    const option = {
+      reference: payment_ref,
+      shipment_num,
+      customer_id: req.user.customer_id
+    };
+
+    util.transactionValidate.processJob(option);
 
     // if (status) {
     return res

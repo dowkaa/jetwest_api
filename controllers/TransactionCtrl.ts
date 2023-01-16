@@ -13,6 +13,7 @@ const fundWalletSchema = util.Joi.object()
     shipment_no: util.Joi.string().required(),
     charged_weight: util.Joi.number().required(),
     pricePerkeg: util.Joi.number().required(),
+    shipment_id: util.Joi.number().required(),
     no_of_bags: util.Joi.number().required(),
   })
   .unknown();

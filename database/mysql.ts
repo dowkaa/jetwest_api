@@ -65,6 +65,7 @@ dbs.Webhook = require("../models/webhook")(sequelize, Sequelizes);
 dbs.Directors = require("../models/directors")(sequelize, Sequelizes);
 dbs.Transactions = require("../models/transactions")(sequelize, Sequelizes);
 dbs.Cargo = require("../models/cargo")(sequelize, Sequelizes);
+dbs.PaystackError = require("../models/paystack_error")(sequelize, Sequelizes);
 dbs.ContactUs = require("../models/contactUs")(sequelize, Sequelizes);
 dbs.LoadedBags = require("../models/loaded_bags")(sequelize, Sequelizes);
 dbs.Mailing = require("../models/mailing")(sequelize, Sequelizes);
