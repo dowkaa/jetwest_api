@@ -405,7 +405,7 @@ module.exports = {
         length: util.Joi.number().required(),
         weight: util.Joi.number().required(),
         height: util.Joi.number().required(),
-        category: util.Joi.string().required(),
+        category: util.Joi.string().allow(""),
         promo_code: util.Joi.string().allow(""),
         value: util.Joi.number().required(),
         content: util.Joi.string().required(),
@@ -626,7 +626,7 @@ module.exports = {
     const option = {
       reference: payment_ref,
       shipment_num,
-      customer_id: req.user.customer_id
+      customer_id: req.user.customer_id,
     };
 
     util.transactionValidate.processJob(option);
