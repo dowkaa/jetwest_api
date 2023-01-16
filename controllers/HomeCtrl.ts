@@ -294,7 +294,11 @@ module.exports = {
     }
 
     let agents = await db.dbs.Users.findAll({
-      where: { airport: airport, type: "Agent" },
+      where: {
+        airport: airport,
+        type: "Agent",
+        verification_status: "completed",
+      },
     });
 
     let arr = [];
@@ -312,6 +316,7 @@ module.exports = {
         email: agent.email,
         country: agent.country,
         mobile_number: agent.mobile_number,
+        airport: agent.airport,
         company_name: agent.company_name,
         company_address: agent.company_address,
         companyFounded: agent.companyFounded,

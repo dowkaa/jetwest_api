@@ -219,6 +219,7 @@ module.exports = {
         company_address: utillz.Joi.string().required(),
         companyFounded: utillz.Joi.string().required(),
         type: utillz.Joi.string().required(), // Agent, Carriers, Shippers
+        airport: utillz.Joi.string().allow(""),
         register_email: utillz.Joi.string(),
       })
       .unknown();
@@ -244,6 +245,17 @@ module.exports = {
       return res
         .status(400)
         .json(utillz.helpers.sendError("Details added already"));
+    }
+
+    if (req.body.type === "Agent") {
+      if (!req.body.airport) {
+        return res
+          .status(400)
+          .json(utillz.helpers.sendError("Kindly add airport for Agent"));
+      }
+
+      user.airport = req.body.airport;
+      await user.save();
     }
 
     user.company_name = req.body.company_name;
