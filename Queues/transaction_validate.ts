@@ -85,7 +85,7 @@ const addJob = async (data: any) => {
         volumetric_weight: parseInt(shipment.volumetric_weight),
         weigth: parseInt(shipment.weigth),
         weight:
-          parseInt(shipment.volumetric_weight) > parseInt(shipment.weigth)
+          parseInt(shipment.volumetric_weight) > parseInt(shipment.weight)
             ? shipment.volumetric_weight
             : shipment.weigth,
       });
@@ -105,7 +105,7 @@ const addJob = async (data: any) => {
           arrival_date: shipment.arrival_date,
           shipment_no: data.shipment_num,
           weight:
-            parseInt(shipment.volumetric_weight) > parseInt(shipment.weigth)
+            parseInt(shipment.volumetric_weight) > parseInt(shipment.weight)
               ? shipment.volumetric_weight
               : shipment.weigth,
           pricePerkeg: shipment.ratePerKg,

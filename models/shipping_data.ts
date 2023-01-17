@@ -26,7 +26,7 @@ var shippingItems = (sequelize: any, type: any) => {
     shipment_routeId: Sequelize.STRING,
     is_scanned: Sequelize.INTEGER,
     scan_code: Sequelize.STRING,
-    weight: Sequelize.STRING,
+    weight: Sequelize.INTEGER,
     volumetric_weight: Sequelize.INTEGER,
     booking_reference: Sequelize.STRING,
     sur_charge: Sequelize.DOUBLE,
