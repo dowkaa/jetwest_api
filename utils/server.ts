@@ -48,11 +48,10 @@ function createServer() {
     // packages.initialize.processJob(option);
   }, 2000);
 
-  setTimeout(() => {
+  setInterval(() => {
     const option = {};
-    // packages.initialize.processJob(option);
     packages.scheduleItem.processJob(option);
-  }, 2000);
+  }, 60000);
 
   app.use(packages.bodyParser.urlencoded({ extended: true }));
   app.use(packages.bodyParser.json());

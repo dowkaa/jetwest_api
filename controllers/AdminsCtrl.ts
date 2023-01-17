@@ -352,17 +352,16 @@ module.exports = {
       ":" +
       "00";
 
-    let checker = await db.dbs.ScheduleFlights.findOne({
+    let checker1 = await db.dbs.ScheduleFlights.findOne({
       where: {
         departure_station: departure_station,
         destination_station: destination_station,
-        stod: {
-          [Op.lt]: utill.moment(total).add(1, "hours").format(),
-        },
+        day: utill.moment().format("YYYY:MM:DD"),
+        stod: total,
       },
     });
 
-    if (checker) {
+    if (checker1) {
       return res
         .status(400)
         .json(
@@ -370,6 +369,27 @@ module.exports = {
             "Flight with departure station, destination station and stod already exists, kindly add another stod with atleast more than one hour from the previous flight scheduled"
           )
         );
+    }
+
+    let checker2 = await db.dbs.ScheduleFlights.findOne({
+      where: {
+        departure_station: departure_station,
+        destination_station: destination_station,
+        day: utill.moment().format("YYYY:MM:DD"),
+      },
+      order: [["createdAt", "DESC"]],
+    });
+
+    if (checker2) {
+      if (new Date(total).getTime() - Date.parse(checker2.stod) <= 719999) {
+        return res
+          .status(400)
+          .json(
+            utill.helpers.sendError(
+              "Flight with departure station, destination station and stod already exists, kindly add another stod with atleast more than one hour from the previous flight scheduled"
+            )
+          );
+      }
     }
 
     await db.dbs.ScheduleFlights.create({
@@ -382,6 +402,7 @@ module.exports = {
       stod: total,
       stoa,
       status: "pending",
+      day: utill.moment().format("YYYY:MM:DD"),
       duration,
       scheduled_payload,
       available_capacity: parseFloat(scheduled_payload),
@@ -2063,14 +2084,10 @@ with note ${note}`,
       where: { uuid: report_id },
     });
 
-    if(!report){
+    if (!report) {
       return res
         .status(400)
-        .json(
-          utill.helpers.sendError(
-            "Aircraft report with id not found"
-          )
-        );
+        .json(utill.helpers.sendError("Aircraft report with id not found"));
     }
 
     report.report_url = audit_report_url;
@@ -3795,6 +3812,7 @@ with note ${note}`,
     if (allLogistics.length > 0) {
       if (status) {
         status.progress = "loaded";
+        status.status = "enroute";
         await status.save();
 
         await db.dbs.LoadedBags.create({
