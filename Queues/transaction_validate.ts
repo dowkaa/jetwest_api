@@ -22,7 +22,7 @@ let paystack_key: any;
 if (process.env.STATE === "dev") {
   paystack_key = process.env.PAYSTACK_TEST_SECRET_KEY;
 } else {
-  paystack_key = process.env.PAYSTACK_LIVE_SECRET_KEY;
+  paystack_key = process.env.PAYSTACK_TEST_SECRET_KEY;
 }
 
 // git clone https://dlakes@bitbucket.org/dlakes/lottos.git
