@@ -82,12 +82,12 @@ const addJob = async (data: any) => {
       });
 
       console.log({
-        volumetric_weight: parseInt(shipment.volumetric_weight),
-        weigth: parseInt(shipment.weigth),
+        volumetric_weight: parseFloat(shipment.volumetric_weight),
+        weigth: parseInt(shipment.weight),
         weight:
-          parseInt(shipment.volumetric_weight) > parseInt(shipment.weight)
+          parseFloat(shipment.volumetric_weight) > parseFloat(shipment.weight)
             ? shipment.volumetric_weight
-            : shipment.weigth,
+            : shipment.weight,
       });
 
       let checkT = await db.dbs.Transactions.findOne({
@@ -106,9 +106,9 @@ const addJob = async (data: any) => {
           arrival_date: shipment.arrival_date,
           shipment_no: data.shipment_num,
           weight:
-            parseInt(shipment.volumetric_weight) > parseInt(shipment.weight)
+            parseFloat(shipment.volumetric_weight) > parseFloat(shipment.weight)
               ? shipment.volumetric_weight
-              : shipment.weigth,
+              : shipment.weight,
           pricePerkeg: shipment.ratePerKg,
           no_of_bags: shipment.no_of_bags,
           type: "credit",
