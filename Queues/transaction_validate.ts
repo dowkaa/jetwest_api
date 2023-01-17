@@ -88,7 +88,9 @@ const addJob = async (data: any) => {
       });
 
       let checkT = await db.dbs.Transactions.findOne({
-        reference: data.reference,
+        where: {
+          reference: data.reference,
+        },
       });
 
       if (!checkT) {
