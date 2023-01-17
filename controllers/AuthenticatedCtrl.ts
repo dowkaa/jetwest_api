@@ -605,6 +605,8 @@ module.exports = {
         shipment_routeId: route.uuid,
         scan_code,
         weight,
+        ratePerKg: route.ratePerKg,
+        arrival_date: v.arrival_date,
         booking_reference: shipment_ref,
         volumetric_weight,
         price: price,

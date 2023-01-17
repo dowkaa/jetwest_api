@@ -80,6 +80,13 @@ const addJob = async (data: any) => {
         where: { shipment_num: data.shipment_num },
       });
 
+      console.log({
+        weight:
+          parseInt(shipment.volumetric_weight) > parseInt(shipment.weigth)
+            ? shipment.volumetric_weight
+            : shipment.weigth,
+      });
+
       await db.dbs.Transactions.create({
         user_id: data.customer_id,
         amount: amount,

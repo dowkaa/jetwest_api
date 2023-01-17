@@ -36,6 +36,7 @@ var shippingItems = (sequelize: any, type: any) => {
     shipperName: Sequelize.STRING,
     shipperNum: Sequelize.STRING,
     no_of_bags: Sequelize.INTEGER,
+    ratePerKg: Sequelize.INTEGER,
     shipment_num: Sequelize.STRING,
     status: Sequelize.STRING,
     promo_code: Sequelize.STRING,
