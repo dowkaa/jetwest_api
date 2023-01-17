@@ -2,6 +2,7 @@ var exec = require("child_process").exec;
 import { Request, Response, NextFunction } from "express";
 const util = require("../utils/packages");
 const { Op } = require("sequelize");
+const { paginate } = require("paginate-info");
 const db = require("../database/mysql");
 require("dotenv").config();
 
@@ -191,10 +192,65 @@ module.exports = {
   },
 
   allTransactions: async (req: any, res: Response, next: NextFunction) => {
-    let transactions = await db.dbs.Transactions.findAll({
+    const { pageNum } = req.query;
+
+    if (!pageNum || isNaN(pageNum)) {
+      return res
+        .status(400)
+        .json(util.helpers.sendError("Kindly add a valid page number"));
+    }
+
+    var currentPage = parseInt(pageNum) ? parseInt(pageNum) : 1;
+
+    var page = currentPage - 1;
+    var pageSize = 25;
+    const offset = page * pageSize;
+    const limit = pageSize;
+
+    // const transactions = await db.dbs.User.findAndCountAll({
+    //   offset: offset,
+    //   limit: limit,
+    //   // where: { user_id: req.user.id },
+    //   order: [["id", "DESC"]],
+    // });
+
+    var transactions = await db.dbs.Transactions.findAndCountAll({
+      offset: offset,
+      limit: limit,
       where: { user_id: req.user.customer_id },
+      order: [["id", "DESC"]],
     });
 
-    return res.status(200).json({ transactions });
+    //1`;
+
+    var next_page = currentPage + 1;
+    var prev_page = currentPage - 1;
+    var nextP =
+      `/api/jetwest/transactions/all-transactions?pageNum=` + next_page;
+    var prevP =
+      `/api/jetwest/transactions/all-transactions?pageNum=` + prev_page;
+
+    const meta = paginate(
+      currentPage,
+      transactions.count,
+      transactions.rows,
+      pageSize
+    );
+
+    res.status(200).json({
+      status: "SUCCESS",
+      data: transactions,
+      per_page: pageSize,
+      current_page: currentPage,
+      last_page: meta.pageCount, //transactions.count,
+      first_page_url: `/api/jetwest/transactions/all-transactions?pageNum=1`,
+      last_page_url:
+        `/api/jetwest/transactions/all-transactions?pageNum=` + meta.pageCount, //transactions.count,
+      next_page_url: nextP,
+      prev_page_url: prevP,
+      path: `/api/jetwest/transactions/all-transactions?pageNum=`,
+      from: 1,
+      to: meta.pageCount, //transactions.count,
+    });
   },
 };
