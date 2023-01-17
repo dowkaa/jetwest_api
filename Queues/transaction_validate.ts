@@ -123,7 +123,7 @@ const addJob = async (data: any) => {
       return;
     }
   } catch (err: any) {
-    console.log({ err });
+    console.log({ err, message: err.response.data });
     await db.dbs.PaystackError.create({
       uuid: util.uuid(),
       data: JSON.stringify(err),
