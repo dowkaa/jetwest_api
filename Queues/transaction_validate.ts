@@ -98,6 +98,7 @@ const addJob = async (data: any) => {
 
       if (!checkT) {
         await db.dbs.Transactions.create({
+          uuid: util.uuid(),
           user_id: data.customer_id,
           amount: amount,
           reference: data.reference,
@@ -112,7 +113,7 @@ const addJob = async (data: any) => {
           no_of_bags: shipment.no_of_bags,
           type: "credit",
           method: "paystack",
-          description: `Payment for shipment with no ${shipment.shipment_no}`,
+          description: `Payment for shipment with no ${shipment.shipment_num}`,
           status: "success",
         });
 
