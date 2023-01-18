@@ -609,6 +609,7 @@ module.exports = {
         arrival_date: v.arrival_date,
         booking_reference: shipment_ref,
         volumetric_weight,
+        payment_status: "pending",
         price: price,
         category,
         promo_code: promo_code ? promo_code : null,
@@ -631,7 +632,13 @@ module.exports = {
       customer_id: req.user.customer_id,
     };
 
-    util.transactionValidate.processJob(option);
+    let response = await util.helpers.validateTransaction(option);
+    let payload = {
+      shipment_num,
+      response
+    }
+    util.payment.processJob(payload);
+
 
     // if (status) {
     return res
