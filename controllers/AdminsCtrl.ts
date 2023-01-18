@@ -3464,18 +3464,21 @@ with note ${note}`,
     const offset = page * pageSize;
     const limit = pageSize;
 
-    let almostCompletedShipments = await db.dbs.ShippingItems.findAndCountAll({
-      offset: offset,
-      limit: limit,
-      where: { status: "Almost completed" },
-      order: [["id", "DESC"]],
-    });
+    let almostCompletedShipments = await db.dbs.ScheduleFlights.findAndCountAll(
+      {
+        offset: offset,
+        limit: limit,
+        where: { status: "Almost completed" },
+        order: [["id", "DESC"]],
+      }
+    );
 
     var next_page = currentPage + 1;
     var prev_page = currentPage - 1;
-    var nextP = `/api/jetwest/admin/almost-completed-shipments?pageNum=` + next_page;
+    var nextP =
+      `/api/jetwest/admin/almost-completed-flights?pageNum=` + next_page;
     var prevP =
-      `/api/jetwest/admin/almost-completed-shipments?pageNum=` + prev_page;
+      `/api/jetwest/admin/almost-completed-flights?pageNum=` + prev_page;
 
     const meta = paginate(
       currentPage,
@@ -3490,13 +3493,12 @@ with note ${note}`,
       per_page: pageSize,
       current_page: currentPage,
       last_page: meta.pageCount, //transactions.count,
-      first_page_url: `/api/jetwest/admin/almost-completed-shipments?pageNum=1`,
+      first_page_url: `/api/jetwest/admin/almost-completed-flights?pageNum=1`,
       last_page_url:
-        `/api/jetwest/admin/almost-completed-shipments?pageNum=` +
-        meta.pageCount, //transactions.count,
+        `/api/jetwest/admin/almost-completed-flights?pageNum=` + meta.pageCount, //transactions.count,
       next_page_url: nextP,
       prev_page_url: prevP,
-      path: `/api/jetwest/admin/almost-completed-shipments?pageNum=`,
+      path: `/api/jetwest/admin/almost-completed-flights?pageNum=`,
       from: 1,
       to: meta.pageCount, //transactions.count,
     });

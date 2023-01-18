@@ -272,7 +272,7 @@ router.get(
 );
 
 router.get(
-  "/almost-completed-shipments",
+  "/almost-completed-flights",
   [jwtMiddleWare, signatureSigner],
   AdminCtrl.almostCompletedShipments
 );
