@@ -102,6 +102,8 @@ const addJob = async (data: any) => {
           user_id: data.customer_id,
           amount: amount,
           reference: data.reference,
+          departure: shipment.pickup_location,
+          arrival: shipment.destination,
           departure_date: shipment.depature_date,
           arrival_date: shipment.arrival_date,
           shipment_no: data.shipment_num,

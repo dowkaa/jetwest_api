@@ -271,6 +271,12 @@ router.get(
   AdminCtrl.completedShipments
 );
 
+router.get(
+  "/almost-completed-shipments",
+  [jwtMiddleWare, signatureSigner],
+  AdminCtrl.completedShipments
+);
+
 router.get("/all-users", [jwtMiddleWare, signatureSigner], AdminCtrl.allUsers);
 router.post(
   "/update-user-note",

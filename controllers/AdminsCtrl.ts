@@ -3444,6 +3444,64 @@ with note ${note}`,
     });
   },
 
+  almostCompletedShipments: async (
+    req: any,
+    res: Response,
+    next: NextFunction
+  ): Promise<Response> => {
+    const { pageNum } = req.query;
+
+    if (!pageNum || isNaN(pageNum)) {
+      return res
+        .status(400)
+        .json(utill.helpers.sendError("Kindly add a valid page number"));
+    }
+
+    var currentPage = parseInt(pageNum) ? parseInt(pageNum) : 1;
+
+    var page = currentPage - 1;
+    var pageSize = 25;
+    const offset = page * pageSize;
+    const limit = pageSize;
+
+    let almostCompletedShipments = await db.dbs.ShippingItems.findAndCountAll({
+      offset: offset,
+      limit: limit,
+      where: { status: "Almost completed" },
+      order: [["id", "DESC"]],
+    });
+
+    var next_page = currentPage + 1;
+    var prev_page = currentPage - 1;
+    var nextP = `/api/jetwest/admin/almost-completed-shipments?pageNum=` + next_page;
+    var prevP =
+      `/api/jetwest/admin/almost-completed-shipments?pageNum=` + prev_page;
+
+    const meta = paginate(
+      currentPage,
+      almostCompletedShipments.count,
+      almostCompletedShipments.rows,
+      pageSize
+    );
+
+    return res.status(200).json({
+      status: "SUCCESS",
+      data: almostCompletedShipments,
+      per_page: pageSize,
+      current_page: currentPage,
+      last_page: meta.pageCount, //transactions.count,
+      first_page_url: `/api/jetwest/admin/almost-completed-shipments?pageNum=1`,
+      last_page_url:
+        `/api/jetwest/admin/almost-completed-shipments?pageNum=` +
+        meta.pageCount, //transactions.count,
+      next_page_url: nextP,
+      prev_page_url: prevP,
+      path: `/api/jetwest/admin/almost-completed-shipments?pageNum=`,
+      from: 1,
+      to: meta.pageCount, //transactions.count,
+    });
+  },
+
   // users
 
   allUsers: async (

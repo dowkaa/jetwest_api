@@ -1466,4 +1466,32 @@ module.exports = {
 
     return res.status(400).json(util.helpers.sendError("Invalid password"));
   },
+
+  shipmentsFromTransactions:  async (req: any, res: Response, next: NextFunction): Promise<Response> => {
+   let uuid = req.query.uuid;
+
+    if (!uuid) {
+      return res
+        .status(400)
+        .json(util.helpers.sendError("Kindly add a valid transaction id"));
+    }
+
+    let transaction = await db.dbs.Transactions.findOne({where: {uuid: uuid}});
+
+    if(!transaction){
+      return res
+        .status(400)
+        .json(util.helpers.sendError("Transaction not found"));
+    }
+
+    let shipments = await db.dbs.ShippingItems.findAll({
+      where: { shipment_num : transaction.shipment_no},
+    });  
+    
+    
+    return res
+        .status(200)
+        .json({shipments});
+
+  }
 };

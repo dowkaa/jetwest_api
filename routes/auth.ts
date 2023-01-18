@@ -113,4 +113,10 @@ routerr.get(
   AuthenticatedCtrl.completedAgentShipments
 );
 
+routerr.get(
+  "/transaction-shipments",
+  [jwtMiddleWare, signatureSignerMiddleware],
+  AuthenticatedCtrl.shipmentsFromTransactions
+);
+
 module.exports = routerr;
