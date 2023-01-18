@@ -274,7 +274,7 @@ router.get(
 router.get(
   "/almost-completed-shipments",
   [jwtMiddleWare, signatureSigner],
-  AdminCtrl.completedShipments
+  AdminCtrl.almostCompletedShipments
 );
 
 router.get("/all-users", [jwtMiddleWare, signatureSigner], AdminCtrl.allUsers);
