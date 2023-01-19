@@ -619,6 +619,7 @@ module.exports = {
         scan_code,
         weight,
         ratePerKg: route.ratePerKg,
+        logo_url: v.logo_url,
         arrival_date: v.arrival_date,
         booking_reference: shipment_ref,
         volumetric_weight,

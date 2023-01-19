@@ -50,6 +50,7 @@ var shippingItems = (sequelize: any, type: any) => {
     reciever_organisation: Sequelize.STRING,
     progress: Sequelize.STRING,
     payment_status: Sequelize.STRING,
+    logo_url: Sequelize.STRING,
 
     reciever_primaryMobile: Sequelize.STRING,
     reciever_secMobile: Sequelize.STRING,
