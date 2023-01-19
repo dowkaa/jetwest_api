@@ -409,6 +409,7 @@ module.exports = {
         promo_code: util.Joi.string().allow(""),
         value: util.Joi.number().required(),
         content: util.Joi.string().required(),
+        ba_code_url: util.Joi.string().allow(""),
       })
       .unknown();
 
@@ -511,6 +512,7 @@ module.exports = {
         length,
         shipment_ref,
         category,
+        ba_code_url,
         promo_code,
         depature_date,
         value,
@@ -623,6 +625,7 @@ module.exports = {
         payment_status: "pending",
         price: price,
         category,
+        ba_code_url,
         promo_code: promo_code ? promo_code : null,
         shipperName: req.user.first_name + " " + req.user.last_name,
         shipperNum: req.user.customer_id,

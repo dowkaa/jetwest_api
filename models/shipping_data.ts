@@ -23,6 +23,7 @@ var shippingItems = (sequelize: any, type: any) => {
     price: Sequelize.DOUBLE,
     ispaid: Sequelize.INTEGER,
     frieghtTime: Sequelize.INTEGER,
+    ba_code_url: Sequelize.STRING,
     height: Sequelize.STRING,
     shipment_routeId: Sequelize.STRING,
     is_scanned: Sequelize.INTEGER,
