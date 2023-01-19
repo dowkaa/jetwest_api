@@ -339,6 +339,12 @@ module.exports = {
         .json(utill.helpers.sendError("Destination does not exist"));
     }
 
+    if (!takeOff) {
+      return res
+        .status(400)
+        .json(utill.helpers.sendError("Departure does not exist"));
+    }
+
     let total =
       yr +
       "-" +
