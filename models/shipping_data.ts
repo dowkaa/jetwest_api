@@ -17,6 +17,7 @@ var shippingItems = (sequelize: any, type: any) => {
     destination: Sequelize.STRING,
     arrival_date: Sequelize.STRING,
     width: Sequelize.STRING,
+    length: Sequelize.INTEGER,
     cargo_id: Sequelize.STRING,
     agent_id: Sequelize.STRING,
     price: Sequelize.DOUBLE,
@@ -45,7 +46,7 @@ var shippingItems = (sequelize: any, type: any) => {
     reciever_firstname: Sequelize.STRING,
     reciever_lastname: Sequelize.STRING,
     reciever_email: Sequelize.STRING,
-    reciver_mobile: Sequelize.STRING,
+    reciever_organisation: Sequelize.STRING,
     progress: Sequelize.STRING,
     payment_status: Sequelize.STRING,
 

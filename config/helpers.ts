@@ -70,14 +70,14 @@ const validateTransaction = async (data: any) => {
         where: { shipment_num: data.shipment_num },
       });
 
-      console.log({
-        volumetric_weight: parseFloat(shipment.volumetric_weight),
-        weigth: parseInt(shipment.weight),
-        weight:
-          parseFloat(shipment.volumetric_weight) > parseFloat(shipment.weight)
-            ? shipment.volumetric_weight
-            : shipment.weight,
-      });
+      // console.log({
+      //   volumetric_weight: parseFloat(shipment.volumetric_weight),
+      //   weigth: parseInt(shipment.weight),
+      //   weight:
+      //     parseFloat(shipment.volumetric_weight) > parseFloat(shipment.weight)
+      //       ? shipment.volumetric_weight
+      //       : shipment.weight,
+      // });
 
       let checkT = await db.dbs.Transactions.findOne({
         where: {
@@ -100,6 +100,7 @@ const validateTransaction = async (data: any) => {
             parseFloat(shipment.volumetric_weight) > parseFloat(shipment.weight)
               ? shipment.volumetric_weight
               : shipment.weight,
+          reciever_organisation: shipment.reciever_organisation,
           pricePerkeg: shipment.ratePerKg,
           no_of_bags: shipment.no_of_bags,
           type: "credit",
@@ -136,20 +137,22 @@ const validateTransaction = async (data: any) => {
         where: { shipment_num: data.shipment_num },
       });
 
-      console.log({
-        volumetric_weight: parseFloat(shipment.volumetric_weight),
-        weigth: parseInt(shipment.weight),
-        weight:
-          parseFloat(shipment.volumetric_weight) > parseFloat(shipment.weight)
-            ? shipment.volumetric_weight
-            : shipment.weight,
-      });
+      // console.log({
+      //   volumetric_weight: parseFloat(shipment.volumetric_weight),
+      //   weigth: parseInt(shipment.weight),
+      //   weight:
+      //     parseFloat(shipment.volumetric_weight) > parseFloat(shipment.weight)
+      //       ? shipment.volumetric_weight
+      //       : shipment.weight,
+      // });
 
       let checkT = await db.dbs.Transactions.findOne({
         where: {
           reference: data.reference,
         },
       });
+
+      console.log({ reciever_organisation: shipment.reciever_organisation });
 
       if (!checkT) {
         await db.dbs.Transactions.create({
@@ -167,6 +170,7 @@ const validateTransaction = async (data: any) => {
               ? shipment.volumetric_weight
               : shipment.weight,
           pricePerkeg: shipment.ratePerKg,
+          reciever_organisation: shipment.reciever_organisation,
           no_of_bags: shipment.no_of_bags,
           type: "credit",
           method: "paystack",

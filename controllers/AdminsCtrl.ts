@@ -392,6 +392,10 @@ module.exports = {
       }
     }
 
+    let carrier = await db.dbs.Users.findOne({
+      where: { uuid: aircraftChecker.owner_id },
+    });
+
     await db.dbs.ScheduleFlights.create({
       uuid: utill.uuid(),
       user_id: req.user.registrationId,
@@ -401,6 +405,7 @@ module.exports = {
       destination_airport: data.name_of_airport,
       stod: total,
       stoa,
+      logo_url: carrier.profileDoc,
       status: "pending",
       day: utill.moment().format("YYYY:MM:DD"),
       duration,

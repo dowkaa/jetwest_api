@@ -19,6 +19,7 @@ var Transactions = (sequelize: any, type: any) => {
     departure: Sequelize.STRING,
     arrival: Sequelize.STRING,
     arrival_date: Sequelize.STRING,
+    reciever_organisation: Sequelize.STRING,
     shipment_no: Sequelize.STRING,
     weight: Sequelize.STRING,
     pricePerkeg: Sequelize.STRING,

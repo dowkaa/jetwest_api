@@ -381,7 +381,7 @@ module.exports = {
         reciever_firstname: util.Joi.string().required(),
         reciever_lastname: util.Joi.string().required(),
         reciever_email: util.Joi.string().required(),
-        reciver_mobile: util.Joi.string().required(),
+        reciever_organisation: util.Joi.string().required(),
         reciever_primaryMobile: util.Joi.string().required(),
         reciever_secMobile: util.Joi.string().required(),
       })
@@ -434,7 +434,7 @@ module.exports = {
       reciever_email,
       reciever_firstname,
       reciever_lastname,
-      reciver_mobile,
+      reciever_organisation,
       reciever_primaryMobile,
       reciever_secMobile,
     } = req.body;
@@ -481,6 +481,16 @@ module.exports = {
         .json(
           util.helpers.sendError(
             "Flight not availbale to carry total weight, kindly book another flight or contact customer support"
+          )
+        );
+    }
+
+    if (Date.parse(stod) - new Date().getTime() <= 1079999) {
+      return res
+        .status(400)
+        .json(
+          util.helpers.sendError(
+            "Flight not available for booking, already in transit"
           )
         );
     }
@@ -598,6 +608,7 @@ module.exports = {
         destination,
         depature_date,
         width,
+        length: length,
         height,
         sur_charge: route.sur_charge,
         taxes: route.tax,
@@ -620,7 +631,7 @@ module.exports = {
         reciever_firstname,
         reciever_lastname,
         reciever_email,
-        reciver_mobile,
+        reciever_organisation,
         reciever_primaryMobile,
         reciever_secMobile,
       });
@@ -635,10 +646,9 @@ module.exports = {
     let response = await util.helpers.validateTransaction(option);
     let payload = {
       shipment_num,
-      response
-    }
+      response,
+    };
     util.payment.processJob(payload);
-
 
     // if (status) {
     return res
