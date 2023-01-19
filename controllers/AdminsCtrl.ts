@@ -305,22 +305,22 @@ module.exports = {
       where: { flight_reg: flight_reg },
     });
 
-    if (parseInt(aircraftChecker.payload) < parseInt(scheduled_payload)) {
-      return res
-        .status(400)
-        .json(
-          utill.helpers.sendError(
-            "scheduled payload cannot be greater than aircraft capacity"
-          )
-        );
-    }
-
     if (!aircraftChecker) {
       return res
         .status(400)
         .json(
           utill.helpers.sendError(
             "Aircraft with provided flight registration id not found"
+          )
+        );
+    }
+
+    if (parseInt(aircraftChecker.payload) < parseInt(scheduled_payload)) {
+      return res
+        .status(400)
+        .json(
+          utill.helpers.sendError(
+            "scheduled payload cannot be greater than aircraft capacity"
           )
         );
     }
