@@ -885,8 +885,11 @@ module.exports = {
     }
 
     flight.atd = atd;
+    // status.progress = "loaded";
     flight.status = "Almost completed";
     await flight.save();
+
+    utill.allShipments.processJob(flight);
 
     return res
       .status(200)
@@ -3811,6 +3814,8 @@ with note ${note}`,
       },
     });
 
+    console.log({ status });
+
     if (!status) {
       return res
         .status(400)
@@ -3882,41 +3887,90 @@ with note ${note}`,
 
     if (allLogistics.length > 0) {
       if (status) {
-        status.progress = "loaded";
-        status.status = "enroute";
-        await status.save();
+        if (status.progress === "completed") {
+          return res
+            .status(400)
+            .json(utill.helpers.sendError("Shipment already completed"));
+        } else if (status.progress === "in-transit") {
+          status.progress = "completed";
+          await status.save();
 
-        await db.dbs.LoadedBags.create({
-          uuid: utill.uuid(),
-          flight_reg: allLogistics[0].flight_reg,
-          shipping_items_uuid: allLogistics[0].shipping_items_uuid,
-          schedule_flights_uuid: allLogistics[0].schedule_flights_uuid,
-          departure_date: allLogistics[0].departure_date,
-          takeoff_airport: allLogistics[0].takeoff_airport,
-          shipperName: allLogistics[0].shipperName,
-          destination_airport: allLogistics[0].destination_airport,
-          departure_station: allLogistics[0].departure_station,
-          destination_station: allLogistics[0].destination_station,
-          status: allLogistics[0].status,
-          stoa: allLogistics[0].stoa,
-          stod: allLogistics[0].stod,
-          taw: allLogistics[0].taw,
-          no_of_bags: allLogistics[0].no_of_bags,
-          shipping_items_createdAt: new Date(
-            allLogistics[0].shipping_items_createdAt
-          )
-            .toISOString()
-            .split("T")
-            .toString()
-            .replace("000Z", ""),
-          schedule_flights_createdAt: new Date(
-            allLogistics[0].schedule_flights_createdAt
-          )
-            .toISOString()
-            .split("T")
-            .toString()
-            .replace("000Z", ""),
-        });
+          await db.dbs.OffLoadedBags.create({
+            uuid: utill.uuid(),
+            flight_reg: allLogistics[0].flight_reg,
+            shipping_items_uuid: allLogistics[0].shipping_items_uuid,
+            schedule_flights_uuid: allLogistics[0].schedule_flights_uuid,
+            departure_date: allLogistics[0].departure_date,
+            takeoff_airport: allLogistics[0].takeoff_airport,
+            shipperName: allLogistics[0].shipperName,
+            destination_airport: allLogistics[0].destination_airport,
+            departure_station: allLogistics[0].departure_station,
+            destination_station: allLogistics[0].destination_station,
+            status: allLogistics[0].status,
+            stoa: allLogistics[0].stoa,
+            stod: allLogistics[0].stod,
+            taw: allLogistics[0].taw,
+            no_of_bags: allLogistics[0].no_of_bags,
+            shipping_items_createdAt: new Date(
+              allLogistics[0].shipping_items_createdAt
+            )
+              .toISOString()
+              .split("T")
+              .toString()
+              .replace("000Z", ""),
+            schedule_flights_createdAt: new Date(
+              allLogistics[0].schedule_flights_createdAt
+            )
+              .toISOString()
+              .split("T")
+              .toString()
+              .replace("000Z", ""),
+          });
+
+          return res
+            .status(200)
+            .json(
+              utill.helpers.sendSuccess(
+                `successfully off-loaded from aircraft with flight number ${allLogistics[0].flight_reg}`
+              )
+            );
+        } else {
+          status.progress = "loaded";
+          status.status = "enroute";
+          await status.save();
+
+          await db.dbs.LoadedBags.create({
+            uuid: utill.uuid(),
+            flight_reg: allLogistics[0].flight_reg,
+            shipping_items_uuid: allLogistics[0].shipping_items_uuid,
+            schedule_flights_uuid: allLogistics[0].schedule_flights_uuid,
+            departure_date: allLogistics[0].departure_date,
+            takeoff_airport: allLogistics[0].takeoff_airport,
+            shipperName: allLogistics[0].shipperName,
+            destination_airport: allLogistics[0].destination_airport,
+            departure_station: allLogistics[0].departure_station,
+            destination_station: allLogistics[0].destination_station,
+            status: allLogistics[0].status,
+            stoa: allLogistics[0].stoa,
+            stod: allLogistics[0].stod,
+            taw: allLogistics[0].taw,
+            no_of_bags: allLogistics[0].no_of_bags,
+            shipping_items_createdAt: new Date(
+              allLogistics[0].shipping_items_createdAt
+            )
+              .toISOString()
+              .split("T")
+              .toString()
+              .replace("000Z", ""),
+            schedule_flights_createdAt: new Date(
+              allLogistics[0].schedule_flights_createdAt
+            )
+              .toISOString()
+              .split("T")
+              .toString()
+              .replace("000Z", ""),
+          });
+        }
       }
       return res
         .status(200)

@@ -27,6 +27,8 @@ function createServer() {
   const updateSchedule = new Queue("update_schedule");
   const transactionValidate = new Queue("transaction_validate");
   const firstSchedule = new Queue("first_schedule");
+  const allShipments = new Queue("all-shipments");
+  const updateShipment = new Queue("update_shipment");
   const firstMail = new Queue("first_mail");
   const secondMail = new Queue("second_mail");
 
@@ -35,6 +37,8 @@ function createServer() {
       new BullAdapter(updateUserBalance),
       new BullAdapter(firstMail),
       new BullAdapter(firstSchedule),
+      new BullAdapter(updateShipment),
+      new BullAdapter(allShipments),
       new BullAdapter(transactionValidate),
       new BullAdapter(updateSchedule),
       new BullAdapter(secondMail),
