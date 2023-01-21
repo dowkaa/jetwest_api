@@ -3985,4 +3985,320 @@ with note ${note}`,
       .status(200)
       .json({ message: "Baggage not found on flight", flight_data: v });
   },
+
+  allLoadedBags: async (req: any, res: Response, next: NextFunction) => {
+    const { pageNum } = req.query;
+
+    if (!pageNum || isNaN(pageNum)) {
+      return res
+        .status(400)
+        .json(utill.helpers.sendError("Kindly add a valid page number"));
+    }
+
+    var currentPage = parseInt(pageNum) ? parseInt(pageNum) : 1;
+
+    var page = currentPage - 1;
+    var pageSize = 25;
+    const offset = page * pageSize;
+    const limit = pageSize;
+
+    let allLoadedBags = await await db.dbs.LoadedBags.findAndCountAll({
+      offset: offset,
+      limit: limit,
+      order: [["createdAt", "DESC"]],
+    });
+
+    var next_page = currentPage + 1;
+    var prev_page = currentPage - 1;
+    var nextP = `/api/jetwest/admin/all-loaded-bags?pageNum=` + next_page;
+    var prevP = `/api/jetwest/admin//all-loaded-bags?pageNum=` + prev_page;
+
+    const meta = paginate(
+      currentPage,
+      allLoadedBags.count,
+      allLoadedBags.rows,
+      pageSize
+    );
+
+    return res.status(200).json({
+      status: "SUCCESS",
+      data: allLoadedBags,
+      per_page: pageSize,
+      current_page: currentPage,
+      last_page: meta.pageCount, //transactions.count,
+      first_page_url: `/api/jetwest/admin/all-loaded-bags?pageNum=1`,
+      last_page_url:
+        `/api/jetwest/admin/all-loaded-bags?pageNum=` + meta.pageCount, //transactions.count,
+      next_page_url: nextP,
+      prev_page_url: prevP,
+      path: `/api/jetwest/admin/all-loaded-bags?pageNum=`,
+      from: 1,
+      to: meta.pageCount, //transactions.count,
+    });
+  },
+
+  filterLoadedBags: async (req: any, res: Response, next: NextFunction) => {
+    const { pageNum, all, today, seven, month, start, end } = req.query;
+    let allLoadedBags;
+
+    console.log({ req: req.query });
+
+    var currentPage = parseInt(pageNum) ? parseInt(pageNum) : 1;
+
+    var page = currentPage - 1;
+    var pageSize = 25;
+    const offset = page * pageSize;
+    const limit = pageSize;
+
+    if (!pageNum || isNaN(pageNum)) {
+      return res
+        .status(400)
+        .json(utill.helpers.sendError("Kindly add a valid page number"));
+    }
+
+    if (all) {
+      allLoadedBags = await await db.dbs.LoadedBags.findAndCountAll({
+        offset: offset,
+        limit: limit,
+        order: [["createdAt", "DESC"]],
+      });
+    } else if (today) {
+      let startDate = utill
+        .moment()
+        .startOf("day")
+        .format("YYYY-MM-DD HH:mm:ss");
+      let endDate = utill.moment().endOf("day").format("YYYY-MM-DD HH:mm:ss");
+      allLoadedBags = await await db.dbs.LoadedBags.findAndCountAll({
+        offset: offset,
+        limit: limit,
+        where: { createdAt: { [Op.between]: [startDate, endDate] } },
+        order: [["createdAt", "DESC"]],
+      });
+    } else if (seven) {
+      let startDate = utill
+        .moment()
+        .subtract(7, "days")
+        .format("YYYY-MM-DD HH:mm:ss");
+      let endDate = utill.moment().format("YYYY-MM-DD HH:mm:ss");
+
+      allLoadedBags = await await db.dbs.LoadedBags.findAndCountAll({
+        offset: offset,
+        limit: limit,
+        where: { createdAt: { [Op.between]: [startDate, endDate] } },
+        order: [["createdAt", "DESC"]],
+      });
+    } else if (month) {
+      let startDate = utill
+        .moment()
+        .subtract(1, "month")
+        .format("YYYY-MM-DD HH:mm:ss");
+      let endDate = utill.moment().format("YYYY-MM-DD HH:mm:ss");
+
+      allLoadedBags = await await db.dbs.LoadedBags.findAndCountAll({
+        offset: offset,
+        limit: limit,
+        where: { createdAt: { [Op.between]: [startDate, endDate] } },
+        order: [["createdAt", "DESC"]],
+      });
+    } else if (start && end) {
+      let startDate = utill.moment(start).format("YYYY-MM-DD HH:mm:ss");
+      let endDate = utill.moment(end).format("YYYY-MM-DD HH:mm:ss");
+
+      allLoadedBags = await await db.dbs.LoadedBags.findAndCountAll({
+        offset: offset,
+        limit: limit,
+        where: { createdAt: { [Op.between]: [startDate, endDate] } },
+        order: [["createdAt", "DESC"]],
+      });
+    } else {
+      return res
+        .status(400)
+        .json(utill.helpers.sendError("Kindly add a valid search paramter"));
+    }
+
+    var next_page = currentPage + 1;
+    var prev_page = currentPage - 1;
+    var nextP = `/api/jetwest/admin/filter-loaded-bags?pageNum=` + next_page;
+    var prevP = `/api/jetwest/admin/filter-loaded-bags?pageNum=` + prev_page;
+
+    const meta = paginate(
+      currentPage,
+      allLoadedBags.count,
+      allLoadedBags.rows,
+      pageSize
+    );
+
+    return res.status(200).json({
+      status: "SUCCESS",
+      data: allLoadedBags,
+      per_page: pageSize,
+      current_page: currentPage,
+      last_page: meta.pageCount, //transactions.count,
+      first_page_url: `/api/jetwest/admin/filter-loaded-bags?pageNum=1`,
+      last_page_url:
+        `/api/jetwest/admin/filter-loaded-bags?pageNum=` + meta.pageCount, //transactions.count,
+      next_page_url: nextP,
+      prev_page_url: prevP,
+      path: `/api/jetwest/admin/filter-loaded-bags?pageNum=`,
+      from: 1,
+      to: meta.pageCount, //transactions.count,
+    });
+  },
+
+  allOffLoadedBags: async (req: any, res: Response, next: NextFunction) => {
+    const { pageNum } = req.query;
+
+    if (!pageNum || isNaN(pageNum)) {
+      return res
+        .status(400)
+        .json(utill.helpers.sendError("Kindly add a valid page number"));
+    }
+
+    var currentPage = parseInt(pageNum) ? parseInt(pageNum) : 1;
+
+    var page = currentPage - 1;
+    var pageSize = 25;
+    const offset = page * pageSize;
+    const limit = pageSize;
+
+    let allOffloadedBags = await db.dbs.OffLoadedBags.findAndCountAll({
+      offset: offset,
+      limit: limit,
+      order: [["createdAt", "DESC"]],
+    });
+
+    var next_page = currentPage + 1;
+    var prev_page = currentPage - 1;
+    var nextP = `/api/jetwest/admin/all-offloaded-bags?pageNum=` + next_page;
+    var prevP = `/api/jetwest/admin/all-offloaded-bags?pageNum=` + prev_page;
+
+    const meta = paginate(
+      currentPage,
+      allOffloadedBags.count,
+      allOffloadedBags.rows,
+      pageSize
+    );
+
+    return res.status(200).json({
+      status: "SUCCESS",
+      data: allOffloadedBags,
+      per_page: pageSize,
+      current_page: currentPage,
+      last_page: meta.pageCount, //transactions.count,
+      first_page_url: `/api/jetwest/admin/all-offloaded-bags?pageNum=1`,
+      last_page_url:
+        `/api/jetwest/admin/all-offloaded-bags?pageNum=` + meta.pageCount, //transactions.count,
+      next_page_url: nextP,
+      prev_page_url: prevP,
+      path: `/api/jetwest/admin/all-offloaded-bags?pageNum=`,
+      from: 1,
+      to: meta.pageCount, //transactions.count,
+    });
+  },
+
+  filterOffloadedBags: async (req: any, res: Response, next: NextFunction) => {
+    const { pageNum, all, today, seven, month, start, end } = req.query;
+    let allOffLoadedBags;
+
+    var currentPage = parseInt(pageNum) ? parseInt(pageNum) : 1;
+
+    var page = currentPage - 1;
+    var pageSize = 25;
+    const offset = page * pageSize;
+    const limit = pageSize;
+
+    if (!pageNum || isNaN(pageNum)) {
+      return res
+        .status(400)
+        .json(utill.helpers.sendError("Kindly add a valid page number"));
+    }
+
+    if (all) {
+      allOffLoadedBags = await db.dbs.OffLoadedBags.findAndCountAll({
+        offset: offset,
+        limit: limit,
+        order: [["createdAt", "DESC"]],
+      });
+    } else if (today) {
+      let startDate = utill
+        .moment()
+        .startOf("day")
+        .format("YYYY-MM-DD HH:mm:ss");
+      let endDate = utill.moment().endOf("day").format("YYYY-MM-DD HH:mm:ss");
+      allOffLoadedBags = await db.dbs.OffLoadedBags.findAndCountAll({
+        offset: offset,
+        limit: limit,
+        where: { createdAt: { [Op.between]: [startDate, endDate] } },
+        order: [["createdAt", "DESC"]],
+      });
+    } else if (seven) {
+      let startDate = utill
+        .moment()
+        .subtract(7, "days")
+        .format("YYYY-MM-DD HH:mm:ss");
+      let endDate = utill.moment().format("YYYY-MM-DD HH:mm:ss");
+
+      allOffLoadedBags = await db.dbs.OffLoadedBags.findAndCountAll({
+        offset: offset,
+        limit: limit,
+        where: { createdAt: { [Op.between]: [startDate, endDate] } },
+        order: [["createdAt", "DESC"]],
+      });
+    } else if (month) {
+      let startDate = utill
+        .moment()
+        .subtract(1, "month")
+        .format("YYYY-MM-DD HH:mm:ss");
+      let endDate = utill.moment().format("YYYY-MM-DD HH:mm:ss");
+
+      allOffLoadedBags = await db.dbs.OffLoadedBags.findAndCountAll({
+        offset: offset,
+        limit: limit,
+        where: { createdAt: { [Op.between]: [startDate, endDate] } },
+        order: [["createdAt", "DESC"]],
+      });
+    } else if (start && end) {
+      let startDate = utill.moment(start).format("YYYY-MM-DD HH:mm:ss");
+      let endDate = utill.moment(end).format("YYYY-MM-DD HH:mm:ss");
+
+      allOffLoadedBags = await db.dbs.OffLoadedBags.findAndCountAll({
+        offset: offset,
+        limit: limit,
+        where: { createdAt: { [Op.between]: [startDate, endDate] } },
+        order: [["createdAt", "DESC"]],
+      });
+    } else {
+      return res
+        .status(400)
+        .json(utill.helpers.sendError("Kindly add a valid search paramter"));
+    }
+
+    var next_page = currentPage + 1;
+    var prev_page = currentPage - 1;
+    var nextP = `/api/jetwest/admin/filter-offloaded-bags?pageNum=` + next_page;
+    var prevP = `/api/jetwest/admin/filter-offloaded-bags?pageNum=` + prev_page;
+
+    const meta = paginate(
+      currentPage,
+      allOffLoadedBags.count,
+      allOffLoadedBags.rows,
+      pageSize
+    );
+
+    return res.status(200).json({
+      status: "SUCCESS",
+      data: allOffLoadedBags,
+      per_page: pageSize,
+      current_page: currentPage,
+      last_page: meta.pageCount, //transactions.count,
+      first_page_url: `/api/jetwest/admin/filter-offloaded-bags?pageNum=1`,
+      last_page_url:
+        `/api/jetwest/admin/filter-offloaded-bags?pageNum=` + meta.pageCount, //transactions.count,
+      next_page_url: nextP,
+      prev_page_url: prevP,
+      path: `/api/jetwest/admin/filter-offloaded-bags?pageNum=`,
+      from: 1,
+      to: meta.pageCount, //transactions.count,
+    });
+  },
 };

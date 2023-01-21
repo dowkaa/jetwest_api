@@ -350,4 +350,29 @@ router.get(
   [jwtMiddleWare, signatureSigner],
   AdminCtrl.scanBaggage
 );
+
+// logistics ops
+router.get(
+  "/all-loaded-bags",
+  [jwtMiddleWare, signatureSigner],
+  AdminCtrl.allLoadedBags
+);
+
+router.get(
+  "/filter-loaded-bags",
+  [jwtMiddleWare, signatureSigner],
+  AdminCtrl.filterLoadedBags
+);
+
+router.get(
+  "/all-offloaded-bags",
+  [jwtMiddleWare, signatureSigner],
+  AdminCtrl.allOffLoadedBags
+);
+
+router.get(
+  "/filter-offloaded-bags",
+  [jwtMiddleWare, signatureSigner],
+  AdminCtrl.filterOffloadedBags
+);
 module.exports = router;
