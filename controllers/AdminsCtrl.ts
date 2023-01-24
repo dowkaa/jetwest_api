@@ -3808,7 +3808,7 @@ with note ${note}`,
   scanBaggage: async (req: any, res: Response, next: NextFunction) => {
     let { refId, flight_id, scan_type } = req.query;
 
-    if (!(refId && flight_id)) {
+    if (!(refId && flight_id && scan_type)) {
       return res
         .status(400)
         .json(utill.helpers.sendError("Enter a valid reference id"));
@@ -3988,6 +3988,14 @@ with note ${note}`,
             .json(
               utill.helpers.sendSuccess(
                 `successfully off-loaded from aircraft with flight number ${allLogistics[0].flight_reg}`
+              )
+            );
+        } else {
+          return res
+            .status(400)
+            .json(
+              utill.helpers.sendSuccess(
+                `Kindly add a valid scan precedure; load or offload`
               )
             );
         }
