@@ -363,6 +363,8 @@ module.exports = {
         departure_station: departure_station,
         destination_station: destination_station,
         flight_reg,
+        arrival_date,
+        departure_date,
         day: utill.moment().format("YYYY:MM:DD"),
         stod: total,
       },
@@ -382,6 +384,8 @@ module.exports = {
       where: {
         departure_station: departure_station,
         flight_reg,
+        arrival_date,
+        departure_date,
         destination_station: destination_station,
         day: utill.moment().format("YYYY:MM:DD"),
       },
