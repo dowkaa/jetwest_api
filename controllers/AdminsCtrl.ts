@@ -362,6 +362,7 @@ module.exports = {
       where: {
         departure_station: departure_station,
         destination_station: destination_station,
+        flight_reg,
         day: utill.moment().format("YYYY:MM:DD"),
         stod: total,
       },
@@ -380,6 +381,7 @@ module.exports = {
     let checker2 = await db.dbs.ScheduleFlights.findOne({
       where: {
         departure_station: departure_station,
+        flight_reg,
         destination_station: destination_station,
         day: utill.moment().format("YYYY:MM:DD"),
       },
