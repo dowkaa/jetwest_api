@@ -3835,7 +3835,11 @@ with note ${note}`,
     }
 
     if (v.atd) {
-      return res.status(400).json(utill.helpers.sendError("flight not found"));
+      return res
+        .status(400)
+        .json(
+          utill.helpers.sendError("Unable to scan bag flight is in progress")
+        );
     }
 
     let allLogistics: any = [];
@@ -3896,7 +3900,18 @@ with note ${note}`,
     if (allLogistics.length > 0) {
       if (status) {
         if (scan_type === "load") {
+          if (parseInt(v.scanned_bags) === parseInt(v.no_of_bags)) {
+            return res
+              .status(400)
+              .json(
+                utill.helpers.sendError(
+                  "All bags scanned into flight successfully"
+                )
+              );
+          }
           if (status.progress === "loaded") {
+            v.load_count = parseInt(v.load_count) + 1;
+            await v.save();
             return res
               .status(200)
               .json(
@@ -3949,6 +3964,8 @@ with note ${note}`,
           }
 
           status.progress = "completed";
+          v.offload_count = parseInt(v.offload_count) + 1;
+          await v.save();
           await status.save();
 
           await db.dbs.OffLoadedBags.create({

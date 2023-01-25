@@ -31,6 +31,8 @@ var ScheduleFlights = (sequelize: any, type: any) => {
     duration: Sequelize.STRING,
     groundHandler: Sequelize.STRING,
     email: Sequelize.STRING,
+    offload_count: Sequelize.INTEGER,
+    load_count: Sequelize.INTEGER,
     logo_url: Sequelize.STRING,
     phone_number: Sequelize.STRING,
   });
