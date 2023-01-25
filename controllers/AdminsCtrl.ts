@@ -855,6 +855,62 @@ module.exports = {
     });
   },
 
+  pendingFlights: async (
+    req: any,
+    res: Response,
+    next: NextFunction
+  ): Promise<Response> => {
+    // let flights = await db.dbs.ScheduleFlights.findAll({
+    //   where: { status: "completed" },
+    // });
+    // return res.status(200).json({ data: flights });
+
+    const { pageNum } = req.query;
+
+    if (!pageNum || isNaN(pageNum)) {
+      return res
+        .status(400)
+        .json(utill.helpers.sendError("Kindly add a valid page number"));
+    }
+
+    var currentPage = parseInt(pageNum) ? parseInt(pageNum) : 1;
+
+    var page = currentPage - 1;
+    var pageSize = 25;
+    const offset = page * pageSize;
+    const limit = pageSize;
+
+    let flights = await db.dbs.ScheduleFlights.findAndCountAll({
+      offset: offset,
+      limit: limit,
+      where: { status: "pending" },
+      order: [["id", "DESC"]],
+    });
+
+    var next_page = currentPage + 1;
+    var prev_page = currentPage - 1;
+    var nextP = `/api/jetwest/admin/pending-flights?pageNum=` + next_page;
+    var prevP = `/api/jetwest/admin/pending-flights?pageNum=` + prev_page;
+
+    const meta = paginate(currentPage, flights.count, flights.rows, pageSize);
+
+    return res.status(200).json({
+      status: "SUCCESS",
+      data: flights,
+      per_page: pageSize,
+      current_page: currentPage,
+      last_page: meta.pageCount, //transactions.count,
+      first_page_url: `/api/jetwest/admin/pending-flights?pageNum=1`,
+      last_page_url:
+        `/api/jetwest/admin/pending-flights?pageNum=` + meta.pageCount, //transactions.count,
+      next_page_url: nextP,
+      prev_page_url: prevP,
+      path: `/api/jetwest/admin/pending-flights?pageNum=`,
+      from: 1,
+      to: meta.pageCount, //transactions.count,
+    });
+  },
+
   updateATD: async (
     req: any,
     res: Response,
@@ -3619,7 +3675,7 @@ with note ${note}`,
 
     var completed = await db.dbs.sequelize
       .query(
-        "SELECT schedule_flights.id, schedule_flights.flight_reg, shipping_items.status, shipping_items.createdAt AS shipping_items_createdAt, shipping_items.uuid AS shipping_items_uuid, schedule_flights.createdAt as schedule_flights_createdAt, schedule_flights.uuid AS schedule_flights_uuid, schedule_flights.departure_date, schedule_flights.destination_airport, schedule_flights.takeoff_airport, schedule_flights.departure_station, schedule_flights.destination_station,schedule_flights.stoa, schedule_flights.stod, schedule_flights.taw, shipping_items.no_of_bags FROM `schedule_flights`, shipping_items WHERE shipping_items.flight_id = schedule_flights.uuid AND schedule_flights.takeoff_airport=:airport  ORDER BY `schedule_flights`.`createdAt` DESC limit :limit offset :offset;",
+        "SELECT schedule_flights.id, schedule_flights.flight_reg, shipping_items.status, shipping_items.createdAt AS shipping_items_createdAt, shipping_items.uuid AS shipping_items_uuid, schedule_flights.createdAt as schedule_flights_createdAt, schedule_flights.uuid AS schedule_flights_uuid, schedule_flights.departure_date, schedule_flights.load_count, schedule_flights.offload_count, schedule_flights.destination_airport, schedule_flights.takeoff_airport, schedule_flights.departure_station, schedule_flights.destination_station,schedule_flights.stoa, schedule_flights.stod, schedule_flights.taw, shipping_items.no_of_bags FROM `schedule_flights`, shipping_items WHERE shipping_items.flight_id = schedule_flights.uuid AND schedule_flights.takeoff_airport=:airport  ORDER BY `schedule_flights`.`createdAt` DESC limit :limit offset :offset;",
         {
           replacements: {
             limit: limit,
@@ -3637,6 +3693,8 @@ with note ${note}`,
           var schedule_flights_uuid = obj.schedule_flights_uuid;
           var departure_date = obj.departure_date;
           var destination_airport = obj.destination_airport;
+          var load_count = obj.load_count;
+          var offload_count = obj.offload_count;
           var takeoff_airport = obj.takeoff_airport;
           var departure_station = obj.departure_station;
           var destination_station = obj.destination_station;
@@ -3653,6 +3711,8 @@ with note ${note}`,
             flight_reg,
             shipping_items_uuid,
             schedule_flights_uuid,
+            load_count,
+            offload_count,
             departure_date,
             departure_station,
             destination_station,
@@ -3730,7 +3790,7 @@ with note ${note}`,
 
     var completed = await db.dbs.sequelize
       .query(
-        "SELECT schedule_flights.id, schedule_flights.flight_reg, shipping_items.status, shipping_items.createdAt AS shipping_items_createdAt, shipping_items.uuid AS shipping_items_uuid, schedule_flights.createdAt as schedule_flights_createdAt, schedule_flights.uuid AS schedule_flights_uuid, schedule_flights.departure_date, schedule_flights.destination_airport, schedule_flights.takeoff_airport, schedule_flights.departure_station, schedule_flights.destination_station,schedule_flights.stoa, schedule_flights.stod, schedule_flights.taw, shipping_items.no_of_bags FROM `schedule_flights`, shipping_items WHERE shipping_items.flight_id = schedule_flights.uuid AND schedule_flights.destination_airport=:airport  ORDER BY `schedule_flights`.`createdAt` DESC limit :limit offset :offset;",
+        "SELECT schedule_flights.id, schedule_flights.flight_reg, shipping_items.status, shipping_items.createdAt AS shipping_items_createdAt, shipping_items.uuid AS shipping_items_uuid, schedule_flights.createdAt as schedule_flights_createdAt, schedule_flights.uuid AS schedule_flights_uuid, schedule_flights.departure_date, schedule_flights.load_count, schedule_flights.offload_count, schedule_flights.destination_airport, schedule_flights.takeoff_airport, schedule_flights.departure_station, schedule_flights.destination_station,schedule_flights.stoa, schedule_flights.stod, schedule_flights.taw, shipping_items.no_of_bags FROM `schedule_flights`, shipping_items WHERE shipping_items.flight_id = schedule_flights.uuid AND schedule_flights.destination_airport=:airport  ORDER BY `schedule_flights`.`createdAt` DESC limit :limit offset :offset;",
         {
           replacements: {
             limit: limit,
@@ -3752,6 +3812,8 @@ with note ${note}`,
           var departure_station = obj.departure_station;
           var destination_station = obj.destination_station;
           var stoa = obj.stoa;
+          var load_count = obj.load_count;
+          var offload_count = obj.offload_count;
           var stod = obj.stod;
           var taw = obj.taw;
           var no_of_bags = obj.no_of_bags;
@@ -3765,6 +3827,8 @@ with note ${note}`,
             shipping_items_uuid,
             schedule_flights_uuid,
             departure_date,
+            load_count,
+            offload_count,
             takeoff_airport,
             destination_airport,
             departure_station,

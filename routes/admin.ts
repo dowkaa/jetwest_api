@@ -375,4 +375,10 @@ router.get(
   [jwtMiddleWare, signatureSigner],
   AdminCtrl.filterOffloadedBags
 );
+
+router.get(
+  "/pending-flights",
+  [jwtMiddleWare, signatureSigner],
+  AdminCtrl.pendingFlights
+);
 module.exports = router;
