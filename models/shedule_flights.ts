@@ -33,6 +33,7 @@ var ScheduleFlights = (sequelize: any, type: any) => {
     email: Sequelize.STRING,
     offload_count: Sequelize.INTEGER,
     load_count: Sequelize.INTEGER,
+    no_of_bags: Sequelize.INTEGER,
     logo_url: Sequelize.STRING,
     phone_number: Sequelize.STRING,
   });

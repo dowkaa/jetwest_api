@@ -640,6 +640,8 @@ module.exports = {
         reciever_secMobile,
       });
     }
+    v.no_of_bags = items.length;
+    await v.save();
 
     const option = {
       reference: payment_ref,
