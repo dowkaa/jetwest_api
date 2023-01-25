@@ -3667,9 +3667,15 @@ with note ${note}`,
       prev_page = currentPage - 1;
     }
     var nextP =
-      "/api/jetwest/admin/all_outgoing_logistics?pageNum=" + next_page;
+      "/api/jetwest/admin/all_outgoing_logistics?pageNum=" +
+      next_page +
+      "&airport=" +
+      airport;
     var prevP =
-      "/api/jetwest/admin/all_outgoing_logistics?pageNum=" + prev_page;
+      "/api/jetwest/admin/all_outgoing_logistics?pageNum=" +
+      prev_page +
+      "&airport=" +
+      airport;
 
     let allLogistics: any = [];
 
@@ -3736,19 +3742,26 @@ with note ${note}`,
       pageSize
     );
 
+    let data = {
+      count: allLogistics.length,
+      rows: allLogistics,
+    };
+
     return res.status(200).json({
       status: "SUCCESS",
-      data: allLogistics,
+      data: data,
       per_page: pageSize,
       current_page: currentPage,
       last_page: meta.pageCount, //transactions.count,
-      first_page_url: `/api/jetwest/admin/all_incoming_logistics?pageNum=1`,
-      last_page_url:
-        "/api/jetwest/transactions/all_outgoing_logistics?pageNum=" +
-        meta.pageCount, //transactions.count,
+      first_page_url: `/api/jetwest/admin/all_incoming_logistics?pageNum=1&airport=${airport}`,
+      last_page_url: `/api/jetwest/transactions/all_outgoing_logistics?pageNum=${meta.pageCount}&airport=${airport}`, //transactions.count,
       next_page_url: nextP,
       prev_page_url: prevP,
-      path: "/api/jetwest/admin/all_outgoing_logistics?pageNum=" + pageNum,
+      path:
+        "/api/jetwest/admin/all_outgoing_logistics?pageNum=" +
+        pageNum +
+        "&airport=" +
+        airport,
       from: 1,
       to: meta.pageCount, //transactions.count,
     });
@@ -3782,9 +3795,15 @@ with note ${note}`,
       prev_page = currentPage - 1;
     }
     var nextP =
-      "/api/jetwest/admin/all_incoming_logistics?pageNum=" + next_page;
+      "/api/jetwest/admin/all_incoming_logistics?pageNum=" +
+      next_page +
+      "&airport=" +
+      airport;
     var prevP =
-      "/api/jetwest/admin/all_incoming_logistics?pageNum=" + prev_page;
+      "/api/jetwest/admin/all_incoming_logistics?pageNum=" +
+      prev_page +
+      "&airport=" +
+      airport;
 
     let allLogistics: any = [];
 
@@ -3851,19 +3870,26 @@ with note ${note}`,
       pageSize
     );
 
+    let data = {
+      count: allLogistics.length,
+      rows: allLogistics,
+    };
+
     return res.status(200).json({
       status: "SUCCESS",
-      data: allLogistics,
+      data: data,
       per_page: pageSize,
       current_page: currentPage,
       last_page: meta.pageCount, //transactions.count,
-      first_page_url: `/api/jetwest/admin/all_incoming_logistics?pageNum=1`,
-      last_page_url:
-        "/api/jetwest/transactions/all_incoming_logistics?pageNum=" +
-        meta.pageCount, //transactions.count,
+      first_page_url: `/api/jetwest/admin/all_incoming_logistics?pageNum=1&airport=${airport}`,
+      last_page_url: `/api/jetwest/transactions/all_incoming_logistics?pageNum=${meta.pageCount}&airport=${airport}`, //transactions.count,
       next_page_url: nextP,
       prev_page_url: prevP,
-      path: "/api/jetwest/admin/all_incoming_logistics?pageNum=" + pageNum,
+      path:
+        "/api/jetwest/admin/all_incoming_logistics?pageNum=" +
+        pageNum +
+        "&airport=" +
+        airport,
       from: 1,
       to: meta.pageCount, //transactions.count,
     });
