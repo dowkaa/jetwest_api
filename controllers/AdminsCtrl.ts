@@ -3925,7 +3925,7 @@ with note ${note}`,
       return res.status(400).json(utill.helpers.sendError("flight not found"));
     }
 
-    if (v.atd) {
+    if (v.status === "Almost completed") {
       return res
         .status(400)
         .json(

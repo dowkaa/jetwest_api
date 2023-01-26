@@ -336,13 +336,13 @@ router.post(
 router.get(
   "/all-outgoing-logistics",
   [jwtMiddleWare, signatureSigner],
-  AdminCtrl.allOutgoingLogistics
+  AdminCtrl.allIncomingLogistics
 );
 
 router.get(
   "/all_incoming_logistics",
   [jwtMiddleWare, signatureSigner],
-  AdminCtrl.allIncomingLogistics
+  AdminCtrl.allOutgoingLogistics
 );
 
 router.get(
