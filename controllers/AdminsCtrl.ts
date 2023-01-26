@@ -4001,8 +4001,6 @@ with note ${note}`,
               );
           }
           if (status.progress === "loaded") {
-            v.load_count = parseInt(v.load_count) + 1;
-            await v.save();
             return res
               .status(200)
               .json(
@@ -4014,6 +4012,8 @@ with note ${note}`,
 
           status.progress = "loaded";
           status.status = "enroute";
+          v.load_count = parseInt(v.load_count) + 1;
+          await v.save();
           await status.save();
 
           await db.dbs.LoadedBags.create({
