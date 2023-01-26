@@ -35,7 +35,7 @@ const addJob = async (data: any) => {
     where: { uuid: data.uuid },
   });
 
-  let date = utils.moment().format("YYYY-MM-DD HH:mm:ss");
+  let date = utils.moment().add(1, "hour").format("YYYY-MM-DD HH:mm:ss");
 
   if (Date.parse(item.stod) - Date.parse(date) <= 7200000) {
     8319169;

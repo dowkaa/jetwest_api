@@ -16,7 +16,7 @@ const http = require("http").Server(app);
 
 module.exports = http.listen(port || 2023, () => {
   console.log(`Server started on port ${port}`);
-  let date = utils.moment().format("YYYY-MM-DD HH:mm:ss");
+  let date = utils.moment().add(1, "hour").format("YYYY-MM-DD HH:mm:ss");
 
   console.log({
     date: new Date(),
