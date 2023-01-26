@@ -182,7 +182,7 @@ module.exports = {
       user.otp = code;
       await user.save();
 
-      const message = `Thanks for Jetwest the Jetwest team, we promise to serve your shiping needs. Kindly use the token ${code} to activate your account. 
+      const message = `Thanks for joining the Dowkaa team, we promise to serve your shiping needs. Kindly use the token ${code} to activate your account. 
         Thanks.`;
       // utilz.welcome.sendMail(option);
 

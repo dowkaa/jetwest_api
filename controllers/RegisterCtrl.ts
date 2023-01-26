@@ -121,7 +121,7 @@ module.exports = {
       const option = {
         email: req.body.email,
         name: `${first_name} ${last_name}`,
-        message: `Thanks for Jetwest the Jetwest team, we promise to serve your shiping needs. Kindly use the token ${code} to activate your account. Thanks.`,
+        message: `Thanks for joing the Dowkaa team, we promise to serve your shiping needs. Kindly use the token ${code} to activate your account. Thanks.`,
         otp: code,
       };
 

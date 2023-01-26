@@ -661,7 +661,7 @@ module.exports = {
       .status(200)
       .json(
         util.helpers.sendSuccess(
-          "Shipment booked successfully, the Jetwest team would reach out to to soon."
+          "Shipment booked successfully, the Dowkaa team would reach out to to soon."
         )
       );
     // }
