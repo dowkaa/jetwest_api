@@ -15,4 +15,7 @@ const http = require("http").Server(app);
 
 module.exports = http.listen(port || 2023, () => {
   console.log(`Server started on port ${port}`);
+  console.log({
+    date: new Date(),
+  });
 });
