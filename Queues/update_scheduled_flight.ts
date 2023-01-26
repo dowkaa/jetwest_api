@@ -35,6 +35,8 @@ const addJob = async (data: any) => {
     where: { uuid: data.uuid },
   });
 
+  console.log({ minus: Date.parse(item.stod) - Date.now(), id: item.uuid });
+
   if (Date.parse(item.stod) - Date.now() <= 7200000) {
     item.status = "In progress";
     await item.save();
