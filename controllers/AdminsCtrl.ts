@@ -3991,7 +3991,7 @@ with note ${note}`,
     if (allLogistics.length > 0) {
       if (status) {
         if (scan_type === "load") {
-          if (parseInt(v.scanned_bags) === parseInt(v.no_of_bags)) {
+          if (parseInt(v.load_count) === parseInt(v.no_of_bags)) {
             return res
               .status(400)
               .json(
@@ -4048,6 +4048,15 @@ with note ${note}`,
               .replace("000Z", ""),
           });
         } else if (scan_type === "offload") {
+          if (parseInt(v.offload_count) === parseInt(v.no_of_bags)) {
+            return res
+              .status(400)
+              .json(
+                utill.helpers.sendError(
+                  "Already offloaded successfully all bags from flight "
+                )
+              );
+          }
           if (status.progress === "completed") {
             return res
               .status(400)
