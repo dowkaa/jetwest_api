@@ -3918,7 +3918,7 @@ with note ${note}`,
     }
 
     let v = await db.dbs.ScheduleFlights.findOne({
-      uuid: status.flight_id,
+      where: { uuid: status.flight_id },
     });
 
     if (!v) {
