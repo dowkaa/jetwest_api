@@ -137,14 +137,142 @@ module.exports = {
       let random = utill.uuid();
 
       const token = signTokens(user, random);
-      return res.status(200).json({
-        success: {
-          token,
-          email: user.email,
-          login_status: user.reg_status,
-          account_type: user.type,
-        },
-      });
+
+      if (user.type === "Carrier") {
+        let cargo = await db.dbs.Cargo.findOne({
+          where: { owner_id: user.uuid },
+        });
+
+        if (!cargo) {
+          return res.status(200).json({
+            success: {
+              token,
+              email: user.email,
+              login_status: user.reg_status,
+              account_type: user.type,
+              totalCompletedShipments: 0,
+              totalAmount: [
+                {
+                  total_amount: 0,
+                },
+              ],
+              totalCancelled: 0,
+              totalkg: [
+                {
+                  totalKg: 0,
+                },
+              ],
+            },
+          });
+        }
+
+        var totalCompletedShipments = await db.dbs.ShippingItems.count({
+          where: { cargo_id: cargo.uuid, status: "completed" },
+          order: [["id", "DESC"]],
+        });
+
+        var totalCancelled = await db.dbs.ShippingItems.count({
+          where: { cargo_id: cargo.uuid, status: "cancelled" },
+          order: [["id", "DESC"]],
+        });
+
+        const totalSuccessfullTransactionsAmount =
+          await db.dbs.Transactions.findAll({
+            where: { cargo_id: cargo.uuid, status: "success" },
+            attributes: [
+              [
+                utill.sequelize.fn("sum", utill.sequelize.col("amount")),
+                "total_amount",
+              ],
+            ],
+            raw: true,
+          });
+
+        const totalkg = await db.dbs.ShippingItems.findAll({
+          where: { cargo_id: cargo.uuid },
+          attributes: [
+            [
+              utill.sequelize.fn(
+                "sum",
+                utill.sequelize.col("chargeable_weight")
+              ),
+              "totalKg",
+            ],
+          ],
+          raw: true,
+        });
+
+        return res.status(200).json({
+          success: {
+            token,
+            email: user.email,
+            login_status: user.reg_status,
+            account_type: user.type,
+            totalCompletedShipments,
+            totalSuccessfullTransactionsAmount,
+            totalCancelled,
+            totalkg,
+          },
+        });
+      } else if (user.type === "Shipper") {
+        var totalCompletedShipments = await db.dbs.ShippingItems.count({
+          where: { user_id: user.uuid, status: "completed" },
+          order: [["id", "DESC"]],
+        });
+
+        var totalCancelled = await db.dbs.ShippingItems.count({
+          where: { user_id: user.uuid, status: "cancelled" },
+          order: [["id", "DESC"]],
+        });
+
+        const totalSuccessfullTransactionsAmount =
+          await db.dbs.Transactions.findAll({
+            where: { user_id: user.customer_id, status: "success" },
+            attributes: [
+              [
+                utill.sequelize.fn("sum", utill.sequelize.col("amount")),
+                "total_amount",
+              ],
+            ],
+            raw: true,
+          });
+
+        const totalkg = await db.dbs.ShippingItems.findAll({
+          where: { user_id: user.uuid },
+          attributes: [
+            [
+              utill.sequelize.fn(
+                "sum",
+                utill.sequelize.col("chargeable_weight")
+              ),
+              "totalKg",
+            ],
+          ],
+          raw: true,
+        });
+
+        return res.status(200).json({
+          success: {
+            token,
+            email: user.email,
+            login_status: user.reg_status,
+            account_type: user.type,
+            totalCompletedShipments,
+            totalSuccessfullTransactionsAmount,
+            totalCancelled,
+            totalkg,
+          },
+        });
+      } else {
+        return res.status(200).json({
+          success: {
+            token,
+            email: user.email,
+            login_status: user.reg_status,
+            account_type: user.type,
+          },
+        });
+      }
     }
 
     return res.status(400).json({

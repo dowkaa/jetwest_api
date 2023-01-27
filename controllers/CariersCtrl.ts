@@ -20,7 +20,20 @@ module.exports = {
     });
 
     if (!cargo) {
-      return res.status(200).json(util.helpers.sendError("No aircraft found"));
+      return res.status(200).json({
+        totalCompletedShipments: 0,
+        totalAmount: [
+          {
+            total_amount: 0,
+          },
+        ],
+        totalCancelled: 0,
+        totalkg: [
+          {
+            totalKg: 0,
+          },
+        ],
+      });
     }
 
     var totalCompletedShipments = await db.dbs.ShippingItems.count({

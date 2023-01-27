@@ -141,7 +141,7 @@ module.exports = {
           otp: code,
           message: `Kindly verify your email with the code sent to your ${
             notification_type === "email" ? "email address" : "mobile number"
-          } to verify your registration `,
+          } `,
         },
       });
     } else {
@@ -206,6 +206,18 @@ module.exports = {
         account_type: user.type,
         token,
         message: "Your email has been verified successfully",
+        totalCompletedShipments: 0,
+        totalAmount: [
+          {
+            total_amount: 0,
+          },
+        ],
+        totalCancelled: 0,
+        totalkg: [
+          {
+            totalKg: 0,
+          },
+        ],
       },
     });
   },
@@ -470,15 +482,39 @@ module.exports = {
 
     const token = signToken(user, random);
 
-    return res.status(200).json({
-      success: {
-        status: "SUCCESS",
-        token,
-        email: user.email,
-        account_type: user.type,
-        message: "directors data added successfully",
-      },
-    });
+    if (user.type === "Carrier" || user.type === "Shipper") {
+      return res.status(200).json({
+        success: {
+          status: "SUCCESS",
+          token,
+          email: user.email,
+          account_type: user.type,
+          message: "directors data added successfully",
+          totalCompletedShipments: 0,
+          totalAmount: [
+            {
+              total_amount: 0,
+            },
+          ],
+          totalCancelled: 0,
+          totalkg: [
+            {
+              totalKg: 0,
+            },
+          ],
+        },
+      });
+    } else {
+      return res.status(200).json({
+        success: {
+          status: "SUCCESS",
+          token,
+          email: user.email,
+          account_type: user.type,
+          message: "directors data added successfully",
+        },
+      });
+    }
   },
 
   businessDocs: async (req: Request, res: Response, next: NextFunction) => {

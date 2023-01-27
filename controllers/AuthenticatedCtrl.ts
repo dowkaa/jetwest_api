@@ -1520,4 +1520,60 @@ module.exports = {
 
     return res.status(200).json({ shipments });
   },
+
+  getUpdate: async (
+    req: any,
+    res: Response,
+    next: NextFunction
+  ): Promise<Response> => {
+    let user = await db.dbs.Users.findOne({ where: { uuid: req.user.uuid } });
+
+    if (user.type !== "Shipper") {
+      return res
+        .status(400)
+        .json(util.helpers.sendError("Non shippers are not allowed here"));
+    }
+
+    var totalCompletedShipments = await db.dbs.ShippingItems.count({
+      where: { user_id: user.uuid, status: "completed" },
+      order: [["id", "DESC"]],
+    });
+
+    var totalCancelled = await db.dbs.ShippingItems.count({
+      where: { user_id: user.uuid, status: "cancelled" },
+      order: [["id", "DESC"]],
+    });
+
+    const totalSuccessfullTransactionsAmount =
+      await db.dbs.Transactions.findAll({
+        where: { user_id: user.customer_id, status: "success" },
+        attributes: [
+          [
+            util.sequelize.fn("sum", util.sequelize.col("amount")),
+            "total_amount",
+          ],
+        ],
+        raw: true,
+      });
+
+    const totalkg = await db.dbs.ShippingItems.findAll({
+      where: { user_id: user.uuid },
+      attributes: [
+        [
+          util.sequelize.fn("sum", util.sequelize.col("chargeable_weight")),
+          "totalKg",
+        ],
+      ],
+      raw: true,
+    });
+
+    return res.status(200).json({
+      success: {
+        totalCompletedShipments,
+        totalSuccessfullTransactionsAmount,
+        totalCancelled,
+        totalkg,
+      },
+    });
+  },
 };

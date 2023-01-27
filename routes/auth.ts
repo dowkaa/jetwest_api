@@ -119,4 +119,10 @@ routerr.get(
   AuthenticatedCtrl.shipmentsFromTransactions
 );
 
+routerr.get(
+  "/shipper-update",
+  [jwtMiddleWare, signatureSignerMiddleware],
+  AuthenticatedCtrl.getUpdate
+);
+
 module.exports = routerr;
