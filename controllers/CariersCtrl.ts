@@ -5,6 +5,16 @@ const { paginate } = require("paginate-info");
 
 module.exports = {
   estimateData: async (req: any, res: Response, next: NextFunction) => {
+    let checker = await db.dbs.Users.findOne({
+      where: { uuid: req.user.uuid, type: "Carrier" },
+    });
+
+    if (!checker) {
+      return res
+        .status(400)
+        .json(util.helpers.sendError("Non carriers are not allowed here"));
+    }
+
     let cargo = await db.dbs.Cargo.findOne({
       where: { owner_id: req.user.uuid },
     });
@@ -13,16 +23,7 @@ module.exports = {
       return res.status(200).json(util.helpers.sendError("No aircraft found"));
     }
 
-    let checker = await db.dbs.Users.findOne({
-      where: { uuid: req.user.uuid, type: "Carrier" },
-    });
-    if (!checker) {
-      return res
-        .status(400)
-        .json(util.helpers.sendError("Non carriers are not allowed here"));
-    }
-
-    var totalShipments = await db.dbs.ShippingItems.count({
+    var totalCompletedShipments = await db.dbs.ShippingItems.count({
       where: { cargo_id: cargo.uuid, status: "completed" },
       order: [["id", "DESC"]],
     });
@@ -32,18 +33,35 @@ module.exports = {
       order: [["id", "DESC"]],
     });
 
-    const totalHours = await db.dbs.ShippingItems.findAll({
+    const totalSuccessfullTransactionsAmount =
+      await db.dbs.Transactions.findAll({
+        where: { cargo_id: cargo.uuid },
+        attributes: [
+          [
+            util.sequelize.fn("sum", util.sequelize.col("amount")),
+            "total_amount",
+          ],
+        ],
+        raw: true,
+      });
+
+    const totalkg = await db.dbs.ShippingItems.findAll({
       where: { cargo_id: cargo.uuid },
       attributes: [
         [
-          util.sequelize.fn("sum", util.sequelize.col("frieghtTime")),
-          "total_frieghtTime",
+          util.sequelize.fn("sum", util.sequelize.col("chargeable_weight")),
+          "totalKg",
         ],
       ],
       raw: true,
     });
 
-    return res.status(200).json({ totalShipments, totalHours, totalCancelled });
+    return res.status(200).json({
+      totalCompletedShipments,
+      totalSuccessfullTransactionsAmount,
+      totalCancelled,
+      totalkg,
+    });
   },
   allFrieghts: async (req: any, res: Response, next: NextFunction) => {
     let cargo = await db.dbs.Cargo.findOne({

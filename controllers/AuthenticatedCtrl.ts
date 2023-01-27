@@ -606,6 +606,7 @@ module.exports = {
         shipment_num,
         value,
         pickup_location,
+        chargeable_weight,
         cargo_id: cargo.uuid,
         destination,
         depature_date,

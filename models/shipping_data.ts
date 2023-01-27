@@ -43,6 +43,7 @@ var shippingItems = (sequelize: any, type: any) => {
     status: Sequelize.STRING,
     promo_code: Sequelize.STRING,
     value: Sequelize.STRING,
+    chargeable_weight: Sequelize.DOUBLE,
     content: Sequelize.STRING,
     reciever_firstname: Sequelize.STRING,
     reciever_lastname: Sequelize.STRING,

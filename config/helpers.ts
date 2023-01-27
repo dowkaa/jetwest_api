@@ -93,6 +93,7 @@ const validateTransaction = async (data: any) => {
           reference: data.reference,
           departure: shipment.pickup_location,
           arrival: shipment.destination,
+          cargo_id: shipment.cargo_id,
           departure_date: shipment.depature_date,
           arrival_date: shipment.arrival_date,
           shipment_no: data.shipment_num,

@@ -3681,7 +3681,7 @@ with note ${note}`,
 
     var completed = await db.dbs.sequelize
       .query(
-        "SELECT schedule_flights.id, schedule_flights.flight_reg, schedule_flights.createdAt as schedule_flights_createdAt, schedule_flights.uuid AS schedule_flights_uuid, schedule_flights.departure_date, schedule_flights.load_count, schedule_flights.offload_count, schedule_flights.destination_airport, schedule_flights.takeoff_airport, schedule_flights.departure_station, schedule_flights.destination_station,schedule_flights.stoa, schedule_flights.stod, schedule_flights.taw, schedule_flights.no_of_bags FROM `schedule_flights` WHERE schedule_flights.takeoff_airport=:airport  ORDER BY `schedule_flights`.`createdAt` DESC limit :limit offset :offset;",
+        "SELECT schedule_flights.id, schedule_flights.flight_reg, schedule_flights.createdAt as schedule_flights_createdAt, schedule_flights.uuid AS schedule_flights_uuid, schedule_flights.departure_date, schedule_flights.load_count, schedule_flights.offload_count, schedule_flights.destination_airport, schedule_flights.takeoff_airport, schedule_flights.status, schedule_flights.departure_station, schedule_flights.destination_station,schedule_flights.stoa, schedule_flights.stod, schedule_flights.taw, schedule_flights.no_of_bags FROM `schedule_flights` WHERE schedule_flights.takeoff_airport=:airport  ORDER BY `schedule_flights`.`createdAt` DESC limit :limit offset :offset;",
         {
           replacements: {
             limit: limit,
@@ -3807,7 +3807,7 @@ with note ${note}`,
 
     var completed = await db.dbs.sequelize
       .query(
-        "SELECT schedule_flights.id, schedule_flights.flight_reg, schedule_flights.createdAt as schedule_flights_createdAt, schedule_flights.uuid AS schedule_flights_uuid, schedule_flights.departure_date, schedule_flights.load_count, schedule_flights.offload_count, schedule_flights.destination_airport, schedule_flights.takeoff_airport, schedule_flights.departure_station, schedule_flights.destination_station,schedule_flights.stoa, schedule_flights.stod, schedule_flights.taw, schedule_flights.no_of_bags FROM `schedule_flights` WHERE schedule_flights.destination_airport=:airport  ORDER BY `schedule_flights`.`createdAt` DESC limit :limit offset :offset;",
+        "SELECT schedule_flights.id, schedule_flights.flight_reg, schedule_flights.createdAt as schedule_flights_createdAt, schedule_flights.uuid AS schedule_flights_uuid, schedule_flights.departure_date, schedule_flights.load_count, schedule_flights.offload_count, schedule_flights.destination_airport, schedule_flights.takeoff_airport, schedule_flights.status, schedule_flights.departure_station, schedule_flights.destination_station,schedule_flights.stoa, schedule_flights.stod, schedule_flights.taw, schedule_flights.no_of_bags FROM `schedule_flights` WHERE schedule_flights.destination_airport=:airport  ORDER BY `schedule_flights`.`createdAt` DESC limit :limit offset :offset;",
         {
           replacements: {
             limit: limit,
@@ -3996,7 +3996,7 @@ with note ${note}`,
               .status(400)
               .json(
                 utill.helpers.sendError(
-                  "All bags scanned into flight successfully"
+                  `Bags with reference ${refId} already scanned into flight with number ${allLogistics[0].flight_reg}`
                 )
               );
           }
@@ -4056,6 +4056,11 @@ with note ${note}`,
                   "Already offloaded successfully all bags from flight "
                 )
               );
+          }
+          if (v.status != "completed") {
+            return res
+              .status(400)
+              .json(utill.helpers.sendError("Flight not landed"));
           }
           if (status.progress === "completed") {
             return res
