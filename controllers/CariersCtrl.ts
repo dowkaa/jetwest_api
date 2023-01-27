@@ -84,7 +84,6 @@ module.exports = {
       where: { cargo_id: cargo.uuid },
       order: [["id", "DESC"]],
     });
-
     //1`;
 
     var next_page = currentPage + 1;

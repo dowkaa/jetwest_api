@@ -4205,7 +4205,7 @@ with note ${note}`,
         .status(200)
         .json(
           utill.helpers.sendSuccess(
-            `Allowed to load into aircraft with flight number ${allLogistics[0].flight_reg}`
+            `Bag with reference number ${refId} has been loaded on the plane with flight number ${allLogistics[0].flight_reg} successfully`
           )
         );
     }
@@ -4267,7 +4267,8 @@ with note ${note}`,
   },
 
   filterLoadedBags: async (req: any, res: Response, next: NextFunction) => {
-    const { pageNum, all, today, seven, month, start, end } = req.query;
+    const { pageNum, airport, all, today, seven, month, start, end } =
+      req.query;
     let allLoadedBags;
 
     console.log({ req: req.query });
@@ -4290,6 +4291,7 @@ with note ${note}`,
         offset: offset,
         limit: limit,
         order: [["createdAt", "DESC"]],
+        where: { takeoff_airport: airport },
       });
     } else if (today) {
       let startDate = utill
@@ -4300,7 +4302,12 @@ with note ${note}`,
       allLoadedBags = await await db.dbs.LoadedBags.findAndCountAll({
         offset: offset,
         limit: limit,
-        where: { createdAt: { [Op.between]: [startDate, endDate] } },
+        where: {
+          createdAt: {
+            [Op.between]: [startDate, endDate],
+          },
+          takeoff_airport: airport,
+        },
         order: [["createdAt", "DESC"]],
       });
     } else if (seven) {
@@ -4313,7 +4320,12 @@ with note ${note}`,
       allLoadedBags = await await db.dbs.LoadedBags.findAndCountAll({
         offset: offset,
         limit: limit,
-        where: { createdAt: { [Op.between]: [startDate, endDate] } },
+        where: {
+          createdAt: {
+            [Op.between]: [startDate, endDate],
+          },
+          takeoff_airport: airport,
+        },
         order: [["createdAt", "DESC"]],
       });
     } else if (month) {
@@ -4326,7 +4338,12 @@ with note ${note}`,
       allLoadedBags = await await db.dbs.LoadedBags.findAndCountAll({
         offset: offset,
         limit: limit,
-        where: { createdAt: { [Op.between]: [startDate, endDate] } },
+        where: {
+          createdAt: {
+            [Op.between]: [startDate, endDate],
+          },
+          takeoff_airport: airport,
+        },
         order: [["createdAt", "DESC"]],
       });
     } else if (start && end) {
@@ -4336,7 +4353,12 @@ with note ${note}`,
       allLoadedBags = await await db.dbs.LoadedBags.findAndCountAll({
         offset: offset,
         limit: limit,
-        where: { createdAt: { [Op.between]: [startDate, endDate] } },
+        where: {
+          createdAt: {
+            [Op.between]: [startDate, endDate],
+          },
+          takeoff_airport: airport,
+        },
         order: [["createdAt", "DESC"]],
       });
     } else {
@@ -4426,7 +4448,8 @@ with note ${note}`,
   },
 
   filterOffloadedBags: async (req: any, res: Response, next: NextFunction) => {
-    const { pageNum, all, today, seven, month, start, end } = req.query;
+    const { pageNum, airport, all, today, seven, month, start, end } =
+      req.query;
     let allOffLoadedBags;
 
     var currentPage = parseInt(pageNum) ? parseInt(pageNum) : 1;
@@ -4447,6 +4470,7 @@ with note ${note}`,
         offset: offset,
         limit: limit,
         order: [["createdAt", "DESC"]],
+        where: { destination_airport: airport },
       });
     } else if (today) {
       let startDate = utill
@@ -4457,7 +4481,12 @@ with note ${note}`,
       allOffLoadedBags = await db.dbs.OffLoadedBags.findAndCountAll({
         offset: offset,
         limit: limit,
-        where: { createdAt: { [Op.between]: [startDate, endDate] } },
+        where: {
+          createdAt: {
+            [Op.between]: [startDate, endDate],
+            destination_airport: airport,
+          },
+        },
         order: [["createdAt", "DESC"]],
       });
     } else if (seven) {
@@ -4470,7 +4499,12 @@ with note ${note}`,
       allOffLoadedBags = await db.dbs.OffLoadedBags.findAndCountAll({
         offset: offset,
         limit: limit,
-        where: { createdAt: { [Op.between]: [startDate, endDate] } },
+        where: {
+          createdAt: {
+            [Op.between]: [startDate, endDate],
+          },
+          destination_airport: airport,
+        },
         order: [["createdAt", "DESC"]],
       });
     } else if (month) {
@@ -4483,7 +4517,10 @@ with note ${note}`,
       allOffLoadedBags = await db.dbs.OffLoadedBags.findAndCountAll({
         offset: offset,
         limit: limit,
-        where: { createdAt: { [Op.between]: [startDate, endDate] } },
+        where: {
+          createdAt: { [Op.between]: [startDate, endDate] },
+          destination_airport: airport,
+        },
         order: [["createdAt", "DESC"]],
       });
     } else if (start && end) {
@@ -4493,7 +4530,10 @@ with note ${note}`,
       allOffLoadedBags = await db.dbs.OffLoadedBags.findAndCountAll({
         offset: offset,
         limit: limit,
-        where: { createdAt: { [Op.between]: [startDate, endDate] } },
+        where: {
+          createdAt: { [Op.between]: [startDate, endDate] },
+          destination_airport: airport,
+        },
         order: [["createdAt", "DESC"]],
       });
     } else {
