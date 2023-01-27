@@ -35,7 +35,7 @@ module.exports = {
 
     const totalSuccessfullTransactionsAmount =
       await db.dbs.Transactions.findAll({
-        where: { cargo_id: cargo.uuid },
+        where: { cargo_id: cargo.uuid, status: "success" },
         attributes: [
           [
             util.sequelize.fn("sum", util.sequelize.col("amount")),
