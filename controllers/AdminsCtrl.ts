@@ -346,11 +346,7 @@ module.exports = {
     }
 
     let total =
-      yr +
-      "-" +
-      mm +
-      "-" +
-      day +
+      departure_date.split("/").reverse().join("-") +
       " " +
       stod_hour +
       ":" +
@@ -363,8 +359,8 @@ module.exports = {
         departure_station: departure_station,
         destination_station: destination_station,
         flight_reg,
-        arrival_date,
-        departure_date,
+        arrival_date: arrival_date.split("/").reverse().join("-"),
+        departure_date: departure_date.split("/").reverse().join("-"),
         day: utill.moment().format("YYYY:MM:DD"),
         stod: total,
       },
@@ -384,8 +380,8 @@ module.exports = {
       where: {
         departure_station: departure_station,
         flight_reg,
-        arrival_date,
-        departure_date,
+        arrival_date: arrival_date.split("/").reverse().join("-"),
+        departure_date: departure_date.split("/").reverse().join("-"),
         destination_station: destination_station,
         day: utill.moment().format("YYYY:MM:DD"),
       },
@@ -423,8 +419,8 @@ module.exports = {
       duration,
       scheduled_payload,
       available_capacity: parseFloat(scheduled_payload),
-      arrival_date,
-      departure_date,
+      arrival_date: arrival_date.split("/").reverse().join("-"),
+      departure_date: departure_date.split("/").reverse().join("-"),
       destination_station,
       groundHandler: data.groundHandler,
       email: data.email,

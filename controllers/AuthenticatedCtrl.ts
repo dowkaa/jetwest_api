@@ -609,7 +609,7 @@ module.exports = {
         chargeable_weight,
         cargo_id: cargo.uuid,
         destination,
-        depature_date,
+        depature_date: depature_date.split("/").reverse().join("-"),
         width,
         length: length,
         height,

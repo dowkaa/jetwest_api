@@ -520,7 +520,7 @@ module.exports = {
   businessDocs: async (req: Request, res: Response, next: NextFunction) => {
     const itemSchema = utillz.Joi.object()
       .keys({
-        incoporation_doc_url: utillz.Joi.string().required(),
+        incoporation_doc_url: utillz.Joi.string().allow(""),
         proofOf_biz_address_url: utillz.Joi.string().required(),
         guarantor_form_url: utillz.Joi.string().required(),
         artOf_association: utillz.Joi.string().required(),
