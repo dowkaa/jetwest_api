@@ -641,7 +641,7 @@ module.exports = {
         reciever_secMobile,
       });
     }
-    v.no_of_bags = items.length;
+    v.no_of_bags = parseInt(v.no_of_bags) + items.length;
     await v.save();
 
     const option = {

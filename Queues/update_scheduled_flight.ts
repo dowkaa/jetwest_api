@@ -38,7 +38,6 @@ const addJob = async (data: any) => {
   let date = utils.moment().add(1, "hour").format("YYYY-MM-DD HH:mm:ss");
 
   if (Date.parse(item.stod) - Date.parse(date) <= 7200000) {
-    8319169;
     item.status = "In progress";
     await item.save();
   }
