@@ -197,7 +197,9 @@ module.exports = {
       .status(200)
       .json(
         utilz.helpers.sendSuccess(
-          "kindly activate account with otp code sent to your mobile number"
+          `kindly activate account with otp code sent to your ${
+            email ? "email address" : "mobile number"
+          } `
         )
       );
   },
