@@ -37,7 +37,7 @@ const sendMail = async (option: any) => {
   const message = {
     from: `${process.env.FROM_NAME} <${process.env.FROM_EMAIL}>`,
     to: option.email,
-    subject: "Welcome to Dowkaa Auto shipping Ltd",
+    subject: "Welcome to Dowkaa",
     template: "welcome",
     context: {
       name: option.name,

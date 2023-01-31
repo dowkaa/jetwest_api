@@ -440,12 +440,13 @@ module.exports = {
       reciever_secMobile,
     } = req.body;
 
-    let checker = await db.dbs.Users.findOne({ where: { uuid: agent_id } });
+    if (agent_id) {
+      let checker = await db.dbs.Users.findOne({ where: { uuid: agent_id } });
 
-    if (!checker) {
-      return res.status(400).json(util.helpers.sendError("Agent not found"));
+      if (!checker) {
+        return res.status(400).json(util.helpers.sendError("Agent not found"));
+      }
     }
-
     let shipment_num = util.helpers.generateReftId(10);
     let scan_code = util.helpers.generateReftId(10);
 
@@ -602,7 +603,7 @@ module.exports = {
         flight_id: v.uuid,
         type,
         user_id: req.user.uuid,
-        agent_id,
+        agent_id: agent_id,
         shipment_num,
         value,
         pickup_location,

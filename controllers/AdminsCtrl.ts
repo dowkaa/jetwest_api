@@ -361,7 +361,7 @@ module.exports = {
         flight_reg,
         arrival_date: arrival_date.split("/").reverse().join("-"),
         departure_date: departure_date.split("/").reverse().join("-"),
-        day: utill.moment().format("YYYY:MM:DD"),
+        day: utill.moment().format("YYYY-MM-DD"),
         stod: total,
       },
     });
@@ -383,7 +383,7 @@ module.exports = {
         arrival_date: arrival_date.split("/").reverse().join("-"),
         departure_date: departure_date.split("/").reverse().join("-"),
         destination_station: destination_station,
-        day: utill.moment().format("YYYY:MM:DD"),
+        day: utill.moment().format("YYYY-MM-DD"),
       },
       order: [["createdAt", "DESC"]],
     });
@@ -415,7 +415,7 @@ module.exports = {
       stoa,
       logo_url: carrier.profileDoc,
       status: "pending",
-      day: utill.moment().format("YYYY:MM:DD"),
+      day: utill.moment().format("YYYY-MM-DD"),
       duration,
       scheduled_payload,
       available_capacity: parseFloat(scheduled_payload),
