@@ -674,7 +674,9 @@ module.exports = {
     res: Response,
     next: NextFunction
   ): Promise<Response> => {
-    let aircrafts = await db.dbs.Cargo.findAll();
+    let aircrafts = await db.dbs.Cargo.findAll({
+      where: { status: "Activated" },
+    });
 
     return res.status(200).json({ aircrafts });
   },
