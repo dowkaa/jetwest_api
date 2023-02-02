@@ -243,13 +243,6 @@ module.exports = {
     const offset = page * pageSize;
     const limit = pageSize;
 
-    // const transactions = await db.dbs.User.findAndCountAll({
-    //   offset: offset,
-    //   limit: limit,
-    //   // where: { user_id: req.user.id },
-    //   order: [["id", "DESC"]],
-    // });
-
     var cargos = await db.dbs.Cargo.findAndCountAll({
       offset: offset,
       limit: limit,
@@ -412,8 +405,6 @@ module.exports = {
         ba_code_url: util.Joi.string().allow(""),
       })
       .unknown();
-
-    // based on destination country the insurance cost differs for fragile goods, add country to table
 
     const validate = bookingSchema.validate(req.body.items[0]);
 

@@ -2568,7 +2568,7 @@ with note ${note}`,
     var cargos = await db.dbs.Cargo.findAndCountAll({
       offset: offset,
       limit: limit,
-      where: { status: "Active" },
+      where: { status: "Activated" },
       order: [["id", "DESC"]],
     });
 

@@ -60,9 +60,15 @@ function createServer() {
   app.use(packages.bodyParser.urlencoded({ extended: true }));
   app.use(packages.bodyParser.json());
 
+  // app.use(
+  //   "/files",
+  //   packages.express.static(packages.path.join(__dirname, "public/files"))
+  // );
+
   app.use("/api/jetwest/public/", packages.publicRoute);
   app.use("/api/jetwest/password/", packages.password);
   app.use("/api/jetwest/webhook/", packages.Webhook);
+  // app.use("/api/jetwest/download", packages.download);
   app.use("/api/jetwest/carriers/", packages.carriers);
   app.use("/api/jetwest/admin/", packages.admin);
   app.use("/api/jetwest/transactions/", packages.transactions);
