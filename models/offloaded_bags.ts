@@ -22,6 +22,7 @@ var OffLoadedBags = (sequelize: any, type: any) => {
     stoa: Sequelize.STRING,
     stod: Sequelize.STRING,
     taw: Sequelize.INTEGER,
+    offload_time: Sequelize.STRING,
     no_of_bags: Sequelize.INTEGER,
     shipping_items_createdAt: Sequelize.STRING,
     schedule_flights_createdAt: Sequelize.STRING,

@@ -19,6 +19,7 @@ var LoadedBags = (sequelize: any, type: any) => {
     departure_station: Sequelize.STRING,
     destination_station: Sequelize.STRING,
     status: Sequelize.STRING,
+    load_time: Sequelize.STRING,
     stoa: Sequelize.STRING,
     stod: Sequelize.STRING,
     taw: Sequelize.INTEGER,
