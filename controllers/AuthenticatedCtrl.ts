@@ -193,7 +193,7 @@ module.exports = {
       areasOfCoverage,
       monthly_flight_time,
       weekly_flight_time,
-      flight_reg: num,
+      flight_reg: aircraft_registration,
       daily_flight_time,
       aircraft_registration,
       airworthiness_cert_url,
