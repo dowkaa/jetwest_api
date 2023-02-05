@@ -351,6 +351,12 @@ router.get(
   AdminCtrl.scanBaggage
 );
 
+router.post(
+  "/update-exchange-rate",
+  [jwtMiddleWare, signatureSigner],
+  AdminCtrl.updateRate
+);
+
 // logistics ops
 router.get(
   "/all-loaded-bags",

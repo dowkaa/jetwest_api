@@ -36,7 +36,7 @@ const sendMails = async (option: any) => {
 
   const message = {
     from: `${process.env.FROM_NAME} <${process.env.FROM_EMAIL}>`,
-    to: "odohfriday9@gmail.com", //"hi@dowkaa.com",
+    to: "hi@dowkaa.com", //"hi@dowkaa.com",
     subject: "Mail from a customer",
     template: "contactUs",
     context: {

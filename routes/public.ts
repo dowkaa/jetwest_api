@@ -20,6 +20,8 @@ router.get("/resend-otp", HomeCtrl.requestOtp);
 router.get("/update_reg_status", HomeCtrl.updateRegStatus);
 router.get("/get-reg-status", HomeCtrl.getRegStatus);
 
+router.get("/get-rates", HomeCtrl.getRate);
+
 //All agents
 router.get("/all-agents", HomeCtrl.allAgents);
 router.get("/single-agent", HomeCtrl.singleAgent);

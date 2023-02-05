@@ -2052,6 +2052,56 @@ with note ${note}`,
       );
   },
 
+  updateRate: async (
+    req: any,
+    res: Response,
+    next: NextFunction
+  ): Promise<Response> => {
+    const loginSchema = utill.Joi.object()
+      .keys({
+        value: utill.Joi.number().required(),
+      })
+      .unknown();
+
+    const validate = loginSchema.validate(req.body);
+
+    if (validate.error != null) {
+      const errorMessage = validate.error.details
+        .map((i: any) => i.message)
+        .join(".");
+      return res.status(400).json(utill.helpers.sendError(errorMessage));
+    }
+    const { value } = req.body;
+
+    let rate = await db.dbs.Rates.findOne();
+
+    if (!rate) {
+      await db.dbs.Rates.create({
+        uuid: utill.uuid(),
+        value: value,
+      });
+
+      return res
+        .status(200)
+        .json(
+          utill.helpers.sendSuccess(
+            `Successfully created naira-dollar exchange rate`
+          )
+        );
+    }
+
+    rate.value = value;
+    await rate.save();
+
+    return res
+      .status(200)
+      .json(
+        utill.helpers.sendSuccess(
+          `Successfully updated naira-dollar exchange rate`
+        )
+      );
+  },
+
   allAircraftReports: async (
     req: any,
     res: Response,

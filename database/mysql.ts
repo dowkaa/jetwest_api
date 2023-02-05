@@ -49,6 +49,7 @@ dbs.AircraftAuditLog = require("../models/aircraftAudit")(
   sequelize,
   Sequelizes
 );
+dbs.Rates = require("../models/rates")(sequelize, Sequelizes);
 dbs.ShipmentRoutes = require("../models/shipment_route")(sequelize, Sequelizes);
 dbs.Quotes = require("../models/quotes")(sequelize, Sequelizes);
 dbs.Promotions = require("../models/promotions")(sequelize, Sequelizes);

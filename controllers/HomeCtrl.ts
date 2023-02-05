@@ -262,6 +262,12 @@ module.exports = {
     return res.status(200).json({ cargo });
   },
 
+  getRate: async (req: any, res: Response, next: NextFunction) => {
+    let rate = await db.dbs.Rates.findOne();
+
+    return res.status(200).json({ rate });
+  },
+
   getRegStatus: async (
     req: { query: { email: string } },
     res: Response,
