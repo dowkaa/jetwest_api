@@ -2073,12 +2073,32 @@ with note ${note}`,
     }
     const { value } = req.body;
 
+    let user = await db.dbs.Users.findOne({ where: { uuid: req.user.uuid } });
+
+    if (user.isAdmin !== 1) {
+      return res
+        .status(400)
+        .json(utill.helpers.sendError("Access denied for non admin users"));
+    }
+
+     if (user.admin_type !== "Super Admin") {
+       return res
+         .status(400)
+         .json(utill.helpers.sendError("UNAUTHORISED!!!!!"));
+     }
+
     let rate = await db.dbs.Rates.findOne();
 
     if (!rate) {
       await db.dbs.Rates.create({
         uuid: utill.uuid(),
         value: value,
+      });
+
+      await db.dbs.AuditLogs.create({
+        uuid: utill.uuid(),
+        user_id: req.user.uuid,
+        description: `Admin ${req.user.first_name} ${req.user.last_name} updated the naira-dollar exchange rate to  ${value}`,
       });
 
       return res
@@ -2092,6 +2112,12 @@ with note ${note}`,
 
     rate.value = value;
     await rate.save();
+
+    await db.dbs.AuditLogs.create({
+      uuid: utill.uuid(),
+      user_id: req.user.uuid,
+      description: `Admin ${req.user.first_name} ${req.user.last_name} updated the naira-dollar exchange rate to from ${rate.value} to  ${value}`,
+    });
 
     return res
       .status(200)
