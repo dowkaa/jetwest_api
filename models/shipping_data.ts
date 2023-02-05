@@ -15,6 +15,7 @@ var shippingItems = (sequelize: any, type: any) => {
     depature_date: Sequelize.STRING,
     destination_route: Sequelize.STRING,
     destination: Sequelize.STRING,
+    organisation: Sequelize.STRING,
     arrival_date: Sequelize.STRING,
     width: Sequelize.STRING,
     length: Sequelize.INTEGER,

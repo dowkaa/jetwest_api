@@ -624,6 +624,7 @@ module.exports = {
         ba_code_url,
         promo_code: promo_code ? promo_code : null,
         shipperName: req.user.first_name + " " + req.user.last_name,
+        organisation: req.user.organisation,
         shipperNum: req.user.customer_id,
         no_of_bags: items.length,
         content,
