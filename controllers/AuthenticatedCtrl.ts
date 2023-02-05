@@ -589,6 +589,8 @@ module.exports = {
         await v.save();
       }
 
+      price = price * parseFloat(route.dailyExchangeRate);
+
       let status = await db.dbs.ShippingItems.create({
         uuid: util.uuid(),
         flight_id: v.uuid,
