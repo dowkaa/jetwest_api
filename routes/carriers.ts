@@ -32,4 +32,16 @@ routerrs.get(
   CarriersCtrl.FrieghtsEnroute
 );
 
+routerrs.get(
+  "/all-item-in-flight",
+  [jwtMiddleWars, signatureSigners],
+  CarriersCtrl.getShipmentsInflight
+);
+
+routerrs.get(
+  "/get-data",
+  [jwtMiddleWars, signatureSigners],
+  CarriersCtrl.getData
+);
+
 module.exports = routerrs;

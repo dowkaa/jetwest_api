@@ -2,6 +2,7 @@ import { Request, Response, NextFunction } from "express";
 const util = require("../utils/packages");
 const db = require("../database/mysql");
 const { paginate } = require("paginate-info");
+const { Op, QueryTypes } = require("sequelize");
 
 module.exports = {
   estimateData: async (req: any, res: Response, next: NextFunction) => {
@@ -264,5 +265,65 @@ module.exports = {
       from: 1,
       to: meta.pageCount, //transactions.count,
     });
+  },
+
+  getShipmentsInflight: async (
+    req: any,
+    res: Response,
+    next: NextFunction
+  ): Promise<Response> => {
+    let uuid = req.query.uuid;
+
+    if (!uuid) {
+      return res
+        .status(400)
+        .json(util.helpers.sendError("Kindly add a valid scheduled flight id"));
+    }
+
+    let shippingItems = await db.dbs.ShippingItems.findAll({
+      where: { flight_id: uuid },
+    });
+
+    return res.status(200).json({ shippingItems });
+  },
+
+  getData: async (
+    req: any,
+    res: Response,
+    next: NextFunction
+  ): Promise<Response> => {
+    let allLogistics: any = [];
+    var completed = await db.dbs.sequelize
+      .query(
+        "SELECT * from schedule_flights, shipping_items where aircraft_owner=:owner shipping_items.flight_id=schedule_flights.uuid",
+        {
+          replacements: { owner: req.user.uuid }, // schedule_flights.takeoff_airport=:airport
+          type: QueryTypes.SELECT,
+        }
+      )
+      .then((objs: any) => {
+        objs.forEach((obj: any) => {
+          // var id = obj.id;
+          // var flight_reg = obj.flight_reg;
+          // var destination_airport = obj.destination_airport;
+          // var takeoff_airport = obj.takeoff_airport;
+          // var schedule_flights_uuid = obj.schedule_flights_uuid;
+          // var departure_date = obj.departure_date;
+          // var departure_station = obj.departure_station;
+          // var destination_station = obj.destination_station;
+          // var stoa = obj.stoa;
+          // var load_count = obj.load_count;
+          // var offload_count = obj.offload_count;
+          // var stod = obj.stod;
+          // var taw = obj.taw;
+          // var no_of_bags = obj.no_of_bags;
+          // var status = obj.status;
+          // var schedule_flights_createdAt = obj.schedule_flights_createdAt;
+
+          allLogistics.push(obj);
+        });
+      });
+
+    return res.status(200).json({ allLogistics });
   },
 };

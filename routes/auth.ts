@@ -125,4 +125,6 @@ routerr.get(
   AuthenticatedCtrl.getUpdate
 );
 
+
+
 module.exports = routerr;
