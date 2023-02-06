@@ -417,6 +417,7 @@ module.exports = {
       status: "pending",
       day: utill.moment().format("YYYY-MM-DD"),
       duration,
+      aircraft_owner: aircraftChecker.owner_id,
       scheduled_payload,
       available_capacity: parseFloat(scheduled_payload),
       arrival_date: arrival_date.split("/").reverse().join("-"),
@@ -2081,11 +2082,9 @@ with note ${note}`,
         .json(utill.helpers.sendError("Access denied for non admin users"));
     }
 
-     if (user.admin_type !== "Super Admin") {
-       return res
-         .status(400)
-         .json(utill.helpers.sendError("UNAUTHORISED!!!!!"));
-     }
+    if (user.admin_type !== "Super Admin") {
+      return res.status(400).json(utill.helpers.sendError("UNAUTHORISED!!!!!"));
+    }
 
     let rate = await db.dbs.Rates.findOne();
 

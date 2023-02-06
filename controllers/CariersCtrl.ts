@@ -77,17 +77,10 @@ module.exports = {
     });
   },
   allFrieghts: async (req: any, res: Response, next: NextFunction) => {
-    let cargo = await db.dbs.Cargo.findOne({
-      where: { owner_id: req.user.uuid },
-    });
-
-    if (!cargo) {
-      return res.status(400).json(util.helpers.sendError("No aircrafts found"));
-    }
-
     let checker = await db.dbs.Users.findOne({
       where: { uuid: req.user.uuid, type: "Carrier" },
     });
+
     if (!checker) {
       return res
         .status(400)
@@ -109,10 +102,10 @@ module.exports = {
     const offset = page * pageSize;
     const limit = pageSize;
 
-    var shipments = await db.dbs.Frieghts.findAndCountAll({
+    var shipments = await db.dbs.ScheduleFlights.findAndCountAll({
       offset: offset,
       limit: limit,
-      where: { cargo_id: cargo.uuid },
+      where: { aircraft_owner: checker.uuid },
       order: [["id", "DESC"]],
     });
     //1`;
@@ -156,13 +149,6 @@ module.exports = {
         .json(util.helpers.sendError("Non carriers are not allowed here"));
     }
 
-    let cargo = await db.dbs.Cargo.findOne({
-      where: { owner_id: req.user.uuid },
-    });
-
-    if (!cargo) {
-      return res.status(400).json(util.helpers.sendError("No aircrafts found"));
-    }
     const { pageNum } = req.query;
 
     if (!pageNum || isNaN(pageNum)) {
@@ -180,10 +166,10 @@ module.exports = {
     const offset = page * pageSize;
     const limit = pageSize;
 
-    var shipments = await db.dbs.Frieghts.findAndCountAll({
+    var shipments = await db.dbs.ScheduleFlights.findAndCountAll({
       offset: offset,
       limit: limit,
-      where: { cargo_id: cargo.uuid, status: "completed" },
+      where: { aircraft_owner: checker.uuid, status: "completed" },
       order: [["id", "DESC"]],
     });
 
@@ -226,13 +212,7 @@ module.exports = {
         .status(400)
         .json(util.helpers.sendError("Non carriers are not allowed here"));
     }
-    let cargo = await db.dbs.Cargo.findOne({
-      where: { owner_id: req.user.uuid },
-    });
 
-    if (!cargo) {
-      return res.status(400).json(util.helpers.sendError("No aircrafts found"));
-    }
     const { pageNum } = req.query;
 
     if (!pageNum || isNaN(pageNum)) {
@@ -248,10 +228,10 @@ module.exports = {
     const offset = page * pageSize;
     const limit = pageSize;
 
-    var shipments = await db.dbs.Frieghts.findAndCountAll({
+    var shipments = await db.dbs.ScheduleFlights.findAndCountAll({
       offset: offset,
       limit: limit,
-      where: { cargo_id: cargo.uuid, status: "enroute" },
+      where: { aircraft_owner: checker.uuid, status: "enroute" },
       order: [["id", "DESC"]],
     });
 
