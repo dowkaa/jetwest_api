@@ -3,6 +3,7 @@ const Queue = require("bull");
 const Redis = require("ioredis");
 const util = require("../utils/packages");
 const db = require("../database/mysql");
+const updateShipment = require("./update_shipment");
 require("dotenv").config();
 
 //redis config
@@ -42,7 +43,7 @@ const addJob = async (data: any) => {
   console.log({ shipments });
 
   for (const item of shipments) {
-    util.updateShipment.processJob(item);
+    updateShipment.processJob(item);
   }
   return;
 };
