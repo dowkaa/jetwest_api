@@ -946,7 +946,6 @@ module.exports = {
     }
 
     flight.atd = atd;
-    // status.progress = "loaded";
     flight.status = "Almost completed";
     await flight.save();
 

@@ -31,6 +31,7 @@ const processJob = async (data: any) => {
 };
 
 const addJob = async (data: any) => {
+  console.log({ data });
   let shipment = await db.dbs.ShippingItems.findOne({
     where: {
       uuid: data.uuid,

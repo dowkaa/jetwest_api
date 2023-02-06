@@ -295,7 +295,7 @@ module.exports = {
     let allLogistics: any = [];
     var completed = await db.dbs.sequelize
       .query(
-        "SELECT * from schedule_flights, shipping_items where aircraft_owner=:owner shipping_items.flight_id=schedule_flights.uuid",
+        "SELECT * from schedule_flights, shipping_items where aircraft_owner=:owner AND shipping_items.flight_id=schedule_flights.uuid;",
         {
           replacements: { owner: req.user.uuid }, // schedule_flights.takeoff_airport=:airport
           type: QueryTypes.SELECT,
