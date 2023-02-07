@@ -41,8 +41,14 @@ const addJob = async (data: any) => {
   });
 
   for (const item of shipments) {
-    console.log({ item });
-    updateShipment.processJob(item);
+    let shipment = await db.dbs.ShippingItems.findOne({
+      where: {
+        uuid: item.uuid,
+      },
+    });
+
+    shipment.progress = "in-transit";
+    await shipment.save();
   }
   return;
 };
