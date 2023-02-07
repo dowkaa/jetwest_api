@@ -949,7 +949,7 @@ module.exports = {
     flight.status = "Almost completed";
     await flight.save();
 
-    utill.allShipments.processJob(flight);
+    utill.helpers.updateShipment(flight);
 
     return res
       .status(200)

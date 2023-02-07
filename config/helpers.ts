@@ -201,6 +201,25 @@ const validateTransaction = async (data: any) => {
   }
 };
 
+const updateShipment = async (data: any) => {
+  let shipments = await db.dbs.ShippingItems.findAll({
+    where: {
+      flight_id: data.uuid,
+    },
+  });
+
+  for (const item of shipments) {
+    let shipment = await db.dbs.ShippingItems.findOne({
+      where: {
+        uuid: item.uuid,
+      },
+    });
+
+    shipment.progress = "in-transit";
+    await shipment.save();
+  }
+};
+
 const deactivateOtp = async (param: string) => {
   if (param.includes("@")) {
     let user = await db.dbs.Users.findOne({ where: { email: param } });
@@ -332,6 +351,7 @@ module.exports = {
   generateReftId,
   deactivateOtp,
   validateTransaction,
+  updateShipment,
   checkPromo,
   checkMobile,
   timestamp,
