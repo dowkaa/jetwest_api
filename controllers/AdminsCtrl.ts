@@ -4135,13 +4135,13 @@ with note ${note}`,
               .status(400)
               .json(utill.helpers.sendError("Flight not landed"));
           }
-          if (status.progress === "completed") {
+          if (status.progress === "landed") {
             return res
               .status(400)
               .json(utill.helpers.sendError("Shipment already offloaded"));
           }
 
-          status.progress = "completed";
+          status.progress = "landed";
           v.offload_count = parseInt(v.offload_count) + 1;
           await v.save();
           await status.save();
