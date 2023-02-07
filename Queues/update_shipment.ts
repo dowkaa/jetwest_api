@@ -51,6 +51,7 @@ queue
 const options = {
   delay: 100,
   attempts: 3,
+  priority: 1,
 };
 
 const processJob = async (data: any) => {
