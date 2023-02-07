@@ -40,8 +40,6 @@ const addJob = async (data: any) => {
     },
   });
 
-  console.log({ shipments });
-
   for (const item of shipments) {
     updateShipment.processJob(item);
   }
