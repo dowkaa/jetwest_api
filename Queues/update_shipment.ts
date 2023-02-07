@@ -1,7 +1,8 @@
+export {};
 const Queue = require("bull");
 const Redis = require("ioredis");
 const util = require("../utils/packages");
-const dd = require("../database/mysql");
+const db = require("../database/mysql");
 require("dotenv").config();
 
 //redis config
@@ -19,19 +20,19 @@ queue.process(async (job: any) => {
 
 // git clone https://dlakes@bitbucket.org/dlakes/lottos.git
 
-const optionz = {
+const options = {
   delay: 100,
   attempts: 1,
 };
 
 const processJob = async (data: any) => {
   //Add queue
-  queue.add(data, optionz);
+  queue.add(data, options);
 };
 
 const addJob = async (data: any) => {
   console.log({ data });
-  let shipment = await dd.dbs.ShippingItems.findOne({
+  let shipment = await db.dbs.ShippingItems.findOne({
     where: {
       uuid: data.uuid,
     },
@@ -40,13 +41,12 @@ const addJob = async (data: any) => {
       console.log({ res });
     })
     .catch((err: any) => {
-      console.log({ err });
+      console.log;
     });
 
-  if (shipment) {
-    shipment.progress = "in-transit";
-    await shipment.save();
-  }
+  shipment.progress = "in-transit";
+  await shipment.save();
+
   return;
 };
 
