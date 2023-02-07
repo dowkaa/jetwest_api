@@ -36,13 +36,7 @@ const addJob = async (data: any) => {
     where: {
       uuid: data.uuid,
     },
-  })
-    .then((res: any) => {
-      console.log({ res });
-    })
-    .catch((err: any) => {
-      console.log;
-    });
+  });
 
   shipment.progress = "in-transit";
   await shipment.save();
