@@ -2,6 +2,7 @@ const packages = require("./packages");
 function createServer() {
   const app = packages.express();
 
+
   // cross origin middleware
   app.use(packages.cors());
 
@@ -47,10 +48,10 @@ function createServer() {
   //card-queue
   app.use("/admin/queues", router);
 
-  setTimeout(() => {
-    const option = {};
-    // packages.initialize.processJob(option);
-  }, 2000);
+  // setTimeout(() => {
+  //   const option = {};
+  //   // packages.initialize.processJob(option);
+  // }, 2000);
 
   setInterval(() => {
     const option = {};

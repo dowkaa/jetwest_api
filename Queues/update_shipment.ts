@@ -18,6 +18,34 @@ queue.process(async (job: any) => {
   await addJob(job.data);
 });
 
+queue
+  .on("waiting", function (jobId: any) {
+    // A Job is waiting to be processed as soon as a worker is idling.
+    // workerLogger.info(`Job ${jobId} waiting to be processed `);
+  })
+  .on("completed", async (job: any, result: any) => {
+    // workerLogger.info(`Job ID: ${job.id}, Result: ${result}`);
+    console.log({ completed: true, job, result });
+    try {
+      const jobbed = await queue.getJob(job.id);
+      if (jobbed) {
+        await jobbed.remove();
+        // workerLogger.info(`removed completed job ${job.id}`);
+      }
+    } catch (error: any) {
+      throw new Error(error);
+    }
+  })
+  .on("failed", function (job: any, err: any) {
+    console.log({ faild: true, job, err });
+    // workerLogger.error("job " + job.id + " in queue failed... " + err);
+  })
+  .on("error", function (err: any) {
+    console.log("Queue Error... " + err);
+  })
+  .on("stalled", function (job: any) {
+    console.log({ stalled: true, job });
+  });
 // git clone https://dlakes@bitbucket.org/dlakes/lottos.git
 
 const options = {
