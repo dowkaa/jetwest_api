@@ -38,6 +38,8 @@ const addJob = async (data: any) => {
     },
   });
 
+  console.log({ shipmentProgress: shipment.progress });
+
   shipment.progress = "in-transit";
   await shipment.save();
 
