@@ -22,7 +22,7 @@ queue.process(async (job: any) => {
 
 const options = {
   delay: 100,
-  attempts: 1,
+  attempts: 3,
 };
 
 const processJob = async (data: any) => {
