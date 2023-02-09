@@ -404,6 +404,20 @@ module.exports = {
       where: { uuid: aircraftChecker.owner_id },
     });
 
+    let dateString = departure_date.split("/").reverse().join("-");
+
+    var d = new Date(dateString);
+    var days = [
+      "Sunday",
+      "Monday",
+      "Tuesday",
+      "Wednesday",
+      "Thursday",
+      "Friday",
+      "Saturday",
+    ];
+    var dayName = days[d.getDay()];
+
     await db.dbs.ScheduleFlights.create({
       uuid: utill.uuid(),
       user_id: req.user.registrationId,
@@ -422,6 +436,7 @@ module.exports = {
       available_capacity: parseFloat(scheduled_payload),
       arrival_date: arrival_date.split("/").reverse().join("-"),
       departure_date: departure_date.split("/").reverse().join("-"),
+      departure_day: dayName,
       destination_station,
       groundHandler: data.groundHandler,
       email: data.email,

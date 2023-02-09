@@ -13,7 +13,6 @@ if (process.env.STATE === "dev") {
 
 module.exports = {
   paystackWebhook: async (req: any, res: Response, next: NextFunction) => {
-    // initialiseOpay.processJob(option);
 
     try {
       await db.Webhook.create({
@@ -23,14 +22,6 @@ module.exports = {
       });
     } catch (e) {}
 
-    // const allowed_ip = ['52.31.139.75', '52.49.173.169', '52.214.14.220', '::1'];
-    // //console.log(req.clientIp);
-
-    // if(!allowed_ip.includes(req.clientIp))
-    // {
-    //     return res.sendStatus(200);
-    // }
-
     var secret = paystack_key;
     //validate event
     var hash = util.crypto
@@ -38,57 +29,86 @@ module.exports = {
       .update(JSON.stringify(req.body))
       .digest("hex");
 
-    //if (hash == req.headers["x-paystack-signature"]) {
-    // Retrieve the request's body
-    var event = req.body;
-    // Do something with event
-    // console.log(event)
-    var reference = event.data.reference;
-    var validateTransaction = await util.helpers.checkUserTransaction(
-      reference
-    );
+    if (hash == req.headers["x-paystack-signature"]) {
+      // Retrieve the request's body
+      var event = req.body;
+      // Do something with event
+      // console.log(event)
+      var reference = event.data.reference;
+      var validateTransaction = await util.helpers.checkUserTransaction(
+        reference
+      );
 
-    console.log("9876546789876==========");
+      let shipment = await db.dbs.ShippingItems.findOne({
+        where: { reference: reference },
+      });
 
-    if (validateTransaction) {
-      console.log("got here");
-      return res.sendStatus(200);
-    } else {
-      if (event.data.status == "success") {
-        // console.log("got here 2")
-        var amount = event.data.amount / 100;
-        // var charges = Charges(amount);
-        //var charges = parseFloat(amount);
-        //amount = amount - Number(charges);
-        let checker = await db.Transaction.findOne({
-          where: { reference: reference },
-        });
+      if (validateTransaction) {
+        console.log("got here");
+        return res.sendStatus(200);
+      } else {
+        if (event.data.status == "success") {
+          var amount = event.data.amount / 100;
+          let checker = await db.Transaction.findOne({
+            where: { reference: reference },
+          });
 
-        if (checker) {
-          return res.sendStatus(200);
-        }
+          if (checker) {
+            return res.sendStatus(200);
+          }
 
-        var user = await db.User.findOne({
-          where: { email: event.data.customer.email },
-        });
+          var user = await db.User.findOne({
+            where: { email: event.data.customer.email },
+          });
 
-        try {
-          await db.Transaction.create({
-            uuid: util.uuid,
+          await db.dbs.Transactions.create({
+            uuid: util.uuid(),
             user_id: user.customer_id,
             amount: amount,
             reference: reference,
+            departure: shipment.pickup_location,
+            arrival: shipment.destination,
+            cargo_id: shipment.cargo_id,
+            departure_date: shipment.depature_date,
+            arrival_date: shipment.arrival_date,
+            shipment_no: shipment.shipment_num,
+            weight:
+              parseFloat(shipment.volumetric_weight) >
+              parseFloat(shipment.weight)
+                ? shipment.volumetric_weight
+                : shipment.weight,
+            reciever_organisation: shipment.reciever_organisation,
+            pricePerkeg: shipment.ratePerKg,
+            no_of_bags: shipment.no_of_bags,
             type: "credit",
             method: "paystack",
+            description: `Payment for shipment with no ${shipment.shipment_num}`,
             status: "success",
-            description: "Fund account via Paystack",
           });
-        } catch (e) {}
 
-        return res.sendStatus(200);
-      } else {
-        return res.sendStatus(200);
+          await db.dbs.ShippingItems.update(
+            { payment_status: "SUCCESS" },
+            {
+              where: {
+                reference: reference,
+              },
+            }
+          );
+
+          return res.sendStatus(200);
+        } else {
+          await db.dbs.ShippingItems.update(
+            { payment_status: "FAILED" },
+            {
+              where: {
+                reference: reference,
+              },
+            }
+          );
+        }
       }
+      return res.sendStatus(200);
     }
+    return res.sendStatus(400);
   },
 };

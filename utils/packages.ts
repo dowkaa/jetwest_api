@@ -36,10 +36,8 @@ exports.firstMail = require("../Queues/first_mail");
 exports.secondMail = require("../Queues/second_mail");
 exports.scheduleItem = require("../Queues/schedule_item");
 exports.transactionValidate = require("../Queues/transaction_validate");
-exports.payment = require("../Queues/payment");
 exports.allShipments = require("../Queues/all_shipments");
 exports.updateShipment = require("../Queues/update_shipment");
-exports.validatePayment = require("../Queues/validate_payment");
 exports.updateScheduled = require("../Queues/update_scheduled_flight");
 exports.initialize = require("../Queues/initialize");
 

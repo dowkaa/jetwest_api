@@ -32,7 +32,6 @@ const validateTransaction = async (data: any) => {
   );
 
   if (validateTransaction) {
-    console.log("1111111111111111111111111");
     return;
   }
 
@@ -69,15 +68,6 @@ const validateTransaction = async (data: any) => {
       let shipment = await db.dbs.ShippingItems.findOne({
         where: { shipment_num: data.shipment_num },
       });
-
-      // console.log({
-      //   volumetric_weight: parseFloat(shipment.volumetric_weight),
-      //   weigth: parseInt(shipment.weight),
-      //   weight:
-      //     parseFloat(shipment.volumetric_weight) > parseFloat(shipment.weight)
-      //       ? shipment.volumetric_weight
-      //       : shipment.weight,
-      // });
 
       let checkT = await db.dbs.Transactions.findOne({
         where: {
@@ -118,18 +108,16 @@ const validateTransaction = async (data: any) => {
           checker.status = "success";
           await checker.save();
         }
+
+        await db.dbs.ShippingItems.update(
+          { payment_status: "SUCCESS" },
+          {
+            where: {
+              reference: data.reference,
+            },
+          }
+        );
       }
-
-      // const option = {
-      //   reference,
-      //   type: "paystack",
-      // };
-
-      // initialiseOpay.processJob(option);
-      // util.paystackQueue(option);
-
-      // req.io.emit('update_user', user);
-      //send email to customer
       return "success";
     } else {
       var amount = result.data.data.amount / 100;
@@ -137,15 +125,6 @@ const validateTransaction = async (data: any) => {
       let shipment = await db.dbs.ShippingItems.findOne({
         where: { shipment_num: data.shipment_num },
       });
-
-      // console.log({
-      //   volumetric_weight: parseFloat(shipment.volumetric_weight),
-      //   weigth: parseInt(shipment.weight),
-      //   weight:
-      //     parseFloat(shipment.volumetric_weight) > parseFloat(shipment.weight)
-      //       ? shipment.volumetric_weight
-      //       : shipment.weight,
-      // });
 
       let checkT = await db.dbs.Transactions.findOne({
         where: {
@@ -187,6 +166,15 @@ const validateTransaction = async (data: any) => {
           checker.status = "failed";
           await checker.save();
         }
+
+        await db.dbs.ShippingItems.update(
+          { payment_status: "FAILED" },
+          {
+            where: {
+              reference: data.reference,
+            },
+          }
+        );
       }
       return "failed";
     }
@@ -202,22 +190,31 @@ const validateTransaction = async (data: any) => {
 };
 
 const updateShipment = async (data: any) => {
-  let shipments = await db.dbs.ShippingItems.findAll({
-    where: {
-      flight_id: data.uuid,
-    },
-  });
-
-  for (const item of shipments) {
-    let shipment = await db.dbs.ShippingItems.findOne({
+  await db.dbs.ShippingItems.update(
+    { progress: "in-transit" },
+    {
       where: {
-        uuid: item.uuid,
+        flight_id: data.uuid,
       },
-    });
+    }
+  );
 
-    shipment.progress = "in-transit";
-    await shipment.save();
-  }
+  // let shipments = await db.dbs.ShippingItems.findAll({
+  //   where: {
+  //     flight_id: data.uuid,
+  //   },
+  // });
+
+  // for (const item of shipments) {
+  //   let shipment = await db.dbs.ShippingItems.findOne({
+  //     where: {
+  //       uuid: item.uuid,
+  //     },
+  //   });
+
+  //   shipment.progress = "in-transit";
+  //   await shipment.save();
+  // }
 };
 
 const deactivateOtp = async (param: string) => {

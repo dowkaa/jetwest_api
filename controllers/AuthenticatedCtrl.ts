@@ -376,7 +376,7 @@ module.exports = {
         reciever_email: util.Joi.string().required(),
         reciever_organisation: util.Joi.string().required(),
         reciever_primaryMobile: util.Joi.string().required(),
-        reciever_secMobile: util.Joi.string().required(),
+        reciever_secMobile: util.Joi.string().allow(""),
       })
       .unknown();
 
@@ -598,6 +598,7 @@ module.exports = {
         user_id: req.user.uuid,
         agent_id: agent_id,
         shipment_num,
+        reference: payment_ref,
         value,
         pickup_location,
         chargeable_weight,
@@ -646,11 +647,6 @@ module.exports = {
     };
 
     let response = await util.helpers.validateTransaction(option);
-    let payload = {
-      shipment_num,
-      response,
-    };
-    util.payment.processJob(payload);
 
     // if (status) {
     return res
@@ -719,18 +715,6 @@ module.exports = {
   },
 
   getAllShipments: async (req: any, res: Response, next: NextFunction) => {
-    // let shipment_num = req.query.shipment_num;
-    // if (!shipment_num) {
-    //   return res
-    //     .status(400)
-    //     .json(util.helpers.sendError("Kindly add a valid item"));
-    // }
-    // let shipment = await db.dbs.ShippingItems.findAll({
-    //   where: { user_id: req.user.uuid, shipment_num: shipment_num },
-    // });
-
-    // return res.status(200).json({ shipment });
-
     const { pageNum, shipment_num } = req.query;
 
     if (!pageNum || isNaN(pageNum) || !shipment_num) {
@@ -745,13 +729,6 @@ module.exports = {
     var pageSize = 25;
     const offset = page * pageSize;
     const limit = pageSize;
-
-    // const transactions = await db.dbs.User.findAndCountAll({
-    //   offset: offset,
-    //   limit: limit,
-    //   // where: { user_id: req.user.id },
-    //   order: [["id", "DESC"]],
-    // });
 
     var shipments = await db.dbs.ShippingItems.findAndCountAll({
       offset: offset,
@@ -777,16 +754,6 @@ module.exports = {
       shipments.rows,
       pageSize
     );
-
-    // if (meta.pageCount <= currentPage) {
-    //   nextP = "api/v-1/@@/transactions?page=" + next_page++;
-    //   var prevP = "api/v-1/@@/transactions?page=" + currentPage;
-    // }
-
-    // if (meta.pageCount > currentPage) {
-    //   nextP = "api/v-1/@@/transactions?page=" + 1;
-    //   prev_page = currentPage - 1;
-    // }
 
     res.status(200).json({
       status: "SUCCESS",

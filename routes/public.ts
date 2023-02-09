@@ -47,6 +47,8 @@ router.get("/all-pending-flights", HomeCtrl.allPendingShipments);
 
 router.get("/check-flight-availability", HomeCtrl.checkFlightAvailability);
 
+router.get("/test", HomeCtrl.test);
+
 // delete unit test account after successful test
 router.get("/delete-test", Register.deleteAccounts);
 router.get("/update-account", Register.updateAccount);

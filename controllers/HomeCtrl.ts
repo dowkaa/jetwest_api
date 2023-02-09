@@ -237,7 +237,7 @@ module.exports = {
   },
 
   allCargos: async (req: Request, res: Response, next: NextFunction) => {
-    let cargos = await db.dbs.Cargo.findAll({ where: { is_available: 1 } });
+    let cargos = await db.dbs.Cargo.findAll();
 
     return res.status(200).json({ cargos });
   },
@@ -531,6 +531,25 @@ module.exports = {
           )
         );
     }
+
+    return res.status(200).json(utilz.helpers.sendSuccess("Flight available"));
+  },
+
+  test: async (
+    req: any,
+    res: Response,
+    next: NextFunction
+  ): Promise<Response> => {
+    let v = await db.dbs.ShippingItems.update(
+      { progress: "in-transit" },
+      {
+        where: {
+          status: "enroute",
+        },
+      }
+    )
+      .then((res: any) => console.log({ res }))
+      .catch((err: any) => console.log({ err }));
 
     return res.status(200).json(utilz.helpers.sendSuccess("Flight available"));
   },

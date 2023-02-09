@@ -22,6 +22,7 @@ var ScheduleFlights = (sequelize: any, type: any) => {
     destination_airport: Sequelize.STRING,
     day: Sequelize.STRING,
     takeoff_airport: Sequelize.STRING,
+    departure_day: Sequelize.STRING,
     atd: Sequelize.STRING,
     block_time: Sequelize.STRING,
     aircraft_owner: Sequelize.STRING,

@@ -48,6 +48,7 @@ var shippingItems = (sequelize: any, type: any) => {
     content: Sequelize.STRING,
     reciever_firstname: Sequelize.STRING,
     reciever_lastname: Sequelize.STRING,
+    reference: Sequelize.STRING,
     reciever_email: Sequelize.STRING,
     reciever_organisation: Sequelize.STRING,
     progress: Sequelize.STRING,
