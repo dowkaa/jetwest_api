@@ -69,7 +69,7 @@ module.exports = {
       activated: req.user.activated,
       permissions,
       BusinessCompliance,
-      apiKey: apiKey.secret,
+      apiKey: apiKey?.secret,
       Directors,
     };
     return res.status(200).json({ user });
