@@ -13,41 +13,15 @@ interface TypedRequestBody<T extends Query, U, R> extends Express.Request {
 }
 
 module.exports = {
-  getProfile: async (
-    req: TypedRequestBody<
-      {},
-      {},
-      {
-        email: string;
-        customer_id: string;
-        uuid: string;
-        activated: string;
-        locked: string;
-        username: string;
-        first_name: string;
-        last_name: string;
-        company_name: string;
-        mobile_number: string;
-        role_id: string;
-        verification_status: string;
-        is_Admin: number;
-        admin_type: string;
-        reg_status: string;
-        companyFounded: string;
-        ratePerkg: string;
-        country: string;
-        organisation: string;
-        company_address: string;
-        roles: string;
-        state: string;
-        profileDoc: string;
-        permissions?: {};
-        type: string;
-      }
-    >,
-    res: Response,
-    next: NextFunction
-  ) => {
+  getProfile: async (req: any, res: Response, next: NextFunction) => {
+    // let res = validateHarsh();
+    // console.log({ req: req.headers });
+    // let rr = await util.helpers.validateHarsh(
+    //   req.headers.api_key,
+    //   req.user.uuid
+    // );
+
+    // console.log({ rr });
     const Directors = await db.dbs.Directors.findAll({
       where: { user_id: req.user.uuid },
     });
@@ -63,6 +37,10 @@ module.exports = {
     }
 
     let BusinessCompliance = await db.dbs.BusinessCompliance.findOne({
+      where: { user_id: req.user.uuid },
+    });
+
+    let apiKey = await db.dbs.ApiKeys.findOne({
       where: { user_id: req.user.uuid },
     });
 
@@ -91,6 +69,7 @@ module.exports = {
       activated: req.user.activated,
       permissions,
       BusinessCompliance,
+      apiKey: apiKey.secret,
       Directors,
     };
     return res.status(200).json({ user });
@@ -610,6 +589,7 @@ module.exports = {
         height,
         sur_charge: route.sur_charge,
         taxes: route.tax,
+        book_type: "Personal",
         status: "pending",
         shipment_routeId: route.uuid,
         scan_code,
@@ -697,7 +677,7 @@ module.exports = {
       pageSize
     );
 
-    res.status(200).json({
+    return res.status(200).json({
       status: "SUCCESS",
       data: shipments,
       per_page: pageSize,
@@ -755,7 +735,7 @@ module.exports = {
       pageSize
     );
 
-    res.status(200).json({
+    return res.status(200).json({
       status: "SUCCESS",
       data: shipments,
       per_page: pageSize,
@@ -845,7 +825,7 @@ module.exports = {
     //   prev_page = currentPage - 1;
     // }
 
-    res.status(200).json({
+    return res.status(200).json({
       status: "SUCCESS",
       data: shipments,
       per_page: pageSize,
@@ -928,7 +908,7 @@ module.exports = {
     //   prev_page = currentPage - 1;
     // }
 
-    res.status(200).json({
+    return res.status(200).json({
       status: "SUCCESS",
       data: shipments,
       per_page: pageSize,
@@ -1009,7 +989,7 @@ module.exports = {
     //   prev_page = currentPage - 1;
     // }
 
-    res.status(200).json({
+    return res.status(200).json({
       status: "SUCCESS",
       data: shipments,
       per_page: pageSize,
@@ -1094,7 +1074,7 @@ module.exports = {
     //   prev_page = currentPage - 1;
     // }
 
-    res.status(200).json({
+    return res.status(200).json({
       status: "SUCCESS",
       data: shipments,
       per_page: pageSize,
@@ -1185,7 +1165,7 @@ module.exports = {
     //   prev_page = currentPage - 1;
     // }
 
-    res.status(200).json({
+    return res.status(200).json({
       status: "SUCCESS",
       data: shipments,
       per_page: pageSize,
@@ -1350,7 +1330,7 @@ module.exports = {
     //   prev_page = currentPage - 1;
     // }
 
-    res.status(200).json({
+    return res.status(200).json({
       status: "SUCCESS",
       data: shipments,
       per_page: pageSize,
@@ -1402,7 +1382,7 @@ module.exports = {
       pageSize
     );
 
-    res.status(200).json({
+    return res.status(200).json({
       status: "SUCCESS",
       data: shipments,
       per_page: pageSize,

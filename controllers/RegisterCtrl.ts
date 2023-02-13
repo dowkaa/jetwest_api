@@ -279,6 +279,25 @@ module.exports = {
     user.type = req.body.type;
     await user.save();
 
+    let secret = utillz.generateApiKey();
+    let encrypt = secret + user.customer_id;
+
+    const harsh = utillz.crypto
+      .createHash("sha256")
+      .update(encrypt)
+      .digest("hex");
+
+    await db.dbs.ApiKeys.create({
+      uuid: utillz.uuid(),
+      user_id: user.uuid,
+      user_type: req.body.type,
+      api_key: harsh,
+      api_status: "test",
+      secret,
+      api_live_units: 0,
+      api_test_units: 5000,
+    });
+
     return res.status(200).json({
       success: {
         status: "SUCCESS",

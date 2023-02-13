@@ -13,7 +13,6 @@ if (process.env.STATE === "dev") {
 
 module.exports = {
   paystackWebhook: async (req: any, res: Response, next: NextFunction) => {
-
     try {
       await db.Webhook.create({
         ip: req.clientIp,
@@ -49,7 +48,7 @@ module.exports = {
       } else {
         if (event.data.status == "success") {
           var amount = event.data.amount / 100;
-          let checker = await db.Transaction.findOne({
+          let checker = await db.Transactions.findOne({
             where: { reference: reference },
           });
 
@@ -109,6 +108,7 @@ module.exports = {
       }
       return res.sendStatus(200);
     }
+    console.log("hereere");
     return res.sendStatus(400);
   },
 };

@@ -2,7 +2,6 @@ const packages = require("./packages");
 function createServer() {
   const app = packages.express();
 
-
   // cross origin middleware
   app.use(packages.cors());
 
@@ -69,7 +68,7 @@ function createServer() {
   app.use("/api/jetwest/public/", packages.publicRoute);
   app.use("/api/jetwest/password/", packages.password);
   app.use("/api/jetwest/webhook/", packages.Webhook);
-  // app.use("/api/jetwest/download", packages.download);
+  app.use("/api/jetwest/customer-service/", packages.CustomerRoutes);
   app.use("/api/jetwest/carriers/", packages.carriers);
   app.use("/api/jetwest/admin/", packages.admin);
   app.use("/api/jetwest/transactions/", packages.transactions);

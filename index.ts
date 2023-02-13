@@ -5,10 +5,6 @@ require("./database/mysql");
 const utils = require("./utils/packages");
 const port = process.env.PORT;
 
-const d = require("./database/mysql");
-
-const db = require("./database/mysql");
-
 // const publicRoute = require('./routes/public')
 const server = require("./utils/server");
 const app = server.createServer();

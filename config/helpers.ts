@@ -1,3 +1,5 @@
+import { userInfo } from "os";
+
 const utilities = require("../utils/packages");
 const db = require("../database/mysql");
 
@@ -17,6 +19,26 @@ if (process.env.STATE === "dev") {
 } else {
   paystack_key = process.env.PAYSTACK_TEST_SECRET_KEY;
 }
+
+const validateHarsh = async (secret: string, user_id: string) => {
+  let user = await db.dbs.Users.findOne({ where: { uuid: user_id } });
+
+  let encryptCheck = secret + user.customer_id;
+
+  const harsh = utilities.crypto
+    .createHash("sha256")
+    .update(encryptCheck)
+    .digest("hex");
+
+  let checker = await db.dbs.ApiKeys.findOne({
+    where: { user_id: user.uuid },
+  });
+
+  if (harsh === checker.api_key) {
+    return true;
+  }
+  return false;
+};
 
 const checkMail = async (req: any) => {
   return await db.dbs.Users.findOne({ where: { email: req.body.email } });
@@ -346,6 +368,7 @@ module.exports = {
   generateClientId,
   sendSuccess,
   generateReftId,
+  validateHarsh,
   deactivateOtp,
   validateTransaction,
   updateShipment,

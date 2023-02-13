@@ -12,9 +12,11 @@ exports.passport = require("passport");
 exports.passportJWT = require("passport-jwt");
 exports.Joi = require("joi");
 exports.cryptoJS = require("crypto-js");
+exports.crypto = require("crypto");
 exports.reset = require("../Mail/resetPassword");
 exports.moment = require("moment");
 exports.axios = require("axios");
+exports.generateApiKey = require("generate-api-key").default;
 exports.sequelize = require("sequelize");
 exports.uuid = require("node-uuid");
 
@@ -25,6 +27,7 @@ exports.transactions = require("../routes/Transaction");
 exports.Webhook = require("../routes/webhook");
 exports.carriers = require("../routes/carriers");
 exports.password = require("../routes/passwordAuth");
+exports.CustomerRoutes = require("../routes/customer_service");
 exports.admin = require("../routes/admin");
 exports.helmet = require("helmet");
 exports.jwt = require("jsonwebtoken");
@@ -45,6 +48,7 @@ exports.initialize = require("../Queues/initialize");
 exports.Register = require("../controllers/RegisterCtrl");
 exports.LoginCtrl = require("../controllers/LoginCtrl");
 exports.HomeCtrl = require("../controllers/HomeCtrl");
+exports.CustomerService = require("../controllers/CustomerService");
 exports.paystackQueue = require("../Queues/paystack");
 
 //  Mailers
@@ -54,6 +58,7 @@ exports.welcome = require("../Mail/welcome");
 exports.contactUs = require("../Mail/contactUs");
 exports.verify = require("../Mail/verify");
 exports.groundHandlerMail = require("../Mail/groundHandler");
+exports.adminBook = require("../Mail/adminBook");
 exports.aircraftUpdate = require("../Mail/aircraftUpdate");
 exports.introduction = require("../Mail/Introduction");
 exports.changeAdminPassword = require("../Mail/changeAdminPassword");

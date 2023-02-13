@@ -11,6 +11,7 @@ var AuditLog = (sequelize: any, type: any) => {
     uuid: Sequelize.STRING,
     user_id: Sequelize.INTEGER,
     description: Sequelize.STRING,
+    data: Sequelize.TEXT
   });
 };
 

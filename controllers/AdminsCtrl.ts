@@ -92,6 +92,7 @@ module.exports = {
       uuid: utill.uuid(),
       user_id: req.user.uuid,
       description: `Admin ${req.user.first_name} ${req.user.last_name} added an admin with role ${roles.name}`,
+      data: JSON.stringify(req.body),
     });
 
     utill.welcome.sendMail(option);
@@ -155,6 +156,7 @@ module.exports = {
       uuid: utill.uuid(),
       user_id: req.user.uuid,
       description: `Admin ${req.user.first_name} ${req.user.last_name} created a permission of type ${type}`,
+      data: JSON.stringify(req.body),
     });
 
     return res
@@ -215,6 +217,7 @@ module.exports = {
       user_id: req.user.uuid,
       description: `Admin ${req.user.first_name} ${req.user.last_name} updated ${checker.first_name} ${checker.last_name}'s admin password
 `,
+      data: JSON.stringify(req.body),
     });
 
     // Admin ${req.user.first_name} ${req.user.last_name} updated ${checker.first_name} ${checker.last_name}'s admin password
@@ -448,6 +451,7 @@ module.exports = {
       user_id: req.user.uuid,
       description: `Admin ${req.user.first_name} ${req.user.last_name} added a flight schedule
 `,
+      data: JSON.stringify(req.body),
     });
 
     return res
@@ -491,6 +495,7 @@ module.exports = {
         checker.arrival_date
       } with data ${JSON.stringify(checker)}
 `,
+      data: JSON.stringify(checker),
     });
 
     return res
@@ -611,6 +616,7 @@ module.exports = {
         req.body
       )}
 `,
+      data: JSON.stringify(req.body),
     });
 
     return res
@@ -678,6 +684,7 @@ module.exports = {
       } updated route with uuid ${route_id} with payload ${JSON.stringify(
         req.body
       )}`,
+      data: JSON.stringify(req.body),
     });
 
     return res
@@ -1125,6 +1132,7 @@ module.exports = {
       user_id: req.user.uuid,
       description: `Admin ${req.user.first_name} ${req.user.last_name} created a destination with uuid ${data.uuid}
 `,
+      data: JSON.stringify(req.body),
     });
 
     return res
@@ -1320,6 +1328,7 @@ module.exports = {
       user_id: req.user.uuid,
       description: `Admin ${req.user.first_name} ${req.user.last_name} created a route with departure ${departure} and destination $
       ${destination}`,
+      data: JSON.stringify(req.body),
     });
 
     const option = {
@@ -1424,6 +1433,7 @@ module.exports = {
       } updated a route with uuid ${route.uuid} with data ${JSON.stringify(
         req.body
       )}`,
+      data: JSON.stringify(req.body),
     });
 
     return res
@@ -1459,6 +1469,7 @@ module.exports = {
       } deleted a route with uuid ${route.uuid} and data ${JSON.stringify(
         route
       )}`,
+      data: JSON.stringify(route),
     });
 
     return res
@@ -1677,6 +1688,7 @@ module.exports = {
       uuid: utill.uuid(),
       user_id: req.user.uuid,
       description: `Admin ${req.user.first_name} ${req.user.last_name} created a role with name ${name}`,
+      data: JSON.stringify(req.body),
     });
 
     console.log("556644");
@@ -2108,11 +2120,6 @@ with note ${note}`,
         value: value,
       });
 
-      await db.dbs.AuditLogs.create({
-        uuid: utill.uuid(),
-        user_id: req.user.uuid,
-        description: `Admin ${req.user.first_name} ${req.user.last_name} updated the naira-dollar exchange rate to  ${value}`,
-      });
 
       return res
         .status(200)
@@ -2130,6 +2137,7 @@ with note ${note}`,
       uuid: utill.uuid(),
       user_id: req.user.uuid,
       description: `Admin ${req.user.first_name} ${req.user.last_name} updated the naira-dollar exchange rate to from ${rate.value} to  ${value}`,
+      data: JSON.stringify(req.body),
     });
 
     return res
@@ -2256,6 +2264,13 @@ with note ${note}`,
     report.report_url = audit_report_url;
     report.description = observations;
     await report.save();
+
+     await db.dbs.AuditLogs.create({
+       uuid: utill.uuid(),
+       user_id: req.user.uuid,
+       description: `Admin ${req.user.first_name} ${req.user.last_name} added the air audit for air audit with id ${report.uuid}`,
+       data: JSON.stringify(req.body),
+     });
 
     return res
       .status(200)
@@ -2757,6 +2772,7 @@ with note ${note}`,
       user_id: req.user.uuid,
       description: `Admin ${req.user.first_name} ${req.user.last_name} created a report with uuid ${data.uuid}
 `,
+      data: JSON.stringify(req.body),
     });
 
     return res
