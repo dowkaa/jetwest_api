@@ -45,7 +45,11 @@ router.get(
   [jwtMiddleWare, signatureSignerMiddleware],
   CustomerService.singleShipment
 );
-
+router.get(
+  "/user-updates",
+  [jwtMiddleWare, signatureSignerMiddleware],
+  CustomerService.getUserUpdate
+);
 router.post(
   "/book-customer-shipment",
   [jwtMiddleWare, signatureSignerMiddleware],

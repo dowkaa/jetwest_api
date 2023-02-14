@@ -60,6 +60,40 @@ module.exports = {
     });
   },
 
+  getUserUpdate: async (
+    req: any,
+    res: Response,
+    next: NextFunction
+  ): Promise<Response> => {
+    let user_id = req.query.user_id;
+
+    if (!user_id) {
+      return res
+        .status(400)
+        .json(util.helpers.sendError("Kindly add a user id"));
+    }
+
+    let user = await db.dbs.Users.findOne({ where: { uuid: user_id } });
+
+    if (!user) {
+      return res.status(400).json(util.helpers.sendError("User not found"));
+    }
+
+    let totalAmount = await db.dbs.Transactions.sum("amount", {
+      where: { user_id: user.customer_id, status: "success" },
+    });
+
+    let totalShipments = await db.dbs.ShippingItems.count({
+      where: { user_id: user.uuid },
+    });
+
+    let totalKg = await db.dbs.ShippingItems.sum("chargeable_weight", {
+      where: { user_id: user.uuid },
+    });
+
+    return res.status(200).json({ totalAmount, totalKg, totalShipments });
+  },
+
   getUserUpcomingShipments: async (
     req: any,
     res: Response,
