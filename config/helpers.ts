@@ -1,5 +1,3 @@
-import { userInfo } from "os";
-
 const utilities = require("../utils/packages");
 const db = require("../database/mysql");
 
@@ -140,6 +138,27 @@ const validateTransaction = async (data: any) => {
           }
         );
       }
+
+      let checker = await db.dbs.Users.findOne({
+        where: { uuid: shipment.agent_id },
+      });
+
+      const opts1 = {
+        name: checker.first_name + " " + checker.last_name,
+        email: checker.email,
+        shipment_num: shipment.shipment_num,
+      };
+
+      const opts2 = {
+        name: shipment.reciever_firstname + " " + shipment.reciever_lastname,
+        email: shipment.reciever_email,
+        shipment_num: shipment.shipment_num,
+        shipper_name: shipment.shipperName,
+        arrival_date: shipment.arrival_date,
+      };
+      utilities.reciever.sendMail(opts2);
+      utilities.agent.sendMail(opts1);
+
       return "success";
     } else {
       var amount = result.data.data.amount / 100;
@@ -153,8 +172,6 @@ const validateTransaction = async (data: any) => {
           reference: data.reference,
         },
       });
-
-      console.log({ reciever_organisation: shipment.reciever_organisation });
 
       if (!checkT) {
         await db.dbs.Transactions.create({

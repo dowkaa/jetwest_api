@@ -410,6 +410,9 @@ module.exports = {
       reciever_secMobile,
     } = req.body;
 
+    let shipment_num = util.helpers.generateReftId(10);
+    let scan_code = util.helpers.generateReftId(10);
+
     if (agent_id) {
       let checker = await db.dbs.Users.findOne({ where: { uuid: agent_id } });
 
@@ -417,8 +420,6 @@ module.exports = {
         return res.status(400).json(util.helpers.sendError("Agent not found"));
       }
     }
-    let shipment_num = util.helpers.generateReftId(10);
-    let scan_code = util.helpers.generateReftId(10);
 
     let checkShipment = await db.dbs.ShippingItems.findOne({
       where: { shipment_num },
