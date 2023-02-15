@@ -43,6 +43,10 @@ module.exports = {
         where: { user_id: item.uuid },
       });
 
+      let totalAmount = await db.dbs.Transactions.sum("amount", {
+        where: { user_id: item.customer_id, status: "success" },
+      });
+
       arr.push({
         uuid: item.uuid,
         first_name: item.first_name,
@@ -71,6 +75,7 @@ module.exports = {
         type: item.type,
         ratePerKg: item.ratePerKg,
         totalKg,
+        totalAmount,
         totalShipments,
       });
     }

@@ -2120,7 +2120,6 @@ with note ${note}`,
         value: value,
       });
 
-
       return res
         .status(200)
         .json(
@@ -2265,12 +2264,12 @@ with note ${note}`,
     report.description = observations;
     await report.save();
 
-     await db.dbs.AuditLogs.create({
-       uuid: utill.uuid(),
-       user_id: req.user.uuid,
-       description: `Admin ${req.user.first_name} ${req.user.last_name} added the air audit for air audit with id ${report.uuid}`,
-       data: JSON.stringify(req.body),
-     });
+    await db.dbs.AuditLogs.create({
+      uuid: utill.uuid(),
+      user_id: req.user.uuid,
+      description: `Admin ${req.user.first_name} ${req.user.last_name} added the air audit for air audit with id ${report.uuid}`,
+      data: JSON.stringify(req.body),
+    });
 
     return res
       .status(200)
@@ -2803,6 +2802,7 @@ with note ${note}`,
     const limit = pageSize;
 
     let shippers = await db.dbs.Users.findAndCountAll({
+      attributes: { exclude: ["password", "otp", "locked", "activated"] },
       offset: offset,
       limit: limit,
       where: { type: "Shipper" },
@@ -2854,6 +2854,7 @@ with note ${note}`,
     const limit = pageSize;
 
     let activatedShippers = await db.dbs.Users.findAndCountAll({
+      attributes: { exclude: ["password", "otp", "locked", "activated"] },
       offset: offset,
       limit: limit,
       where: { type: "Shipper", verification_status: "completed" },
@@ -2910,6 +2911,7 @@ with note ${note}`,
     const limit = pageSize;
 
     let declinedShippers = await db.dbs.Users.findAndCountAll({
+      attributes: { exclude: ["password", "otp", "locked", "activated"] },
       offset: offset,
       limit: limit,
       where: { type: "Shipper", verification_status: "declined" },
@@ -2968,6 +2970,7 @@ with note ${note}`,
     const limit = pageSize;
 
     let carriers = await db.dbs.Users.findAndCountAll({
+      attributes: { exclude: ["password", "otp", "locked", "activated"] },
       offset: offset,
       limit: limit,
       where: { type: "Carrier" },
@@ -3019,6 +3022,7 @@ with note ${note}`,
     const limit = pageSize;
 
     let activatedCarriers = await db.dbs.Users.findAndCountAll({
+      attributes: { exclude: ["password", "otp", "locked", "activated"] },
       offset: offset,
       limit: limit,
       where: { type: "Carrier", verification_status: "completed" },
@@ -3075,6 +3079,7 @@ with note ${note}`,
     const limit = pageSize;
 
     let declinedCarriers = await db.dbs.Users.findAndCountAll({
+      attributes: { exclude: ["password", "otp", "locked", "activated"] },
       offset: offset,
       limit: limit,
       where: { type: "Carrier", verification_status: "declined" },
@@ -3132,6 +3137,7 @@ with note ${note}`,
     const limit = pageSize;
 
     let agents = await db.dbs.Users.findAndCountAll({
+      attributes: { exclude: ["password", "otp", "locked", "activated"] },
       offset: offset,
       limit: limit,
       where: { type: "Agent" },
@@ -3182,6 +3188,7 @@ with note ${note}`,
     const limit = pageSize;
 
     let activatedAgents = await db.dbs.Users.findAndCountAll({
+      attributes: { exclude: ["password", "otp", "locked", "activated"] },
       offset: offset,
       limit: limit,
       where: { type: "Agent", verification_status: "completed" },
@@ -3238,6 +3245,7 @@ with note ${note}`,
     const limit = pageSize;
 
     let declinedAgents = await db.dbs.Users.findAndCountAll({
+      attributes: { exclude: ["password", "otp", "locked", "activated"] },
       offset: offset,
       limit: limit,
       where: { type: "Agent", verification_status: "declined" },
@@ -3432,7 +3440,10 @@ with note ${note}`,
         .json(utill.helpers.sendError("Kindly add a valid search param"));
     }
 
-    let user = await db.dbs.Users.findOne({ where: { uuid: uuid } });
+    let user = await db.dbs.Users.findOne({
+      attributes: { exclude: ["password", "otp", "locked", "activated"] },
+      where: { uuid: uuid },
+    });
     if (!user) {
       return res
         .status(400)
@@ -3706,6 +3717,7 @@ with note ${note}`,
     const limit = pageSize;
 
     let allUsers = await db.dbs.Users.findAndCountAll({
+      attributes: { exclude: ["password", "otp", "locked", "activated"] },
       offset: offset,
       limit: limit,
       order: [["id", "DESC"]],
