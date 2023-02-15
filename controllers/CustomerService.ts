@@ -74,6 +74,7 @@ module.exports = {
         profileDoc: item.profileDoc,
         type: item.type,
         ratePerKg: item.ratePerKg,
+        createdAt: item.createdAt,
         totalKg,
         totalAmount,
         totalShipments,
