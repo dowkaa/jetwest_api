@@ -32,6 +32,54 @@ module.exports = {
       order: [["id", "DESC"]],
     });
 
+    let arr = [];
+
+    for (const item of users.rows) {
+      let totalShipments = await db.dbs.ShippingItems.count({
+        where: { user_id: item.uuid },
+      });
+
+      let totalKg = await db.dbs.ShippingItems.sum("chargeable_weight", {
+        where: { user_id: item.uuid },
+      });
+
+      arr.push({
+        uuid: item.uuid,
+        first_name: item.first_name,
+        last_name: item.last_name,
+        customer_id: item.customer_id,
+        organisation: item.organisation,
+        username: item.username,
+        email: item.email,
+        country: item.country,
+        mobile_number: item.mobile_number,
+        reg_mail_status: item.reg_mail_status,
+        is_Admin: item.is_admin,
+        admin_type: item.admin_type,
+        roles: item.roles,
+        status: item.status,
+        company_name: item.company_name,
+        login_count: item.login_count,
+        notes: item.notes,
+        airport: item.airport,
+        company_address: item.company_address,
+        reg_status: item.reg_status,
+        role_id: item.role_id,
+        companyFounded: item.companyFounded,
+        verification_status: item.verification_status,
+        profileDoc: item.profileDoc,
+        type: item.type,
+        ratePerKg: item.ratePerKg,
+        totalKg,
+        totalShipments,
+      });
+    }
+
+    let data = {
+      count: users.count,
+      rows: arr,
+    };
+
     var next_page = currentPage + 1;
     var prev_page = currentPage - 1;
     var nextP =
@@ -43,7 +91,7 @@ module.exports = {
 
     return res.status(200).json({
       status: "SUCCESS",
-      data: users,
+      data: data,
       per_page: pageSize,
       current_page: currentPage,
       last_page: meta.pageCount, //transactions.count,
