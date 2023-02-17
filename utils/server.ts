@@ -10,6 +10,7 @@ function createServer() {
 
   // session
   app.use(packages.cookieParser());
+  app.use(packages.express.json());
   app.use(
     packages.session({
       secret: process.env.SECRET,
@@ -52,10 +53,10 @@ function createServer() {
   //   // packages.initialize.processJob(option);
   // }, 2000);
 
-  setInterval(() => {
-    const option = {};
-    packages.scheduleItem.processJob(option);
-  }, 60000);
+  // setInterval(() => {
+  //   const option = {};
+  //   packages.scheduleItem.processJob(option);
+  // }, 60000);
 
   app.use(packages.bodyParser.urlencoded({ extended: true }));
   app.use(packages.bodyParser.json());
@@ -68,6 +69,7 @@ function createServer() {
   app.use("/api/jetwest/public/", packages.publicRoute);
   app.use("/api/jetwest/password/", packages.password);
   app.use("/api/jetwest/webhook/", packages.Webhook);
+  app.use("/api/dowkaa/open-api/", packages.openApi);
   app.use("/api/jetwest/customer-service/", packages.CustomerRoutes);
   app.use("/api/jetwest/carriers/", packages.carriers);
   app.use("/api/jetwest/admin/", packages.admin);
@@ -80,7 +82,7 @@ function createServer() {
     res.header("Acces-Control-Allow-Origin", "*");
     res.header(
       "Access-Control-Allow-Headers",
-      "Origin, X-Requested-With, Content-Type, Accept, Authorization"
+      "Origin, X-Requested-With, Content-Type, Accept, Authorization, apiKey"
     );
 
     if (req.method == "OPTIONS") {

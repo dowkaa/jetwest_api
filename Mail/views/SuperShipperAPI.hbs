@@ -20,24 +20,25 @@
       } .main { position: relative; } .main-content { padding: 20px;
       padding-top: 20px; text-align: center; /* height: 100vh; */ }
       .main-content .title { font-size: 18px; text-align: center; line-height:
-      28px; } .main-content .hero-p { font-size: 14px; padding-top: 70px; }
-      .main-content .link { display: inline-block; color: #85025a; font-size:
-      14px; padding-top: 30px; } .main-content .sub-info { display: block;
-      font-size: 13px; padding-top: 50px; padding-bottom: 5rem; } .footer {
-      margin-top: 30px; padding: 20px; background: linear-gradient(92.03deg,
-      #c91c6f 28.72%, #a12278 88.13%); color: rgba(255, 255, 255, 0.8);
-      text-align: center; font-size: 14px; } .footer .unsubscribe a { display:
-      inline-block; color: rgba(255, 255, 255, 0.8); padding-bottom: 10px; /*
-      line-height: 5; */ } .social-links { margin: 5px 0; } .social-links
-      .social-icon { color: rgba(255, 255, 255, 0.48); font-size: 30px;
-      margin-left: 20px; /* float: left; width: 25%; */ } .copyright {
-      font-size: 12px; clear: both; } .address { line-height: 3; } @media screen
-      and (min-width: 768px) { .hero .logo { width: 12%; padding-top: 20px; }
-      .main-content .title { font-size: 24px; width: 40%; margin: 0 auto;
-      padding-top: 20px; } .main-content .hero-p { font-size: 16px; width: 40%;
-      margin: 0 auto; } .main-content .link { font-size: 16px; } .main-content
-      .sub-info { width: 45%; margin: 0 auto; font-size: 15px; padding-bottom:
-      1rem; } .footer { padding-top: 30px; } }
+      28px; } .main-content .hero-p { font-size: 14px; padding-top: 10px; }
+      .main-content .hero-p .welcome-message{ padding-top: 20px; text-align:
+      justify; } .main-content .link { display: inline-block; color: #85025a;
+      font-size: 14px; padding-top: 30px; } .main-content .sub-info { display:
+      block; font-size: 12px; padding-top: 50px; padding-bottom: 5rem;
+      text-align: justify; } .footer { margin-top: 30px; padding: 20px;
+      background: linear-gradient(92.03deg, #c91c6f 28.72%, #a12278 88.13%);
+      color: rgba(255, 255, 255, 0.8); text-align: center; font-size: 14px; }
+      .footer .unsubscribe a { display: inline-block; color: rgba(255, 255, 255,
+      0.8); padding-bottom: 10px; /* line-height: 5; */ } .social-links {
+      margin: 5px 0; } .social-links .social-icon { color: rgba(255, 255, 255,
+      0.48); font-size: 30px; margin-left: 20px; /* float: left; width: 25%; */
+      } .copyright { font-size: 12px; clear: both; } .address { line-height: 3;
+      } @media screen and (min-width: 768px) { .hero .logo { width: 12%;
+      padding-top: 20px; } .main-content .title { font-size: 24px; width: 40%;
+      margin: 0 auto; padding-top: 20px; } .main-content .hero-p { font-size:
+      16px; width: 40%; margin: 0 auto; padding-top: 30px; } .main-content .link
+      { font-size: 16px; } .main-content .sub-info { width: 45%; margin: 0 auto;
+      font-size: 13px; padding-bottom: 1rem; } .footer { padding-top: 30px; } }
     </style>
   </head>
   <body>
@@ -52,16 +53,27 @@
         </div>
       </header>
       <section class="main-content">
-        <h3 style="color: #010912" class="title">
-          Seems like you had some trouble logging into your account
-        </h3>
-        <p class="hero-p">
-          {{message}}
-        </p>
-        {{! <a href="#" class="link">If there is ever need for a link, goes here.</a> }}
+        <h3 style="color: #010912" class="title">Dear {{name}},</h3>
+        <div class="hero-p">
+          <p class="welcome-message">
+            You have successfully booked a shipment, but at the moment you do
+            not have sufficient funds in your account so the amount has been
+            debited to your and would be withdrawn on your next wallet funding.
+          </p>
+
+          <div style="margin-top: 20px">
+            <span>Dikko Nwachukwu.</span>
+            <h4>CEO, Dowkaa.</h4>
+          </div>
+        </div>
         <div class="sub-info">
-          Kindly ignore this mail if you do not want to change your password, or
-          if you did not make this request.
+          To make sure you keep getting these emails, please add
+          <a
+            style="color: #c91c6f;"
+            href="mailto:lulu@Dowkaa.com"
+          >lulu@Dowkaa.com</a>
+          to your address book or allow list. Want to control the kind of emails
+          you receive from Dowkaa? Update your email preferences.
         </div>
       </section>
     </main>

@@ -38,18 +38,27 @@ module.exports = {
     }
 
     var totalCompletedShipments = await db.dbs.ShippingItems.count({
-      where: { cargo_id: cargo.uuid, status: "completed" },
+      where: {
+        [Op.or]: [{ cargo_id: cargo.id }, { cargo_id: cargo.uuid }],
+        status: "completed",
+      },
       order: [["id", "DESC"]],
     });
 
     var totalCancelled = await db.dbs.ShippingItems.count({
-      where: { cargo_id: cargo.uuid, status: "cancelled" },
+      where: {
+        [Op.or]: [{ cargo_id: cargo.id }, { cargo_id: cargo.uuid }],
+        status: "cancelled",
+      },
       order: [["id", "DESC"]],
     });
 
     const totalSuccessfullTransactionsAmount =
       await db.dbs.Transactions.findAll({
-        where: { cargo_id: cargo.uuid, status: "success" },
+        where: {
+          [Op.or]: [{ cargo_id: cargo.id }, { cargo_id: cargo.uuid }],
+          status: "success",
+        },
         attributes: [
           [
             util.sequelize.fn("sum", util.sequelize.col("amount")),
@@ -60,7 +69,7 @@ module.exports = {
       });
 
     const totalkg = await db.dbs.ShippingItems.findAll({
-      where: { cargo_id: cargo.uuid },
+      where: { [Op.or]: [{ cargo_id: cargo.id }, { cargo_id: cargo.uuid }] },
       attributes: [
         [
           util.sequelize.fn("sum", util.sequelize.col("chargeable_weight")),

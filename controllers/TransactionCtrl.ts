@@ -108,7 +108,7 @@ module.exports = {
         var amount = result.data.data.amount / 100;
 
         await db.dbs.Transactions.create({
-          user_id: req.user.customer_id,
+          user_id: req.user.id,
           amount: amount,
           reference: reference,
           departure_date,

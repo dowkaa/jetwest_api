@@ -11,6 +11,9 @@ var Transactions = (sequelize: any, type: any) => {
     uuid: Sequelize.STRING,
     user_id: Sequelize.STRING,
     amount: Sequelize.STRING,
+    previous_balance: Sequelize.DECIMAL(12, 2),
+    new_balance: Sequelize.DECIMAL(12, 2),
+    amount_deducted: Sequelize.DECIMAL(12, 2),
     reference: Sequelize.STRING,
     type: Sequelize.STRING,
     method: Sequelize.STRING,
@@ -25,6 +28,7 @@ var Transactions = (sequelize: any, type: any) => {
     weight: Sequelize.STRING,
     pricePerkeg: Sequelize.STRING,
     no_of_bags: Sequelize.STRING,
+    company_name: Sequelize.STRING,
     description: Sequelize.STRING,
   });
 };

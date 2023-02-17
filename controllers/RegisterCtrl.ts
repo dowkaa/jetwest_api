@@ -289,13 +289,22 @@ module.exports = {
 
     await db.dbs.ApiKeys.create({
       uuid: utillz.uuid(),
-      user_id: user.uuid,
+      user_id: user.id,
       user_type: req.body.type,
       api_key: harsh,
       api_status: "test",
       secret,
       api_live_units: 0,
       api_test_units: 5000,
+    });
+
+    await db.dbs.Wallets.create({
+      uuid: utillz.uuid(),
+      user_id: user.id,
+      amount: 0,
+      amount_owed: 0,
+      amount_deducted: 0,
+      company_name: user.company_name,
     });
 
     return res.status(200).json({
@@ -386,7 +395,7 @@ module.exports = {
 
     await db.dbs.BusinessCompliance.create({
       uuid: uuid,
-      user_id: user.uuid,
+      user_id: user.id,
       natureOf_biz,
       business_reg_num,
       biz_type,
@@ -480,7 +489,7 @@ module.exports = {
 
       await db.dbs.Directors.create({
         uuid: utillz.uuid(),
-        user_id: user.uuid,
+        user_id: user.id,
         first_name,
         last_name,
         title,

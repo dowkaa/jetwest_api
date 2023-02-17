@@ -76,7 +76,7 @@ module.exports = {
       password: utill.bcrypt.hashSync(password),
       is_Admin: 1,
       status: "Active",
-      role_id: roles.uuid,
+      role_id: roles.id,
       type: "Admin",
       admin_type: roles.name,
       roles: roles.permissions,
@@ -423,7 +423,7 @@ module.exports = {
 
     await db.dbs.ScheduleFlights.create({
       uuid: utill.uuid(),
-      user_id: req.user.registrationId,
+      user_id: req.user.id,
       departure_station,
       flight_reg,
       takeoff_airport: takeOff.name_of_airport,
@@ -1543,7 +1543,7 @@ module.exports = {
     }
 
     let business = await db.dbs.BusinessCompliance.findOne({
-      where: { user_id: user.uuid },
+      where: { user_id: { [Op.or]: [user.uuid, user.id] } },
     });
 
     if (business) {
@@ -1682,7 +1682,7 @@ module.exports = {
       permissions: JSON.stringify(permissions),
     });
 
-    console.log("1223344");
+    //console.log("1223344");
 
     await db.dbs.AuditLogs.create({
       uuid: utill.uuid(),
@@ -1691,7 +1691,7 @@ module.exports = {
       data: JSON.stringify(req.body),
     });
 
-    console.log("556644");
+    //console.log("556644");
 
     return res
       .status(200)
@@ -1760,7 +1760,9 @@ module.exports = {
     const offset = page * pageSize;
     const limit = pageSize;
 
-    let user = await db.dbs.Users.findOne({ where: { uuid: req.user.uuid } });
+    let user = await db.dbs.Users.findOne({
+      where: { uuid: { [Op.or]: [req.user.uuid, req.user.id] } },
+    });
 
     if (parseInt(user.is_Admin) != 1) {
       return res
@@ -1829,14 +1831,9 @@ module.exports = {
     const offset = page * pageSize;
     const limit = pageSize;
 
-    // const transactions = await db.dbs.User.findAndCountAll({
-    //   offset: offset,
-    //   limit: limit,
-    //   // where: { user_id: req.user.id },
-    //   order: [["id", "DESC"]],
-    // });
-
-    let user = await db.dbs.Users.findOne({ where: { uuid: req.user.uuid } });
+    let user = await db.dbs.Users.findOne({
+      where: { uuid: { [Op.or]: [req.user.uuid, req.user.id] } },
+    });
 
     if (parseInt(user.is_Admin) != 1) {
       return res
@@ -2297,8 +2294,6 @@ with note ${note}`,
         );
     }
 
-    console.log("=======================");
-
     if (
       !(
         user.admin_type === "Flight Operator" ||
@@ -2757,7 +2752,7 @@ with note ${note}`,
 
     let data = await db.dbs.ScheduleLogs.create({
       uuid: utill.uuid(),
-      admin_id: req.user.uuid,
+      admin_id: req.user.id,
       flight_reg,
       activated_date,
       scheduled_date,
@@ -2802,7 +2797,7 @@ with note ${note}`,
     const limit = pageSize;
 
     let shippers = await db.dbs.Users.findAndCountAll({
-      attributes: { exclude: ["password", "otp", "locked", "activated"] },
+      attributes: { exclude: ["id", "password", "otp", "locked", "activated"] },
       offset: offset,
       limit: limit,
       where: { type: "Shipper" },
@@ -2854,7 +2849,7 @@ with note ${note}`,
     const limit = pageSize;
 
     let activatedShippers = await db.dbs.Users.findAndCountAll({
-      attributes: { exclude: ["password", "otp", "locked", "activated"] },
+      attributes: { exclude: ["id", "password", "otp", "locked", "activated"] },
       offset: offset,
       limit: limit,
       where: { type: "Shipper", verification_status: "completed" },
@@ -2911,7 +2906,7 @@ with note ${note}`,
     const limit = pageSize;
 
     let declinedShippers = await db.dbs.Users.findAndCountAll({
-      attributes: { exclude: ["password", "otp", "locked", "activated"] },
+      attributes: { exclude: ["id", "password", "otp", "locked", "activated"] },
       offset: offset,
       limit: limit,
       where: { type: "Shipper", verification_status: "declined" },
@@ -2970,7 +2965,7 @@ with note ${note}`,
     const limit = pageSize;
 
     let carriers = await db.dbs.Users.findAndCountAll({
-      attributes: { exclude: ["password", "otp", "locked", "activated"] },
+      attributes: { exclude: ["id", "password", "otp", "locked", "activated"] },
       offset: offset,
       limit: limit,
       where: { type: "Carrier" },
@@ -3022,7 +3017,7 @@ with note ${note}`,
     const limit = pageSize;
 
     let activatedCarriers = await db.dbs.Users.findAndCountAll({
-      attributes: { exclude: ["password", "otp", "locked", "activated"] },
+      attributes: { exclude: ["id", "password", "otp", "locked", "activated"] },
       offset: offset,
       limit: limit,
       where: { type: "Carrier", verification_status: "completed" },
@@ -3079,7 +3074,7 @@ with note ${note}`,
     const limit = pageSize;
 
     let declinedCarriers = await db.dbs.Users.findAndCountAll({
-      attributes: { exclude: ["password", "otp", "locked", "activated"] },
+      attributes: { exclude: ["id", "password", "otp", "locked", "activated"] },
       offset: offset,
       limit: limit,
       where: { type: "Carrier", verification_status: "declined" },
@@ -3137,7 +3132,7 @@ with note ${note}`,
     const limit = pageSize;
 
     let agents = await db.dbs.Users.findAndCountAll({
-      attributes: { exclude: ["password", "otp", "locked", "activated"] },
+      attributes: { exclude: ["id", "password", "otp", "locked", "activated"] },
       offset: offset,
       limit: limit,
       where: { type: "Agent" },
@@ -3188,7 +3183,7 @@ with note ${note}`,
     const limit = pageSize;
 
     let activatedAgents = await db.dbs.Users.findAndCountAll({
-      attributes: { exclude: ["password", "otp", "locked", "activated"] },
+      attributes: { exclude: ["id", "password", "otp", "locked", "activated"] },
       offset: offset,
       limit: limit,
       where: { type: "Agent", verification_status: "completed" },
@@ -3245,7 +3240,7 @@ with note ${note}`,
     const limit = pageSize;
 
     let declinedAgents = await db.dbs.Users.findAndCountAll({
-      attributes: { exclude: ["password", "otp", "locked", "activated"] },
+      attributes: { exclude: ["id", "password", "otp", "locked", "activated"] },
       offset: offset,
       limit: limit,
       where: { type: "Agent", verification_status: "declined" },
@@ -3441,7 +3436,7 @@ with note ${note}`,
     }
 
     let user = await db.dbs.Users.findOne({
-      attributes: { exclude: ["password", "otp", "locked", "activated"] },
+      attributes: { exclude: ["id", "password", "otp", "locked", "activated"] },
       where: { uuid: uuid },
     });
     if (!user) {
@@ -3451,14 +3446,16 @@ with note ${note}`,
     }
 
     let business = await db.dbs.BusinessCompliance.findAll({
-      where: { user_id: user.uuid },
+      where: { user_id: { [Op.or]: [user.uuid, user.id] } },
     });
     let director = await db.dbs.Directors.findAll({
-      where: { user_id: user.uuid },
+      where: { user_id: { [Op.or]: [user.uuid, user.id] } },
     });
-    let cargos = await db.dbs.Cargo.findAll({ where: { owner_id: user.uuid } });
+    let cargos = await db.dbs.Cargo.findAll({
+      where: { owner_id: { [Op.or]: [user.uuid, user.id] } },
+    });
     let shipments = await db.dbs.ShippingItems.findAll({
-      where: { user_id: user.uuid },
+      where: { user_id: { [Op.or]: [user.uuid, user.id] } },
     });
 
     return res
@@ -3717,16 +3714,18 @@ with note ${note}`,
     const limit = pageSize;
 
     let allUsers = await db.dbs.Users.findAndCountAll({
-      attributes: { exclude: ["password", "otp", "locked", "activated"] },
+      attributes: { exclude: ["id", "password", "otp", "locked", "activated"] },
       offset: offset,
       limit: limit,
       order: [["id", "DESC"]],
       include: [
         {
           model: db.dbs.BusinessCompliance,
+          as: "business_compliance",
         },
         {
           model: db.dbs.Directors,
+          as: "directors",
         },
       ],
     });

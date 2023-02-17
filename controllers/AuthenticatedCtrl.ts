@@ -23,7 +23,7 @@ module.exports = {
 
     // console.log({ rr });
     const Directors = await db.dbs.Directors.findAll({
-      where: { user_id: req.user.uuid },
+      where: { user_id: { [Op.or]: [req.user.uuid, req.user.id] } },
     });
 
     let permissions;
@@ -37,11 +37,11 @@ module.exports = {
     }
 
     let BusinessCompliance = await db.dbs.BusinessCompliance.findOne({
-      where: { user_id: req.user.uuid },
+      where: { user_id: { [Op.or]: [req.user.uuid, req.user.id] } },
     });
 
     let apiKey = await db.dbs.ApiKeys.findOne({
-      where: { user_id: req.user.uuid },
+      where: { user_id: { [Op.or]: [req.user.uuid, req.user.id] } },
     });
 
     const user = {
@@ -166,7 +166,7 @@ module.exports = {
 
     let data = await db.dbs.Cargo.create({
       uuid: util.uuid(),
-      owner_id: req.user.uuid,
+      owner_id: req.user.id,
       model,
       payload,
       areasOfCoverage,
@@ -225,7 +225,7 @@ module.exports = {
     var cargos = await db.dbs.Cargo.findAndCountAll({
       offset: offset,
       limit: limit,
-      where: { owner_id: req.user.uuid },
+      where: { owner_id: { [Op.or]: [req.user.uuid, req.user.id] } },
       order: [["id", "DESC"]],
     });
 
@@ -304,7 +304,7 @@ module.exports = {
 
     let data = await db.dbs.Quotes.create({
       uuid: util.uuid(),
-      user_id: req.user.uuid,
+      user_id: req.user.id,
       type,
       company_name,
       email,
@@ -571,52 +571,105 @@ module.exports = {
 
       price = price * parseFloat(route.dailyExchangeRate);
 
-      let status = await db.dbs.ShippingItems.create({
-        uuid: util.uuid(),
-        flight_id: v.uuid,
-        type,
-        user_id: req.user.uuid,
-        agent_id: agent_id,
-        shipment_num,
-        reference: payment_ref,
-        value,
-        pickup_location,
-        chargeable_weight,
-        cargo_id: cargo.uuid,
-        destination,
-        depature_date: depature_date.split("/").reverse().join("-"),
-        width,
-        length: length,
-        height,
-        sur_charge: route.sur_charge,
-        taxes: route.tax,
-        book_type: "Personal",
-        status: "pending",
-        shipment_routeId: route.uuid,
-        scan_code,
-        weight,
-        ratePerKg: route.ratePerKg,
-        logo_url: v.logo_url,
-        arrival_date: v.arrival_date,
-        booking_reference: shipment_ref,
-        volumetric_weight,
-        payment_status: "pending",
-        price: price,
-        category,
-        ba_code_url,
-        promo_code: promo_code ? promo_code : null,
-        shipperName: req.user.first_name + " " + req.user.last_name,
-        organisation: req.user.organisation,
-        shipperNum: req.user.customer_id,
-        no_of_bags: items.length,
-        content,
-        reciever_firstname,
-        reciever_lastname,
-        reciever_email,
-        reciever_organisation,
-        reciever_primaryMobile,
-        reciever_secMobile,
-      });
+      if (agent_id) { 
+        let agent = await db.dbs.Users.findOne({ where: { uuid: agent_id } });
+        let status = await db.dbs.ShippingItems.create({
+          uuid: util.uuid(),
+          flight_id: v.id,
+          type,
+          user_id: req.user.id,
+          agent_id: agent.id,
+          shipment_num,
+          reference: payment_ref,
+          value,
+          pickup_location,
+          chargeable_weight,
+          cargo_id: cargo.id,
+          destination,
+          depature_date: depature_date.split("/").reverse().join("-"),
+          width,
+          length: length,
+          height,
+          sur_charge: route.sur_charge,
+          taxes: route.tax,
+          book_type: "Personal",
+          status: "pending",
+          shipment_routeId: route.id,
+          scan_code,
+          weight,
+          ratePerKg: route.ratePerKg,
+          logo_url: v.logo_url,
+          arrival_date: v.arrival_date,
+          booking_reference: shipment_ref,
+          volumetric_weight,
+          company_name: req.user.company_name,
+          payment_status: "pending",
+          price: price,
+          category,
+          ba_code_url,
+          promo_code: promo_code ? promo_code : null,
+          shipperName: req.user.first_name + " " + req.user.last_name,
+          organisation: req.user.organisation,
+          shipperNum: req.user.customer_id,
+          no_of_bags: items.length,
+          content,
+          reciever_firstname,
+          reciever_lastname,
+          reciever_email,
+          reciever_organisation,
+          reciever_primaryMobile,
+          reciever_secMobile,
+        });
+      } else {
+        let status = await db.dbs.ShippingItems.create({
+          uuid: util.uuid(),
+          flight_id: v.id,
+          type,
+          user_id: req.user.id,
+          shipment_num,
+          reference: payment_ref,
+          value,
+          pickup_location,
+          chargeable_weight,
+          cargo_id: cargo.id,
+          destination,
+          depature_date: depature_date.split("/").reverse().join("-"),
+          width,
+          length: length,
+          height,
+          sur_charge: route.sur_charge,
+          taxes: route.tax,
+          book_type: "Personal",
+          status: "pending",
+          shipment_routeId: route.id,
+          scan_code,
+          weight,
+          ratePerKg: route.ratePerKg,
+          logo_url: v.logo_url,
+          arrival_date: v.arrival_date,
+          booking_reference: shipment_ref,
+          volumetric_weight,
+          company_name: req.user.company_name,
+          payment_status: "pending",
+          price: price,
+          category,
+          ba_code_url,
+          promo_code: promo_code ? promo_code : null,
+          shipperName: req.user.first_name + " " + req.user.last_name,
+          organisation: req.user.organisation,
+          shipperNum: req.user.customer_id,
+          no_of_bags: items.length,
+          content,
+          reciever_firstname,
+          reciever_lastname,
+          reciever_email,
+          reciever_organisation,
+          reciever_primaryMobile,
+          reciever_secMobile,
+        });
+      }
+
+      
     }
     v.no_of_bags = parseInt(v.no_of_bags) + items.length;
     await v.save();
@@ -624,6 +677,8 @@ module.exports = {
     const option = {
       reference: payment_ref,
       shipment_num,
+      id: req.user.id,
+      company_name: req.user.company_name,
       customer_id: req.user.customer_id,
     };
 
@@ -714,7 +769,10 @@ module.exports = {
     var shipments = await db.dbs.ShippingItems.findAndCountAll({
       offset: offset,
       limit: limit,
-      where: { user_id: req.user.uuid, shipment_num: shipment_num },
+      where: {
+        user_id: { [Op.or]: [req.user.uuid, req.user.id] },
+        shipment_num: shipment_num,
+      },
       order: [["id", "DESC"]],
     });
 
@@ -800,7 +858,10 @@ module.exports = {
     var shipments = await db.dbs.ShippingItems.findAndCountAll({
       offset: offset,
       limit: limit,
-      where: { user_id: req.user.uuid, status: "pending" },
+      where: {
+        user_id: { [Op.or]: [req.user.uuid, req.user.id] },
+        status: "pending",
+      },
       order: [["id", "DESC"]],
     });
 
@@ -962,7 +1023,10 @@ module.exports = {
     var shipments = await db.dbs.ShippingItems.findAndCountAll({
       offset: offset,
       limit: limit,
-      where: { agent_id: req.user.uuid, status: "enroute" },
+      where: {
+        agent_id: { [Op.or]: [req.user.uuid, req.user.id] },
+        status: "enroute",
+      },
       order: [["id", "DESC"]],
     });
 
@@ -1047,7 +1111,10 @@ module.exports = {
     var shipments = await db.dbs.ShippingItems.findAndCountAll({
       offset: offset,
       limit: limit,
-      where: { agent_id: req.user.uuid, status: "pending" },
+      where: {
+        agent_id: { [Op.or]: [req.user.uuid, req.user.id] },
+        status: "pending",
+      },
       order: [["id", "DESC"]],
     });
 
@@ -1138,7 +1205,7 @@ module.exports = {
     var shipments = await db.dbs.ShippingItems.findAndCountAll({
       offset: offset,
       limit: limit,
-      where: { agent_id: req.user.uuid, status: "completed" },
+      where: { agent_id: { [Op.or]: [req.user.uuid, req.user.id] }, status: "completed" },
       order: [["id", "DESC"]],
     });
 
@@ -1305,7 +1372,7 @@ module.exports = {
     var shipments = await db.dbs.ShippingItems.findAndCountAll({
       offset: offset,
       limit: limit,
-      where: { user_id: req.user.uuid, status: "enroute" },
+      where: { user_id: { [Op.or]: [req.user.uuid, req.user.id] }, status: "enroute" },
       order: [["id", "DESC"]],
     });
 
@@ -1367,7 +1434,10 @@ module.exports = {
     var shipments = await db.dbs.ShippingItems.findAndCountAll({
       offset: offset,
       limit: limit,
-      where: { user_id: req.user.uuid, status: "completed" },
+      where: {
+        user_id: { [Op.or]: [req.user.uuid, req.user.id] },
+        status: "completed",
+      },
       order: [["id", "DESC"]],
     });
 
@@ -1478,18 +1548,27 @@ module.exports = {
     }
 
     var totalCompletedShipments = await db.dbs.ShippingItems.count({
-      where: { user_id: user.uuid, status: "completed" },
+      where: {
+        user_id: { [Op.or]: [user.uuid, user.id] },
+        status: "completed",
+      },
       order: [["id", "DESC"]],
     });
 
     var totalCancelled = await db.dbs.ShippingItems.count({
-      where: { user_id: user.uuid, status: "cancelled" },
+      where: {
+        user_id: { [Op.or]: [user.uuid, user.id] },
+        status: "cancelled",
+      },
       order: [["id", "DESC"]],
     });
 
     const totalSuccessfullTransactionsAmount =
       await db.dbs.Transactions.findAll({
-        where: { user_id: user.customer_id, status: "success" },
+        where: {
+          user_id: { [Op.or]: [req.user.customer_id, req.user.id] },
+          status: "success",
+        },
         attributes: [
           [
             util.sequelize.fn("sum", util.sequelize.col("amount")),
@@ -1500,7 +1579,7 @@ module.exports = {
       });
 
     const totalkg = await db.dbs.ShippingItems.findAll({
-      where: { user_id: user.uuid },
+      where: { user_id: { [Op.or]: [req.user.uuid, req.user.id] } },
       attributes: [
         [
           util.sequelize.fn("sum", util.sequelize.col("chargeable_weight")),

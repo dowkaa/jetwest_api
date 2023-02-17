@@ -38,6 +38,7 @@ var User = (sequelize: any, type: any) => {
     otp: Sequelize.STRING,
     locked: Sequelize.INTEGER,
     activated: Sequelize.INTEGER,
+    company_role: Sequelize.STRING,
   });
 };
 

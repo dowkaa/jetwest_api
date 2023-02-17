@@ -386,7 +386,7 @@ module.exports = {
       offset: offset,
       limit: limit,
       where: {
-        booking_reference: ref,
+        [Op.or]: [{ booking_reference: ref }, { shipment_num: ref }],
       },
       order: [["id", "DESC"]],
     });

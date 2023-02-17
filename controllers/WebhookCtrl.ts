@@ -62,7 +62,7 @@ module.exports = {
 
           await db.dbs.Transactions.create({
             uuid: util.uuid(),
-            user_id: user.customer_id,
+            user_id: user.id,
             amount: amount,
             reference: reference,
             departure: shipment.pickup_location,
@@ -71,6 +71,7 @@ module.exports = {
             departure_date: shipment.depature_date,
             arrival_date: shipment.arrival_date,
             shipment_no: shipment.shipment_num,
+            company_name: user.company_name,
             weight:
               parseFloat(shipment.volumetric_weight) >
               parseFloat(shipment.weight)

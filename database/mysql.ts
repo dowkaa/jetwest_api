@@ -63,6 +63,7 @@ dbs.AuditLogs = require("../models/audit_logs")(sequelize, Sequelizes);
 dbs.ScheduleLogs = require("../models/scheduled_audits")(sequelize, Sequelizes);
 dbs.Roles = require("../models/roles")(sequelize, Sequelizes);
 dbs.Permissions = require("../models/permissions")(sequelize, Sequelizes);
+dbs.Wallets = require("../models/user_wallet")(sequelize, Sequelizes);
 dbs.Webhook = require("../models/webhook")(sequelize, Sequelizes);
 dbs.Directors = require("../models/directors")(sequelize, Sequelizes);
 dbs.Transactions = require("../models/transactions")(sequelize, Sequelizes);
@@ -84,20 +85,49 @@ dbs.BusinessCompliance = require("../models/business_compliance")(
 );
 dbs.ShippingItems = require("../models/shipping_data")(sequelize, Sequelizes);
 
+// database associations
 dbs.BusinessCompliance.belongsTo(dbs.Users, {
   foreignKey: "user_id",
-  uniqueKey: "uuid",
-  // as: "business_compliance",
+  as: "business_compliance",
 });
 
 dbs.Users.hasOne(dbs.BusinessCompliance, {
   foreignKey: "user_id",
-  // as: "business_compliance",
+  as: "business_compliance",
 });
 
-dbs.Users.hasOne(dbs.Directors, {
+dbs.Users.hasMany(dbs.Directors, {
   foreignKey: "user_id",
-  // as: "business_compliance",
+  as: "directors",
 });
 
+dbs.Directors.belongsTo(dbs.Users, {
+  foreignKey: "user_id",
+  as: "directors",
+});
+
+dbs.Wallets.belongsTo(dbs.Users, {
+  foreignKey: "user_id",
+  as: "wallets",
+});
+
+dbs.ShippingItems.belongsTo(dbs.ScheduleFlights, {
+  foreignKey: "flight_id",
+  as: "shipping_items",
+});
+
+dbs.ScheduleFlights.hasMany(dbs.ShippingItems, {
+  foreignKey: "flight_id",
+  as: "shipping_items",
+});
+
+dbs.ApiKeys.belongsTo(dbs.Users, {
+  foreignKey: "user_id",
+  as: "api_secret",
+});
+
+dbs.Users.hasOne(dbs.ApiKeys, {
+  foreignKey: "user_id",
+  as: "api_secret",
+});
 exports.dbs = dbs;
