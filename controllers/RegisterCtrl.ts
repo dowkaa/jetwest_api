@@ -110,6 +110,7 @@ module.exports = {
       mobile_number: mobile,
       first_name,
       last_name,
+      team_id: "Admin",
       reg_status: "step-1",
       country,
       password: utillz.bcrypt.hashSync(password),

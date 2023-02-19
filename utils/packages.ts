@@ -30,9 +30,10 @@ exports.authRouth = require("../routes/auth");
 exports.transactions = require("../routes/Transaction");
 exports.Webhook = require("../routes/webhook");
 exports.carriers = require("../routes/carriers");
-exports.openApi = require('../routes/openApi')
+exports.openApi = require("../routes/openApi");
 exports.password = require("../routes/passwordAuth");
 exports.CustomerRoutes = require("../routes/customer_service");
+exports.team = require("../routes/teams");
 exports.admin = require("../routes/admin");
 
 // cron jobs
@@ -59,6 +60,7 @@ exports.welcome = require("../Mail/welcome");
 exports.contactUs = require("../Mail/contactUs");
 exports.verify = require("../Mail/verify");
 exports.groundHandlerMail = require("../Mail/groundHandler");
+exports.teamWelcome = require("../Mail/team_welcome");
 exports.adminBook = require("../Mail/adminBook");
 exports.shipperAPI = require("../Mail/shipperAPI");
 exports.SuperShipperAPIMail = require("../Mail/SuperShipperAPI");

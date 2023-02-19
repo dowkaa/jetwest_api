@@ -5,6 +5,7 @@ require("dotenv").config();
 const Register = require("../controllers/RegisterCtrl");
 const LoginCtrl = require("../controllers/LoginCtrl");
 const HomeCtrl = require("../controllers/HomeCtrl");
+const CarrierCtrl = require("../controllers/CariersCtrl");
 
 // Authentication
 router.post("/register_step_one", Register.step1);
@@ -14,6 +15,7 @@ router.post("/add_business", Register.addBusiness);
 router.post("/update_business_compliance", Register.businessDocs);
 router.post("/add_directors", Register.step4);
 router.post("/login", LoginCtrl.Login);
+router.post("/login-carrier", CarrierCtrl.Login);
 router.get("/resend-otp", HomeCtrl.requestOtp);
 
 // registration staus

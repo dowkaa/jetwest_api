@@ -53,10 +53,10 @@ function createServer() {
   //   // packages.initialize.processJob(option);
   // }, 2000);
 
-  // setInterval(() => {
-  //   const option = {};
-  //   packages.scheduleItem.processJob(option);
-  // }, 60000);
+  setInterval(() => {
+    const option = {};
+    packages.scheduleItem.processJob(option);
+  }, 60000);
 
   app.use(packages.bodyParser.urlencoded({ extended: true }));
   app.use(packages.bodyParser.json());
@@ -70,6 +70,7 @@ function createServer() {
   app.use("/api/jetwest/password/", packages.password);
   app.use("/api/jetwest/webhook/", packages.Webhook);
   app.use("/api/dowkaa/open-api/", packages.openApi);
+  app.use("/api/dowkaa/team/", packages.team);
   app.use("/api/jetwest/customer-service/", packages.CustomerRoutes);
   app.use("/api/jetwest/carriers/", packages.carriers);
   app.use("/api/jetwest/admin/", packages.admin);
