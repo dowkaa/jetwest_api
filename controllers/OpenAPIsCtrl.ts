@@ -1,5 +1,5 @@
 export {};
-import { NextFunction, response, Response } from "express";
+import { NextFunction, Response } from "express";
 const util = require("../utils/packages");
 const { paginate } = require("paginate-info");
 const { Op, QueryTypes } = require("sequelize");
@@ -482,14 +482,78 @@ module.exports = {
       );
   },
 
+  allShipments: async (
+    req: any,
+    res: Response,
+    next: NextFunction
+  ): Promise<Response> => {
+    let user = await db.dbs.Users.findOne({ where: { uuid: req.user.uuid } });
+
+    if (user.type === "Shipper") {
+      return res
+        .status(400)
+        .json(
+          util.helpers.sendError(
+            "Non Shippers are not allowed to access this API"
+          )
+        );
+    }
+    let allShipments = await db.dbs.ShippingItems.findAll({
+      where: { user_id: req.user.id },
+    });
+
+    return res.status(200).json({ allShipments });
+  },
+
+  singleShpment: async (
+    req: any,
+    res: Response,
+    next: NextFunction
+  ): Promise<Response> => {
+    let user = await db.dbs.Users.findOne({ where: { uuid: req.user.uuid } });
+
+    if (user.type === "Shipper") {
+      return res
+        .status(400)
+        .json(
+          util.helpers.sendError(
+            "Non Shippers are not allowed to access this API"
+          )
+        );
+    }
+    let shipment_id = req.query.shipment_id;
+    if (!shipment_id) {
+      return res
+        .status(400)
+        .json(util.helpers.sendError("Kindly add a valid shipment id"));
+    }
+
+    let shipment = await db.dbs.ShippingItems.findOne({
+      where: { uuid: shipment_id },
+    });
+
+    return res.status(200).json({ shipment });
+  },
+
   trackShipments: async (
     req: any,
     res: Response,
     next: NextFunction
   ): Promise<Response> => {
-    let { ref, pageNum } = req.query;
+    let user = await db.dbs.Users.findOne({ where: { uuid: req.user.uuid } });
 
-    if (!pageNum || isNaN(pageNum) || !ref) {
+    if (user.type === "Shipper") {
+      return res
+        .status(400)
+        .json(
+          util.helpers.sendError(
+            "Non Shippers are not allowed to access this API"
+          )
+        );
+    }
+    let { booking_ref, pageNum } = req.query;
+
+    if (!pageNum || isNaN(pageNum) || !booking_ref) {
       return res
         .status(400)
         .json(util.helpers.sendError("Kindly add a valid page number"));
@@ -506,7 +570,10 @@ module.exports = {
       offset: offset,
       limit: limit,
       where: {
-        [Op.or]: [{ booking_reference: ref }, { shipment_num: ref }],
+        [Op.or]: [
+          { booking_reference: booking_ref },
+          { shipment_num: booking_ref },
+        ],
       },
       order: [["id", "DESC"]],
     });
@@ -563,6 +630,18 @@ module.exports = {
         .json(util.helpers.sendError("Kindly add your current airport"));
     }
 
+    let user = await db.dbs.Users.findOne({ where: { uuid: req.user.uuid } });
+
+    if (user.type === "Agent") {
+      return res
+        .status(400)
+        .json(
+          util.helpers.sendError(
+            "Non Agents are not allowed to access this API"
+          )
+        );
+    }
+
     var currentPage = parseInt(pageNum) ? parseInt(pageNum) : 1;
 
     var page = currentPage - 1;
@@ -581,7 +660,7 @@ module.exports = {
           as: "shipping_items",
           required: false,
           where: {
-            [Op.or]: [{ agent_id: req.user.id }, { agent_id: req.user.uuid }],
+            [Op.or]: [{ agent_id: user.id }, { agent_id: user.uuid }],
           },
         },
       ],
@@ -635,6 +714,18 @@ module.exports = {
         .json(util.helpers.sendError("Kindly add your current airport"));
     }
 
+    let user = await db.dbs.Users.findOne({ where: { uuid: req.user.uuid } });
+
+    if (user.type === "Agent") {
+      return res
+        .status(400)
+        .json(
+          util.helpers.sendError(
+            "Non Agents are not allowed to access this API"
+          )
+        );
+    }
+
     var currentPage = parseInt(pageNum) ? parseInt(pageNum) : 1;
 
     var page = currentPage - 1;
@@ -653,7 +744,7 @@ module.exports = {
           as: "shipping_items",
           required: false,
           where: {
-            [Op.or]: [{ agent_id: req.user.id }, { agent_id: req.user.uuid }],
+            [Op.or]: [{ agent_id: user.id }, { agent_id: user.uuid }],
           },
         },
       ],

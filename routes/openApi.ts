@@ -10,6 +10,8 @@ var OpenApiCtrl = require("../controllers/OpenAPIsCtrl");
 // shipper APIs
 router.post("/bookShipment-api", [checkKey], OpenApiCtrl.bookShipment);
 router.get("/track-shipment-api", [checkKey], OpenApiCtrl.trackShipments);
+router.get("/all-shipments", [checkKey], OpenApiCtrl.allShipments);
+router.get("/single-shipment", [checkKey], OpenApiCtrl.singleShpment);
 
 // Agent API routes
 router.get("/get-incoming-flights", [checkKey], OpenApiCtrl.getIncomingFlights);
