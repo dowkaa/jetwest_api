@@ -587,7 +587,7 @@ module.exports = {
     }
 
     let business = await db.dbs.BusinessCompliance.findOne({
-      where: { user_id: user.uuid },
+      where: { user_id: user.id },
     });
 
     if (!business) {

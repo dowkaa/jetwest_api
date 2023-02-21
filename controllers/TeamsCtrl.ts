@@ -11,7 +11,6 @@ module.exports = {
   ): Promise<Response> => {
     const schema = utill.Joi.object()
       .keys({
-        user_id: utill.Joi.string().required(),
         type: utill.Joi.string().required(),
         first_name: utill.Joi.string().required(),
         last_name: utill.Joi.string().required(),
@@ -47,10 +46,9 @@ module.exports = {
         );
     }
 
-    const { first_name, last_name, country, email, mobile, user_id, type } =
-      req.body;
+    const { first_name, last_name, country, email, mobile, type } = req.body;
 
-    let user = await db.dbs.Users.findOne({ where: { uuid: user_id } });
+    let user = await db.dbs.Users.findOne({ where: { uuid: req.user.uuid } });
 
     if (!user) {
       return res.status(400).json(utill.helpers.sendError("User not found"));
