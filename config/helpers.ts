@@ -84,6 +84,7 @@ const validateTransaction = async (data: any) => {
     const result = await utilities.axios(option);
 
     if (result.data.data.status == "success") {
+      console.log({ data1: data, data });
       var amount = result.data.data.amount / 100;
 
       let shipment = await db.dbs.ShippingItems.findOne({
@@ -163,6 +164,7 @@ const validateTransaction = async (data: any) => {
 
       return "success";
     } else {
+      console.log({ data2: data, data });
       var amount = result.data.data.amount / 100;
 
       let shipment = await db.dbs.ShippingItems.findOne({
