@@ -82,25 +82,21 @@ const validateTransaction = async (data: any) => {
 
   try {
     const result = await utilities.axios(option);
-    console.log({ status: result.data.data.status });
 
     if (result.data.data.status == "success") {
       console.log({ data1: data, data });
       try {
         var amount = result.data.data.amount / 100;
-        console.log("======1111111====1111111====11111");
 
         let shipment = await db.dbs.ShippingItems.findOne({
           where: { shipment_num: data.shipment_num },
         });
-        console.log("======22222222====22222222====2222222222");
 
         let checkT = await db.dbs.Transactions.findOne({
           where: {
             reference: data.reference,
           },
         });
-        console.log("======3333333333====33333333====333333333333");
 
         if (!checkT) {
           await db.dbs.Transactions.create({
@@ -128,18 +124,15 @@ const validateTransaction = async (data: any) => {
             description: `Payment for shipment with no ${shipment.shipment_num}`,
             status: "success",
           });
-          console.log("======4444444444====44444444444====4444444444");
 
           let checker = await db.dbs.PaystackStarter.findOne({
             where: { reference: data.reference },
           });
-          console.log("======5555555====5555555555====55555555555");
 
           if (checker) {
             checker.status = "success";
             await checker.save();
           }
-          console.log("======666666666====666666666666====6666666666666666666");
 
           await db.dbs.ShippingItems.update(
             { payment_status: "SUCCESS" },
@@ -149,29 +142,20 @@ const validateTransaction = async (data: any) => {
               },
             }
           );
-
-          console.log(
-            "======77777777777777====777777777777777777====777777777777777"
-          );
         }
-
-        let checker = await db.dbs.Users.findOne({
-          where: { uuid: shipment.agent_id },
-        });
-        console.log("======8888888888888====8888888888888====8888888888888");
 
         if (shipment.agent_id) {
+          let checker = await db.dbs.Users.findOne({
+            where: { id: shipment.agent_id },
+          });
+
           const opts1 = {
-            name: checker?.first_name + " " + checker?.last_name,
-            email: checker?.email,
-            shipment_num: shipment?.shipment_num,
+            name: checker.first_name + " " + checker.last_name,
+            email: checker.email,
+            shipment_num: shipment.shipment_num,
           };
           utilities.agent.sendMail(opts1);
-          console.log(
-            "----------------------------------------------------------------"
-          );
         }
-        console.log("======999999999====999999999====999999999");
 
         const opts2 = {
           name: shipment.reciever_firstname + " " + shipment.reciever_lastname,
@@ -180,11 +164,7 @@ const validateTransaction = async (data: any) => {
           shipper_name: shipment.shipperName,
           arrival_date: shipment.arrival_date,
         };
-        console.log("======0000000000====0000000000====0000000000");
         utilities.reciever.sendMail(opts2);
-        console.log(
-          "22222222222222======0000000000====0000000000====0000000000"
-        );
 
         return "success";
       } catch (error: any) {
