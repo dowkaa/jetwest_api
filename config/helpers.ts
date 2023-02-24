@@ -454,15 +454,15 @@ const addShipmentAndCreditUser = async (
 
   if (category === "fragile") {
     price = chargeable_weight * parseFloat(route.ratePerKg);
-    let price1 = price * parseFloat(route.sur_charge);
-    let price2 = price * parseFloat(route.tax);
-    let price3 = value * parseFloat(route.insurance);
+    let price1 = price * (parseFloat(route.sur_charge) / 100);
+    let price2 = price * (parseFloat(route.tax) / 100);
+    let price3 = value * (parseFloat(route.insurance) / 100);
     let totalPrice = price + price1 + price2 + price3;
     price = totalPrice;
   } else {
     price = chargeable_weight * parseFloat(route.ratePerKg);
-    let price1 = price * parseFloat(route.sur_charge);
-    let price2 = price * parseFloat(route.tax);
+    let price1 = price * (parseFloat(route.sur_charge) / 100);
+    let price2 = price * (parseFloat(route.tax) / 100);
     let totalPrice = price + price1 + price2;
     price = totalPrice;
   }
@@ -754,15 +754,15 @@ const logPendingShipment = async (req: any, res: Response, item: any) => {
 
   if (category === "fragile") {
     price = chargeable_weight * parseFloat(route.ratePerKg);
-    let price1 = price * parseFloat(route.sur_charge);
-    let price2 = price * parseFloat(route.tax);
-    let price3 = value * parseFloat(route.insurance);
+    let price1 = price * (parseFloat(route.sur_charge) / 100);
+    let price2 = price * (parseFloat(route.tax) / 100);
+    let price3 = value * (parseFloat(route.insurance) / 100);
     let totalPrice = price + price1 + price2 + price3;
     price = totalPrice;
   } else {
     price = chargeable_weight * parseFloat(route.ratePerKg);
-    let price1 = price * parseFloat(route.sur_charge);
-    let price2 = price * parseFloat(route.tax);
+    let price1 = price * (parseFloat(route.sur_charge) / 100);
+    let price2 = price * (parseFloat(route.tax) / 100);
     let totalPrice = price + price1 + price2;
     price = totalPrice;
   }

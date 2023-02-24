@@ -524,15 +524,15 @@ module.exports = {
 
       if (category === "fragile") {
         price = chargeable_weight * parseFloat(route.ratePerKg);
-        let price1 = price * parseFloat(route.sur_charge);
-        let price2 = price * parseFloat(route.tax);
-        let price3 = value * parseFloat(route.insurance);
+        let price1 = price * (parseFloat(route.sur_charge) / 100);
+        let price2 = price * (parseFloat(route.tax) / 100);
+        let price3 = value * (parseFloat(route.insurance) / 100);
         let totalPrice = price + price1 + price2 + price3;
         price = totalPrice;
       } else {
         price = chargeable_weight * parseFloat(route.ratePerKg);
-        let price1 = price * parseFloat(route.sur_charge);
-        let price2 = price * parseFloat(route.tax);
+        let price1 = price * (parseFloat(route.sur_charge) / 100);
+        let price2 = price * (parseFloat(route.tax) / 100);
         let totalPrice = price + price1 + price2;
         price = totalPrice;
       }
@@ -571,7 +571,7 @@ module.exports = {
 
       price = price * parseFloat(route.dailyExchangeRate);
 
-      if (agent_id) { 
+      if (agent_id) {
         let agent = await db.dbs.Users.findOne({ where: { uuid: agent_id } });
         let status = await db.dbs.ShippingItems.create({
           uuid: util.uuid(),
@@ -668,8 +668,6 @@ module.exports = {
           reciever_secMobile,
         });
       }
-
-      
     }
     v.no_of_bags = parseInt(v.no_of_bags) + items.length;
     await v.save();
@@ -1205,7 +1203,10 @@ module.exports = {
     var shipments = await db.dbs.ShippingItems.findAndCountAll({
       offset: offset,
       limit: limit,
-      where: { agent_id: { [Op.or]: [req.user.uuid, req.user.id] }, status: "completed" },
+      where: {
+        agent_id: { [Op.or]: [req.user.uuid, req.user.id] },
+        status: "completed",
+      },
       order: [["id", "DESC"]],
     });
 
@@ -1372,7 +1373,10 @@ module.exports = {
     var shipments = await db.dbs.ShippingItems.findAndCountAll({
       offset: offset,
       limit: limit,
-      where: { user_id: { [Op.or]: [req.user.uuid, req.user.id] }, status: "enroute" },
+      where: {
+        user_id: { [Op.or]: [req.user.uuid, req.user.id] },
+        status: "enroute",
+      },
       order: [["id", "DESC"]],
     });
 

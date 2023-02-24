@@ -636,15 +636,15 @@ module.exports = {
 
       if (category === "fragile") {
         price = chargeable_weight * parseFloat(route.ratePerKg);
-        let price1 = price * parseFloat(route.sur_charge);
-        let price2 = price * parseFloat(route.tax);
-        let price3 = value * parseFloat(route.insurance);
+        let price1 = price * (parseFloat(route.sur_charge) / 100);
+        let price2 = price * (parseFloat(route.tax) / 100);
+        let price3 = value * (parseFloat(route.insurance) / 100);
         let totalPrice = price + price1 + price2 + price3;
         price = totalPrice;
       } else {
         price = chargeable_weight * parseFloat(route.ratePerKg);
-        let price1 = price * parseFloat(route.sur_charge);
-        let price2 = price * parseFloat(route.tax);
+        let price1 = price * (parseFloat(route.sur_charge) / 100);
+        let price2 = price * (parseFloat(route.tax) / 100);
         let totalPrice = price + price1 + price2;
         price = totalPrice;
       }
@@ -685,16 +685,16 @@ module.exports = {
 
       let status = await db.dbs.ShippingItems.create({
         uuid: util.uuid(),
-        flight_id: v.uuid,
+        flight_id: v.id,
         type,
-        user_id: user.uuid,
+        user_id: user.id,
         agent_id: agent_id,
         shipment_num,
         reference: payment_ref,
         value,
         pickup_location,
         chargeable_weight,
-        cargo_id: cargo.uuid,
+        cargo_id: cargo.id,
         destination,
         depature_date: depature_date.split("/").reverse().join("-"),
         width,
@@ -703,7 +703,7 @@ module.exports = {
         sur_charge: route.sur_charge,
         taxes: route.tax,
         status: "pending",
-        shipment_routeId: route.uuid,
+        shipment_routeId: route.id,
         scan_code,
         book_type: "Admin",
         weight,

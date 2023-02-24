@@ -2,6 +2,7 @@ export {};
 import { NextFunction, response, Response } from "express";
 const db = require("../database/mysql");
 const utill = require("../utils/packages");
+
 module.exports = {
   // company admin creates users theme
   createTeam: async (
@@ -12,6 +13,7 @@ module.exports = {
     const schema = utill.Joi.object()
       .keys({
         type: utill.Joi.string().required(),
+        team_type: utill.Joi.string().required(),
         first_name: utill.Joi.string().required(),
         last_name: utill.Joi.string().required(),
         country: utill.Joi.string().required(),
@@ -518,6 +520,7 @@ module.exports = {
         });
       }
     }
+
     v.no_of_bags = parseInt(v.no_of_bags) + items.length;
     await v.save();
 
@@ -539,5 +542,30 @@ module.exports = {
           "Shipment booked successfully, the Dowkaa team would reach out to to soon."
         )
       );
+  },
+
+  updateProfile: async (
+    req: any,
+    res: Response,
+    next: NextFunction
+  ): Promise<Response> => {
+    const itemSchema = utill.Joi.object()
+      .keys({
+        items: utill.Joi.array().required(),
+        address: utill.Joi.string().required(),
+        director: utill.Joi.string().required(),
+      })
+      .unknown();
+
+    const validate1 = itemSchema.validate(req.body);
+
+    if (validate1.error != null) {
+      const errorMessage = validate1.error.details
+        .map((i: any) => i.message)
+        .join(".");
+      return res.status(400).json(utill.helpers.sendError(errorMessage));
+    }
+
+    return res.status(200).json(utill.helpers.sendSuccess("Success!"));
   },
 };
