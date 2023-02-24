@@ -160,11 +160,17 @@ const validateTransaction = async (data: any) => {
         });
         console.log("======8888888888888====8888888888888====8888888888888");
 
-        const opts1 = {
-          name: checker.first_name + " " + checker.last_name,
-          email: checker.email,
-          shipment_num: shipment.shipment_num,
-        };
+        if (shipment.agent_id) {
+          const opts1 = {
+            name: checker?.first_name + " " + checker?.last_name,
+            email: checker?.email,
+            shipment_num: shipment?.shipment_num,
+          };
+          utilities.agent.sendMail(opts1);
+          console.log(
+            "----------------------------------------------------------------"
+          );
+        }
         console.log("======999999999====999999999====999999999");
 
         const opts2 = {
@@ -176,7 +182,6 @@ const validateTransaction = async (data: any) => {
         };
         console.log("======0000000000====0000000000====0000000000");
         utilities.reciever.sendMail(opts2);
-        utilities.agent.sendMail(opts1);
         console.log(
           "22222222222222======0000000000====0000000000====0000000000"
         );
