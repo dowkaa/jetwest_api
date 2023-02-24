@@ -82,145 +82,156 @@ const validateTransaction = async (data: any) => {
 
   try {
     const result = await utilities.axios(option);
+    console.log({ status: result.data.data.status });
 
     if (result.data.data.status == "success") {
       console.log({ data1: data, data });
-      var amount = result.data.data.amount / 100;
+      try {
+        var amount = result.data.data.amount / 100;
 
-      let shipment = await db.dbs.ShippingItems.findOne({
-        where: { shipment_num: data.shipment_num },
-      });
-
-      let checkT = await db.dbs.Transactions.findOne({
-        where: {
-          reference: data.reference,
-        },
-      });
-
-      if (!checkT) {
-        await db.dbs.Transactions.create({
-          uuid: utilities.uuid(),
-          user_id: data.id,
-          amount: amount,
-          reference: data.reference,
-          departure: shipment.pickup_location,
-          arrival: shipment.destination,
-          cargo_id: shipment.cargo_id,
-          departure_date: shipment.depature_date,
-          arrival_date: shipment.arrival_date,
-          company_name: data.company_name,
-          shipment_no: data.shipment_num,
-          weight:
-            parseFloat(shipment.volumetric_weight) > parseFloat(shipment.weight)
-              ? shipment.volumetric_weight
-              : shipment.weight,
-          reciever_organisation: shipment.reciever_organisation,
-          pricePerkeg: shipment.ratePerKg,
-          no_of_bags: shipment.no_of_bags,
-          type: "credit",
-          method: "paystack",
-          description: `Payment for shipment with no ${shipment.shipment_num}`,
-          status: "success",
+        let shipment = await db.dbs.ShippingItems.findOne({
+          where: { shipment_num: data.shipment_num },
         });
 
-        let checker = await db.dbs.PaystackStarter.findOne({
-          where: { reference: data.reference },
+        let checkT = await db.dbs.Transactions.findOne({
+          where: {
+            reference: data.reference,
+          },
         });
 
-        if (checker) {
-          checker.status = "success";
-          await checker.save();
+        if (!checkT) {
+          await db.dbs.Transactions.create({
+            uuid: utilities.uuid(),
+            user_id: data.id,
+            amount: amount,
+            reference: data.reference,
+            departure: shipment.pickup_location,
+            arrival: shipment.destination,
+            cargo_id: shipment.cargo_id,
+            departure_date: shipment.depature_date,
+            arrival_date: shipment.arrival_date,
+            company_name: data.company_name,
+            shipment_no: data.shipment_num,
+            weight:
+              parseFloat(shipment.volumetric_weight) >
+              parseFloat(shipment.weight)
+                ? shipment.volumetric_weight
+                : shipment.weight,
+            reciever_organisation: shipment.reciever_organisation,
+            pricePerkeg: shipment.ratePerKg,
+            no_of_bags: shipment.no_of_bags,
+            type: "credit",
+            method: "paystack",
+            description: `Payment for shipment with no ${shipment.shipment_num}`,
+            status: "success",
+          });
+
+          let checker = await db.dbs.PaystackStarter.findOne({
+            where: { reference: data.reference },
+          });
+
+          if (checker) {
+            checker.status = "success";
+            await checker.save();
+          }
+
+          await db.dbs.ShippingItems.update(
+            { payment_status: "SUCCESS" },
+            {
+              where: {
+                reference: data.reference,
+              },
+            }
+          );
         }
 
-        await db.dbs.ShippingItems.update(
-          { payment_status: "SUCCESS" },
-          {
-            where: {
-              reference: data.reference,
-            },
-          }
-        );
+        let checker = await db.dbs.Users.findOne({
+          where: { uuid: shipment.agent_id },
+        });
+
+        const opts1 = {
+          name: checker.first_name + " " + checker.last_name,
+          email: checker.email,
+          shipment_num: shipment.shipment_num,
+        };
+
+        const opts2 = {
+          name: shipment.reciever_firstname + " " + shipment.reciever_lastname,
+          email: shipment.reciever_email,
+          shipment_num: shipment.shipment_num,
+          shipper_name: shipment.shipperName,
+          arrival_date: shipment.arrival_date,
+        };
+        utilities.reciever.sendMail(opts2);
+        utilities.agent.sendMail(opts1);
+
+        return "success";
+      } catch (error: any) {
+        console.log({ error1: error });
       }
-
-      let checker = await db.dbs.Users.findOne({
-        where: { uuid: shipment.agent_id },
-      });
-
-      const opts1 = {
-        name: checker.first_name + " " + checker.last_name,
-        email: checker.email,
-        shipment_num: shipment.shipment_num,
-      };
-
-      const opts2 = {
-        name: shipment.reciever_firstname + " " + shipment.reciever_lastname,
-        email: shipment.reciever_email,
-        shipment_num: shipment.shipment_num,
-        shipper_name: shipment.shipperName,
-        arrival_date: shipment.arrival_date,
-      };
-      utilities.reciever.sendMail(opts2);
-      utilities.agent.sendMail(opts1);
-
-      return "success";
     } else {
       console.log({ data2: data, data });
-      var amount = result.data.data.amount / 100;
+      try {
+        var amount = result.data.data.amount / 100;
 
-      let shipment = await db.dbs.ShippingItems.findOne({
-        where: { shipment_num: data.shipment_num },
-      });
-
-      let checkT = await db.dbs.Transactions.findOne({
-        where: {
-          reference: data.reference,
-        },
-      });
-
-      if (!checkT) {
-        await db.dbs.Transactions.create({
-          uuid: utilities.uuid(),
-          user_id: data.id,
-          amount: amount,
-          reference: data.reference,
-          departure: shipment.pickup_location,
-          arrival: shipment.destination,
-          departure_date: shipment.depature_date,
-          company_name: data.company_name,
-          arrival_date: shipment.arrival_date,
-          shipment_no: data.shipment_num,
-          weight:
-            parseFloat(shipment.volumetric_weight) > parseFloat(shipment.weight)
-              ? shipment.volumetric_weight
-              : shipment.weight,
-          pricePerkeg: shipment.ratePerKg,
-          reciever_organisation: shipment.reciever_organisation,
-          no_of_bags: shipment.no_of_bags,
-          type: "credit",
-          method: "paystack",
-          description: `Payment for shipment with no ${shipment.shipment_num}`,
-          status: "failed",
+        let shipment = await db.dbs.ShippingItems.findOne({
+          where: { shipment_num: data.shipment_num },
         });
 
-        let checker = await db.dbs.PaystackStarter.findOne({
-          where: { reference: data.reference },
+        let checkT = await db.dbs.Transactions.findOne({
+          where: {
+            reference: data.reference,
+          },
         });
 
-        if (checker) {
-          checker.status = "failed";
-          await checker.save();
-        }
+        if (!checkT) {
+          await db.dbs.Transactions.create({
+            uuid: utilities.uuid(),
+            user_id: data.id,
+            amount: amount,
+            reference: data.reference,
+            departure: shipment.pickup_location,
+            arrival: shipment.destination,
+            departure_date: shipment.depature_date,
+            company_name: data.company_name,
+            arrival_date: shipment.arrival_date,
+            shipment_no: data.shipment_num,
+            weight:
+              parseFloat(shipment.volumetric_weight) >
+              parseFloat(shipment.weight)
+                ? shipment.volumetric_weight
+                : shipment.weight,
+            pricePerkeg: shipment.ratePerKg,
+            reciever_organisation: shipment.reciever_organisation,
+            no_of_bags: shipment.no_of_bags,
+            type: "credit",
+            method: "paystack",
+            description: `Payment for shipment with no ${shipment.shipment_num}`,
+            status: "failed",
+          });
 
-        await db.dbs.ShippingItems.update(
-          { payment_status: "FAILED" },
-          {
-            where: {
-              reference: data.reference,
-            },
+          let checker = await db.dbs.PaystackStarter.findOne({
+            where: { reference: data.reference },
+          });
+
+          if (checker) {
+            checker.status = "failed";
+            await checker.save();
           }
-        );
+
+          await db.dbs.ShippingItems.update(
+            { payment_status: "FAILED" },
+            {
+              where: {
+                reference: data.reference,
+              },
+            }
+          );
+        }
+        return "failed";
+      } catch (error) {
+        console.log({ error2: error });
       }
-      return "failed";
     }
   } catch (err: any) {
     console.log({ err, message: err.response.data });
