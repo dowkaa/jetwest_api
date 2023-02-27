@@ -542,15 +542,6 @@ module.exports = {
   ): Promise<Response> => {
     let user = await db.dbs.Users.findOne({ where: { uuid: req.user.uuid } });
 
-    if (user.type === "Shipper") {
-      return res
-        .status(400)
-        .json(
-          util.helpers.sendError(
-            "Non Shippers are not allowed to access this API"
-          )
-        );
-    }
     let { booking_ref, pageNum } = req.query;
 
     if (!pageNum || isNaN(pageNum) || !booking_ref) {

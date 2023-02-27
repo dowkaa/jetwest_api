@@ -3439,6 +3439,7 @@ with note ${note}`,
       attributes: { exclude: [, "password", "otp", "locked", "activated"] },
       where: { uuid: uuid },
     });
+
     if (!user) {
       return res
         .status(400)
