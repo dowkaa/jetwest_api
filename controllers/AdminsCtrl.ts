@@ -3436,7 +3436,7 @@ with note ${note}`,
     }
 
     let user = await db.dbs.Users.findOne({
-      attributes: { exclude: ["id", "password", "otp", "locked", "activated"] },
+      attributes: { exclude: [, "password", "otp", "locked", "activated"] },
       where: { uuid: uuid },
     });
     if (!user) {
