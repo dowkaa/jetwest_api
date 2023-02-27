@@ -4,6 +4,34 @@ const util = require("../utils/packages");
 const { paginate } = require("paginate-info");
 const { Op, QueryTypes } = require("sequelize");
 const db = require("../database/mysql");
+
+const updateShipmentStatus = async (items: any) => {
+  setTimeout(async () => {
+    for (const item of items) {
+      let checker = await db.dbs.ShippingItems.findOne({
+        where: { booking_reference: item.shipment_ref },
+      });
+      let v = await db.dbs.ScheduleFlights.findOne({
+        where: {
+          id: checker.flight_id,
+        },
+      });
+
+      if (checker.payment_status === "pending") {
+        checker.payment_status = "failed";
+        await checker.save();
+
+        v.available_capacity =
+          parseFloat(v.available_capacity) + parseFloat(checker.weight);
+        v.totalAmount = parseFloat(v.totalAmount) - parseFloat(checker.price);
+        v.taw = parseFloat(v.taw) - parseFloat(checker.weight);
+        await v.save();
+      }
+    }
+    // }, 10000);
+  }, 3600000);
+};
+
 module.exports = {
   getAllUsers: async (
     req: any,
@@ -442,6 +470,7 @@ module.exports = {
     return res.status(200).json({ shipmemt });
   },
 
+  // this should be held for 30 minutes after which the payment_status is updated to failed
   bookCustomerShipment: async (
     req: any,
     res: Response,
@@ -715,6 +744,7 @@ module.exports = {
         payment_status: "pending",
         price: price,
         category,
+        company_name: req.user.company_name,
         ba_code_url,
         promo_code: promo_code ? promo_code : null,
         shipperName: user.first_name + " " + user.last_name,
@@ -747,14 +777,73 @@ module.exports = {
 
     util.adminBook.sendMail(option);
 
+    updateShipmentStatus(items);
     // if (status) {
     return res
       .status(200)
       .json(
         util.helpers.sendSuccess(
-          "Shipment booked successfully, a notification email would be sent the shipper with details of the shipment. Thanks"
+          "Shipment booked successfully, a notification email would be sent to the shipper with details of the shipment. Thanks"
         )
       );
     // }
+  },
+
+  // update bank transfers
+  confirmPayment: async (req: any, res: Response): Promise<Response> => {
+    const itemSchema = util.Joi.object()
+      .keys({
+        proof_url: util.Joi.string().required(),
+        user_id: util.Joi.string().required(),
+        shipment_ref: util.Joi.string().required(),
+        amount: util.Joi.string().required(),
+      })
+      .unknown();
+
+    const validate1 = itemSchema.validate(req.body);
+
+    if (validate1.error != null) {
+      const errorMessage = validate1.error.details
+        .map((i: any) => i.message)
+        .join(".");
+      return res.status(400).json(util.helpers.sendError(errorMessage));
+    }
+
+    const { proof_url, user_id, shipment_ref, amount } = req.body;
+
+    let user = await db.dbs.Users.findOne({ where: { uuid: user_id } });
+
+    if (!user) {
+      return res.status(400).json(util.helpers.sendError("User not found"));
+    }
+
+    let shipment = await db.dbs.ShippingItems.findOne({
+      where: { booking_reference: shipment_ref },
+    });
+
+    if (!shipment) {
+      return res
+        .status(400)
+        .json(util.helpers.sendError("Shipments not found"));
+    }
+
+    await db.dbs.ShippingItems.update(
+      { payment_reference: "SUCCESS" },
+      { where: { booking_reference: shipment_ref } }
+    );
+
+    await db.dbs.PaymentProofs.create({
+      uuid: util.uuid(),
+      user_id: user_id,
+      proof_url: proof_url,
+      admin_id: req.user.id,
+      shipment_ref: shipment_ref,
+      user_company: user.company_name,
+      amount: amount,
+    });
+
+    return res
+      .status(200)
+      .json(util.helpers.sendSuccess("payment successfully verified"));
   },
 };

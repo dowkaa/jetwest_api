@@ -37,7 +37,7 @@ const sendMail = async (option: any) => {
     context: {
       name: option.name,
       shipment_num: option.shipment_num,
-      shipper_name: option.shipperName,
+      shipper_name: option.shipper_name,
       arrival_date: option.arrival_date,
     },
   };

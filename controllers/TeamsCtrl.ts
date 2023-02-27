@@ -12,7 +12,6 @@ module.exports = {
   ): Promise<Response> => {
     const schema = utill.Joi.object()
       .keys({
-        type: utill.Joi.string().required(),
         team_type: utill.Joi.string().required(),
         first_name: utill.Joi.string().required(),
         last_name: utill.Joi.string().required(),
@@ -48,18 +47,29 @@ module.exports = {
         );
     }
 
-    const { first_name, last_name, country, email, mobile, type } = req.body;
+    const { first_name, last_name, country, email, mobile, team_type } =
+      req.body;
 
     let user = await db.dbs.Users.findOne({ where: { uuid: req.user.uuid } });
 
     if (!user) {
       return res.status(400).json(utill.helpers.sendError("User not found"));
     }
+
+    if (user.verification_status != "completed") {
+      return res
+        .status(400)
+        .json(
+          utill.helpers.sendError("Unverified users cannot add team members")
+        );
+    }
+
     var customer_id = utill.helpers.generateClientId(10);
     var password = utill.helpers.generateReftId(6);
 
     await db.dbs.Users.create({
-      team_id: type,
+      team_id: team_type,
+      type: user.type,
       customer_id,
       uuid: utill.uuid(),
       mobile_number: mobile,
@@ -81,7 +91,7 @@ module.exports = {
     const option = {
       name: first_name + " " + last_name,
       email: email,
-      message: `You have been added to your ${user.company_name} company's dowkaa account as a ${type}. Kindly use the password below to login and access your company dashboard. Thanks`,
+      message: `You have been added to your ${user.company_name} company's dowkaa account as a ${team_type}. Kindly use the password below to login and access your company dashboard. Thanks`,
       password,
     };
 
@@ -567,5 +577,80 @@ module.exports = {
     }
 
     return res.status(200).json(utill.helpers.sendSuccess("Success!"));
+  },
+
+  addSuperAdmin: async (
+    req: any,
+    res: Response,
+    next: NextFunction
+  ): Promise<Response> => {
+    let admin = await db.dbs.Users.findOne({ where: { uuid: req.user.uuid } });
+
+    if (admin.team_id !== "Admin") {
+      return res
+        .status(400)
+        .json(
+          utill.helpers.sendError(
+            "Only company system adminns can update user privilege"
+          )
+        );
+    }
+    let uuid = req.query.uuid;
+
+    if (!uuid) {
+      return res
+        .status(400)
+        .json(utill.helpers.sendError("Kindly add a valid admin id"));
+    }
+
+    let user = await db.dbs.Users.findOne({ where: { uuid: uuid } });
+
+    if (!user) {
+      return res.status(400).json(utill.helpers.sendError("User not found"));
+    }
+
+    user.team_id = "Admin";
+    await user.save();
+
+    return res
+      .status(200)
+      .json(utill.helpers.sendSuccess("User privilege updated successfully"));
+  },
+
+  deleteAdmin: async (
+    req: any,
+    res: Response,
+    next: NextFunction
+  ): Promise<Response> => {
+    let admin = await db.dbs.Users.findOne({ where: { uuid: req.user.uuid } });
+
+    if (admin.team_id !== "Admin") {
+      return res
+        .status(400)
+        .json(
+          utill.helpers.sendError(
+            "Only company system adminns can delete admin"
+          )
+        );
+    }
+    let uuid = req.query.uuid;
+
+    if (!uuid) {
+      return res
+        .status(400)
+        .json(utill.helpers.sendError("Kindly add a valid admin id"));
+    }
+
+    let user = await db.dbs.Users.findOne({ where: { uuid: uuid } });
+
+    if (!user) {
+      return res.status(400).json(utill.helpers.sendError("User not found"));
+    }
+
+    await user.destroy();
+
+    return res
+      .status(200)
+      .json(utill.helpers.sendSuccess("Admin User deleted successfully"));
   },
 };
