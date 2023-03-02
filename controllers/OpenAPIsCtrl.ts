@@ -265,17 +265,13 @@ module.exports = {
         where: { user_id: userChecker.id },
       });
 
-      if (parseFloat(checkBalance.amount) - price < 0) {
+      if (parseFloat(checkBalance?.amount) - price < 0) {
         let checkTransactionTotal = await db.dbs.Transactions.sum("amount", {
           where: { user_id: req.user.id },
         });
-        console.log(
-          "111111111111111111111111111111111111111111111111111122222222222222222222222222222222"
-        );
 
         if (checkTransactionTotal < 1000000) {
-          let resp = await util.helpers.logPendingShipment(req, res, item);
-          console.log("1111111111111111111111111111111111111111111111111111");
+          let resp = await util.helpers.logPendingShipment(req, res, items);
 
           const option = {
             email: req.user.email,
@@ -301,7 +297,7 @@ module.exports = {
               req,
               res,
               req.user.id,
-              item
+              items
             );
 
             const option = {
@@ -319,7 +315,7 @@ module.exports = {
                   : util.helpers.sendSuccess(resp.message)
               );
           } else {
-            let resp = await util.helpers.logPendingShipment(req, res, item);
+            let resp = await util.helpers.logPendingShipment(req, res, items);
 
             return res
               .status(resp.status)
@@ -331,36 +327,6 @@ module.exports = {
           }
         }
       }
-
-      await db.dbs.Transactions.create({
-        uuid: util.uuid(),
-        user_id: req.user.id,
-        amount: price,
-        reference: "nil",
-        previous_balance: checkBalance.amount,
-        new_balance: parseFloat(checkBalance.amount) - price,
-        amount_deducted: price,
-        departure: pickup_location,
-        arrival: destination,
-        cargo_id: cargo.id,
-        departure_date: depature_date.split("/").reverse().join("-"),
-        arrival_date: v.arrival_date,
-        shipment_no: shipment_num,
-        company_name: req.user.company_name,
-        weight:
-          volumetric_weight > parseFloat(weight) ? volumetric_weight : weight,
-        reciever_organisation: reciever_organisation,
-        pricePerkeg: route.ratePerKg,
-        no_of_bags: items.length,
-        type: "credit",
-        method: "wallet",
-        description: `Payment for shipment with no ${shipment_num}`,
-        status: "success",
-      });
-
-      checkBalance.amount = parseFloat(checkBalance.amount) - price;
-      checkBalance.amount_deducted = price;
-      await checkBalance.save();
 
       if (agent_id) {
         let agent = await db.dbs.Users.findOne({
@@ -468,10 +434,19 @@ module.exports = {
     const option = {
       reference: payment_ref,
       shipment_num,
+      email: req.user.email,
       id: req.user.id,
       customer_id: req.user.customer_id,
     };
 
+    util.shipperAPI.sendMail(option);
+
+    util.helpers.logApiTransaction(
+      req.user.customer_id,
+      total_amount,
+      shipment_num,
+      `Payment for shipment with no ${shipment_num}`
+    );
     // if (status) {
     return res
       .status(200)

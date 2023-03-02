@@ -39,6 +39,54 @@ const validateHarsh = async (secret: string, user_id: string) => {
   return null;
 };
 
+const logApiTransaction = async (
+  customer_id: string,
+  amount: number,
+  shipment_num: any,
+  message: string
+) => {
+  let user = await db.dbs.Users.findOne({
+    where: { customer_id: customer_id },
+  });
+
+  let checkBalance = await db.dbs.Wallets.findOne({
+    where: { user_id: user.id },
+  });
+
+  checkBalance.amount = parseFloat(checkBalance.amount) - amount;
+  checkBalance.amount_deducted = amount;
+  await checkBalance.save();
+
+  let item = await db.dbs.ShippingItems.findOne({
+    where: { shipment_num: shipment_num },
+  });
+
+  await db.dbs.Transactions.create({
+    uuid: utilities.uuid(),
+    user_id: user.id,
+    amount: amount,
+    reference: "nil",
+    previous_balance: checkBalance.amount,
+    new_balance: parseFloat(checkBalance.amount) - amount,
+    amount_deducted: amount,
+    departure: item.pickup_location,
+    arrival: item.destination,
+    cargo_id: item.cargo_id,
+    departure_date: item.depature_date.split("/").reverse().join("-"),
+    arrival_date: item.arrival_date,
+    shipment_no: shipment_num,
+    company_name: user.company_name,
+    weight: item.weight,
+    reciever_organisation: item.reciever_organisation,
+    pricePerkeg: item.pricePerKg,
+    no_of_bags: item.items.length,
+    type: "credit",
+    method: "wallet",
+    description: message,
+    status: "success",
+  });
+};
+
 const checkMail = async (req: any) => {
   return await db.dbs.Users.findOne({ where: { email: req.body.email } });
 };
@@ -418,200 +466,242 @@ const addShipmentAndCreditUser = async (
     return resp;
   }
 
-  let price;
-  const {
-    type,
-    width,
-    height,
-    weight,
-    length,
-    shipment_ref,
-    category,
-    ba_code_url,
-    promo_code,
-    depature_date,
-    value,
-    content,
-  } = item;
+  for (const index of item) {
+    let price;
+    const {
+      type,
+      width,
+      height,
+      weight,
+      length,
+      shipment_ref,
+      category,
+      ba_code_url,
+      promo_code,
+      depature_date,
+      value,
+      content,
+    } = index;
 
-  let route = await db.dbs.ShipmentRoutes.findOne({
-    where: { destination_name: destination },
-  });
+    let route = await db.dbs.ShipmentRoutes.findOne({
+      where: { destination_name: destination },
+    });
 
-  if (!route) {
-    let resp = {
-      status: 400,
-      message: "Route not found",
-    };
-    return resp;
-  }
-
-  let cargo = await db.dbs.Cargo.findOne({
-    where: { flight_reg: v.flight_reg },
-  });
-
-  if (!cargo) {
-    let resp = {
-      status: 400,
-      message:
-        "Aircraft with flight registration number ${v.flight_reg} not found",
-    };
-    return resp;
-  }
-
-  let chargeable_weight;
-  let volumetric_weight =
-    (parseInt(width) * parseInt(height) * parseInt(length)) / 5000;
-
-  chargeable_weight =
-    volumetric_weight > parseInt(weight) ? volumetric_weight : parseInt(weight);
-
-  if (category === "fragile") {
-    price = chargeable_weight * parseFloat(route.ratePerKg);
-    let price1 = price * (parseFloat(route.sur_charge) / 100);
-    let price2 = price * (parseFloat(route.tax) / 100);
-    let price3 = value * (parseFloat(route.insurance) / 100);
-    let totalPrice = price + price1 + price2 + price3;
-    price = totalPrice;
-  } else {
-    price = chargeable_weight * parseFloat(route.ratePerKg);
-    let price1 = price * (parseFloat(route.sur_charge) / 100);
-    let price2 = price * (parseFloat(route.tax) / 100);
-    let totalPrice = price + price1 + price2;
-    price = totalPrice;
-  }
-
-  if (parseInt(weight) > volumetric_weight) {
-    if (parseFloat(v.available_capacity) - parseFloat(weight) < 0) {
+    if (!route) {
       let resp = {
         status: 400,
-        message: "Cannot book shipment aircraft capacity not enough",
+        message: "Route not found",
       };
       return resp;
     }
-    v.available_capacity =
-      parseFloat(v.available_capacity) - parseFloat(weight);
-    v.totalAmount = parseFloat(v.totalAmount) + price;
-    v.taw = parseFloat(v.taw) + parseFloat(weight);
-    await v.save();
-  } else {
-    if (parseFloat(v.available_capacity) - volumetric_weight < 0) {
+
+    let cargo = await db.dbs.Cargo.findOne({
+      where: { flight_reg: v.flight_reg },
+    });
+
+    if (!cargo) {
       let resp = {
         status: 400,
-        message: "Cannot book shipment aircraft capacity not enough",
+        message:
+          "Aircraft with flight registration number ${v.flight_reg} not found",
       };
       return resp;
     }
-    v.available_capacity = parseFloat(v.available_capacity) - volumetric_weight;
-    v.taw = parseFloat(v.taw) + volumetric_weight;
-    v.totalAmount = parseFloat(v.totalAmount) + price;
-    await v.save();
+
+    let chargeable_weight;
+    let volumetric_weight =
+      (parseInt(width) * parseInt(height) * parseInt(length)) / 5000;
+
+    chargeable_weight =
+      volumetric_weight > parseInt(weight)
+        ? volumetric_weight
+        : parseInt(weight);
+
+    if (category === "fragile") {
+      price = chargeable_weight * parseFloat(route.ratePerKg);
+      let price1 = price * (parseFloat(route.sur_charge) / 100);
+      let price2 = price * (parseFloat(route.tax) / 100);
+      let price3 = value * (parseFloat(route.insurance) / 100);
+      let totalPrice = price + price1 + price2 + price3;
+      price = totalPrice;
+    } else {
+      price = chargeable_weight * parseFloat(route.ratePerKg);
+      let price1 = price * (parseFloat(route.sur_charge) / 100);
+      let price2 = price * (parseFloat(route.tax) / 100);
+      let totalPrice = price + price1 + price2;
+      price = totalPrice;
+    }
+
+    if (parseInt(weight) > volumetric_weight) {
+      if (parseFloat(v.available_capacity) - parseFloat(weight) < 0) {
+        let resp = {
+          status: 400,
+          message: "Cannot book shipment aircraft capacity not enough",
+        };
+        return resp;
+      }
+      v.available_capacity =
+        parseFloat(v.available_capacity) - parseFloat(weight);
+      v.totalAmount = parseFloat(v.totalAmount) + price;
+      v.taw = parseFloat(v.taw) + parseFloat(weight);
+      await v.save();
+    } else {
+      if (parseFloat(v.available_capacity) - volumetric_weight < 0) {
+        let resp = {
+          status: 400,
+          message: "Cannot book shipment aircraft capacity not enough",
+        };
+        return resp;
+      }
+      v.available_capacity =
+        parseFloat(v.available_capacity) - volumetric_weight;
+      v.taw = parseFloat(v.taw) + volumetric_weight;
+      v.totalAmount = parseFloat(v.totalAmount) + price;
+      await v.save();
+    }
+
+    price = price * parseFloat(route.dailyExchangeRate);
+
+    if (agent_id) {
+      let agent = await db.dbs.Users.findOne({
+        where: { uuid: agent_id },
+      });
+      let status = await db.dbs.ShippingItems.create({
+        uuid: utilities.uuid(),
+        flight_id: v.id,
+        type,
+        user_id: req.user.id,
+        agent_id: agent.id,
+        shipment_num,
+        reference: payment_ref,
+        value,
+        pickup_location,
+        chargeable_weight,
+        cargo_id: cargo.id,
+        destination,
+        depature_date: depature_date.split("/").reverse().join("-"),
+        width,
+        length: length,
+        height,
+        sur_charge: route.sur_charge,
+        taxes: route.tax,
+        book_type: "Personal",
+        status: "pending",
+        shipment_routeId: route.id,
+        scan_code,
+        weight,
+        ratePerKg: route.ratePerKg,
+        logo_url: v.logo_url,
+        arrival_date: v.arrival_date,
+        booking_reference: shipment_ref,
+        volumetric_weight,
+        company_name: req.user.company_name,
+        payment_status: "paid",
+        price: price,
+        category,
+        ba_code_url,
+        promo_code: promo_code ? promo_code : null,
+        shipperName: req.user.first_name + " " + req.user.last_name,
+        organisation: req.user.organisation,
+        shipperNum: req.user.customer_id,
+        no_of_bags: req.body.items.length,
+        content,
+        reciever_firstname,
+        reciever_lastname,
+        reciever_email,
+        reciever_organisation,
+        reciever_primaryMobile,
+        reciever_secMobile,
+      });
+      // utilities.helpers.removeShipment(status.uuid);
+    } else {
+      let status = await db.dbs.ShippingItems.create({
+        uuid: utilities.uuid(),
+        flight_id: v.id,
+        type,
+        user_id: req.user.id,
+        shipment_num,
+        reference: payment_ref,
+        value,
+        pickup_location,
+        chargeable_weight,
+        cargo_id: cargo.id,
+        destination,
+        depature_date: depature_date.split("/").reverse().join("-"),
+        width,
+        length: length,
+        height,
+        sur_charge: route.sur_charge,
+        taxes: route.tax,
+        book_type: "Personal",
+        status: "pending",
+        shipment_routeId: route.id,
+        scan_code,
+        weight,
+        ratePerKg: route.ratePerKg,
+        logo_url: v.logo_url,
+        arrival_date: v.arrival_date,
+        booking_reference: shipment_ref,
+        volumetric_weight,
+        company_name: req.user.company_name,
+        payment_status: "paid",
+        price: price,
+        category,
+        ba_code_url,
+        promo_code: promo_code ? promo_code : null,
+        shipperName: req.user.first_name + " " + req.user.last_name,
+        organisation: req.user.organisation,
+        shipperNum: req.user.customer_id,
+        no_of_bags: req.body.items.length,
+        content,
+        reciever_firstname,
+        reciever_lastname,
+        reciever_email,
+        reciever_organisation,
+        reciever_primaryMobile,
+        reciever_secMobile,
+      });
+
+      // utilities.helpers.removeShipment(status.uuid);
+    }
+
+    // let checkBalance = await db.dbs.Wallets.findOne({
+    //   where: { user_id: req.user.id },
+    // });
+
+    // await db.dbs.Transactions.create({
+    //   uuid: utilities.uuid(),
+    //   user_id: req.user.id,
+    //   amount: price,
+    //   reference: "nil",
+    //   previous_balance: checkBalance.amount,
+    //   new_balance: parseFloat(checkBalance.amount) - price,
+    //   amount_deducted: price,
+    //   departure: pickup_location,
+    //   arrival: destination,
+    //   cargo_id: cargo.id,
+    //   departure_date: depature_date.split("/").reverse().join("-"),
+    //   arrival_date: v.arrival_date,
+    //   shipment_no: shipment_num,
+    //   company_name: req.user.company_name,
+    //   weight:
+    //     volumetric_weight > parseFloat(weight) ? volumetric_weight : weight,
+    //   reciever_organisation: reciever_organisation,
+    //   pricePerkeg: route.ratePerKg,
+    //   no_of_bags: items.length,
+    //   type: "credit",
+    //   method: "wallet",
+    //   description: `On credit Payment for shipment with no ${shipment_num} of the sum of ${price} to be deducted upon next wallet deposit`,
+    //   status: "success",
+    // });
   }
 
-  price = price * parseFloat(route.dailyExchangeRate);
-
-  if (agent_id) {
-    let agent = await db.dbs.Users.findOne({
-      where: { uuid: agent_id },
-    });
-    let status = await db.dbs.ShippingItems.create({
-      uuid: utilities.uuid(),
-      flight_id: v.id,
-      type,
-      user_id: req.user.id,
-      agent_id: agent.id,
-      shipment_num,
-      reference: payment_ref,
-      value,
-      pickup_location,
-      chargeable_weight,
-      cargo_id: cargo.id,
-      destination,
-      depature_date: depature_date.split("/").reverse().join("-"),
-      width,
-      length: length,
-      height,
-      sur_charge: route.sur_charge,
-      taxes: route.tax,
-      book_type: "Personal",
-      status: "pending",
-      shipment_routeId: route.id,
-      scan_code,
-      weight,
-      ratePerKg: route.ratePerKg,
-      logo_url: v.logo_url,
-      arrival_date: v.arrival_date,
-      booking_reference: shipment_ref,
-      volumetric_weight,
-      company_name: req.user.company_name,
-      payment_status: "pending",
-      price: price,
-      category,
-      ba_code_url,
-      promo_code: promo_code ? promo_code : null,
-      shipperName: req.user.first_name + " " + req.user.last_name,
-      organisation: req.user.organisation,
-      shipperNum: req.user.customer_id,
-      no_of_bags: req.body.items.length,
-      content,
-      reciever_firstname,
-      reciever_lastname,
-      reciever_email,
-      reciever_organisation,
-      reciever_primaryMobile,
-      reciever_secMobile,
-    });
-    utilities.helpers.removeShipment(status.uuid);
-  } else {
-    let status = await db.dbs.ShippingItems.create({
-      uuid: utilities.uuid(),
-      flight_id: v.id,
-      type,
-      user_id: req.user.id,
-      shipment_num,
-      reference: payment_ref,
-      value,
-      pickup_location,
-      chargeable_weight,
-      cargo_id: cargo.id,
-      destination,
-      depature_date: depature_date.split("/").reverse().join("-"),
-      width,
-      length: length,
-      height,
-      sur_charge: route.sur_charge,
-      taxes: route.tax,
-      book_type: "Personal",
-      status: "pending",
-      shipment_routeId: route.id,
-      scan_code,
-      weight,
-      ratePerKg: route.ratePerKg,
-      logo_url: v.logo_url,
-      arrival_date: v.arrival_date,
-      booking_reference: shipment_ref,
-      volumetric_weight,
-      company_name: req.user.company_name,
-      payment_status: "pending",
-      price: price,
-      category,
-      ba_code_url,
-      promo_code: promo_code ? promo_code : null,
-      shipperName: req.user.first_name + " " + req.user.last_name,
-      organisation: req.user.organisation,
-      shipperNum: req.user.customer_id,
-      no_of_bags: req.body.items.length,
-      content,
-      reciever_firstname,
-      reciever_lastname,
-      reciever_email,
-      reciever_organisation,
-      reciever_primaryMobile,
-      reciever_secMobile,
-    });
-
-    utilities.helpers.removeShipment(status.uuid);
-  }
+  utilities.helpers.logApiTransaction(
+    req.user.customer_id,
+    total_amount,
+    shipment_num,
+    `On credit Payment for shipment with no ${shipment_num} of the sum of ${total_amount} to be deducted upon next wallet deposit`
+  );
 
   v.no_of_bags = parseInt(v.no_of_bags) + items.length;
   await v.save();
@@ -719,199 +809,210 @@ const logPendingShipment = async (req: any, res: Response, item: any) => {
     return resp;
   }
 
-  let price;
-  const {
-    type,
-    width,
-    height,
-    weight,
-    length,
-    shipment_ref,
-    category,
-    ba_code_url,
-    promo_code,
-    depature_date,
-    value,
-    content,
-  } = item;
+  for (const index of item) {
+    let price;
+    const {
+      type,
+      width,
+      height,
+      weight,
+      length,
+      shipment_ref,
+      category,
+      ba_code_url,
+      promo_code,
+      depature_date,
+      value,
+      content,
+    } = index;
 
-  let route = await db.dbs.ShipmentRoutes.findOne({
-    where: { destination_name: destination },
-  });
+    let route = await db.dbs.ShipmentRoutes.findOne({
+      where: { destination_name: destination },
+    });
 
-  if (!route) {
-    let resp = {
-      status: 400,
-      message: "Route not found",
-    };
-    return resp;
-  }
-
-  let cargo = await db.dbs.Cargo.findOne({
-    where: { flight_reg: v.flight_reg },
-  });
-
-  if (!cargo) {
-    let resp = {
-      status: 400,
-      message: `Aircraft with flight registration number ${v.flight_reg} not found`,
-    };
-    return resp;
-  }
-
-  let chargeable_weight;
-  let volumetric_weight =
-    (parseInt(width) * parseInt(height) * parseInt(length)) / 5000;
-
-  chargeable_weight =
-    volumetric_weight > parseInt(weight) ? volumetric_weight : parseInt(weight);
-
-  if (category === "fragile") {
-    price = chargeable_weight * parseFloat(route.ratePerKg);
-    let price1 = price * (parseFloat(route.sur_charge) / 100);
-    let price2 = price * (parseFloat(route.tax) / 100);
-    let price3 = value * (parseFloat(route.insurance) / 100);
-    let totalPrice = price + price1 + price2 + price3;
-    price = totalPrice;
-  } else {
-    price = chargeable_weight * parseFloat(route.ratePerKg);
-    let price1 = price * (parseFloat(route.sur_charge) / 100);
-    let price2 = price * (parseFloat(route.tax) / 100);
-    let totalPrice = price + price1 + price2;
-    price = totalPrice;
-  }
-
-  if (parseInt(weight) > volumetric_weight) {
-    if (parseFloat(v.available_capacity) - parseFloat(weight) < 0) {
+    if (!route) {
       let resp = {
         status: 400,
-        message: "Cannot book shipment aircraft capacity not enough",
+        message: "Route not found",
       };
       return resp;
     }
-    v.available_capacity =
-      parseFloat(v.available_capacity) - parseFloat(weight);
-    v.totalAmount = parseFloat(v.totalAmount) + price;
-    v.taw = parseFloat(v.taw) + parseFloat(weight);
-    await v.save();
-  } else {
-    if (parseFloat(v.available_capacity) - volumetric_weight < 0) {
+
+    let cargo = await db.dbs.Cargo.findOne({
+      where: { flight_reg: v.flight_reg },
+    });
+
+    if (!cargo) {
       let resp = {
         status: 400,
-        message: "Cannot book shipment aircraft capacity not enough",
+        message: `Aircraft with flight registration number ${v.flight_reg} not found`,
       };
       return resp;
     }
-    v.available_capacity = parseFloat(v.available_capacity) - volumetric_weight;
-    v.taw = parseFloat(v.taw) + volumetric_weight;
-    v.totalAmount = parseFloat(v.totalAmount) + price;
-    await v.save();
+
+    let chargeable_weight;
+    let volumetric_weight =
+      (parseInt(width) * parseInt(height) * parseInt(length)) / 5000;
+
+    chargeable_weight =
+      volumetric_weight > parseInt(weight)
+        ? volumetric_weight
+        : parseInt(weight);
+
+    if (category === "fragile") {
+      price = chargeable_weight * parseFloat(route.ratePerKg);
+      let price1 = price * (parseFloat(route.sur_charge) / 100);
+      let price2 = price * (parseFloat(route.tax) / 100);
+      let price3 = value * (parseFloat(route.insurance) / 100);
+      let totalPrice = price + price1 + price2 + price3;
+      price = totalPrice;
+    } else {
+      price = chargeable_weight * parseFloat(route.ratePerKg);
+      let price1 = price * (parseFloat(route.sur_charge) / 100);
+      let price2 = price * (parseFloat(route.tax) / 100);
+      let totalPrice = price + price1 + price2;
+      price = totalPrice;
+    }
+
+    if (parseInt(weight) > volumetric_weight) {
+      if (parseFloat(v.available_capacity) - parseFloat(weight) < 0) {
+        let resp = {
+          status: 400,
+          message: "Cannot book shipment aircraft capacity not enough",
+        };
+        return resp;
+      }
+      v.available_capacity =
+        parseFloat(v.available_capacity) - parseFloat(weight);
+      v.totalAmount = parseFloat(v.totalAmount) + price;
+      v.taw = parseFloat(v.taw) + parseFloat(weight);
+      await v.save();
+    } else {
+      if (parseFloat(v.available_capacity) - volumetric_weight < 0) {
+        let resp = {
+          status: 400,
+          message: "Cannot book shipment aircraft capacity not enough",
+        };
+        return resp;
+      }
+      v.available_capacity =
+        parseFloat(v.available_capacity) - volumetric_weight;
+      v.taw = parseFloat(v.taw) + volumetric_weight;
+      v.totalAmount = parseFloat(v.totalAmount) + price;
+      await v.save();
+    }
+
+    price = price * parseFloat(route.dailyExchangeRate);
+
+    if (agent_id) {
+      let agent = await db.dbs.Users.findOne({
+        where: { uuid: agent_id },
+      });
+      let status = await db.dbs.ShippingItems.create({
+        uuid: utilities.uuid(),
+        flight_id: v.id,
+        type,
+        user_id: req.user.id,
+        agent_id: agent.id,
+        shipment_num,
+        reference: payment_ref,
+        value,
+        pickup_location,
+        chargeable_weight,
+        cargo_id: cargo.id,
+        destination,
+        depature_date: depature_date.split("/").reverse().join("-"),
+        width,
+        length: length,
+        height,
+        sur_charge: route.sur_charge,
+        taxes: route.tax,
+        book_type: "Personal",
+        status: "pending",
+        shipment_routeId: route.id,
+        scan_code,
+        weight,
+        ratePerKg: route.ratePerKg,
+        logo_url: v.logo_url,
+        arrival_date: v.arrival_date,
+        booking_reference: shipment_ref,
+        volumetric_weight,
+        company_name: req.user.company_name,
+        payment_status: "pending",
+        price: price,
+        category,
+        ba_code_url,
+        promo_code: promo_code ? promo_code : null,
+        shipperName: req.user.first_name + " " + req.user.last_name,
+        organisation: req.user.organisation,
+        shipperNum: req.user.customer_id,
+        no_of_bags: req.body.items.length,
+        content,
+        reciever_firstname,
+        reciever_lastname,
+        reciever_email,
+        reciever_organisation,
+        reciever_primaryMobile,
+        reciever_secMobile,
+      });
+      utilities.helpers.removeShipment(status.uuid);
+    } else {
+      let status = await db.dbs.ShippingItems.create({
+        uuid: utilities.uuid(),
+        flight_id: v.id,
+        type,
+        user_id: req.user.id,
+        shipment_num,
+        reference: payment_ref,
+        value,
+        pickup_location,
+        chargeable_weight,
+        cargo_id: cargo.id,
+        destination,
+        depature_date: depature_date.split("/").reverse().join("-"),
+        width,
+        length: length,
+        height,
+        sur_charge: route.sur_charge,
+        taxes: route.tax,
+        book_type: "Personal",
+        status: "pending",
+        shipment_routeId: route.id,
+        scan_code,
+        weight,
+        ratePerKg: route.ratePerKg,
+        logo_url: v.logo_url,
+        arrival_date: v.arrival_date,
+        booking_reference: shipment_ref,
+        volumetric_weight,
+        company_name: req.user.company_name,
+        payment_status: "pending",
+        price: price,
+        category,
+        ba_code_url,
+        promo_code: promo_code ? promo_code : null,
+        shipperName: req.user.first_name + " " + req.user.last_name,
+        organisation: req.user.organisation,
+        shipperNum: req.user.customer_id,
+        no_of_bags: req.body.items.length,
+        content,
+        reciever_firstname,
+        reciever_lastname,
+        reciever_email,
+        reciever_organisation,
+        reciever_primaryMobile,
+        reciever_secMobile,
+      });
+
+      utilities.helpers.removeShipment(status.uuid);
+    }
   }
 
-  price = price * parseFloat(route.dailyExchangeRate);
-
-  if (agent_id) {
-    let agent = await db.dbs.Users.findOne({
-      where: { uuid: agent_id },
-    });
-    let status = await db.dbs.ShippingItems.create({
-      uuid: utilities.uuid(),
-      flight_id: v.id,
-      type,
-      user_id: req.user.id,
-      agent_id: agent.id,
-      shipment_num,
-      reference: payment_ref,
-      value,
-      pickup_location,
-      chargeable_weight,
-      cargo_id: cargo.id,
-      destination,
-      depature_date: depature_date.split("/").reverse().join("-"),
-      width,
-      length: length,
-      height,
-      sur_charge: route.sur_charge,
-      taxes: route.tax,
-      book_type: "Personal",
-      status: "pending",
-      shipment_routeId: route.id,
-      scan_code,
-      weight,
-      ratePerKg: route.ratePerKg,
-      logo_url: v.logo_url,
-      arrival_date: v.arrival_date,
-      booking_reference: shipment_ref,
-      volumetric_weight,
-      company_name: req.user.company_name,
-      payment_status: "pending",
-      price: price,
-      category,
-      ba_code_url,
-      promo_code: promo_code ? promo_code : null,
-      shipperName: req.user.first_name + " " + req.user.last_name,
-      organisation: req.user.organisation,
-      shipperNum: req.user.customer_id,
-      no_of_bags: req.body.items.length,
-      content,
-      reciever_firstname,
-      reciever_lastname,
-      reciever_email,
-      reciever_organisation,
-      reciever_primaryMobile,
-      reciever_secMobile,
-    });
-    utilities.helpers.removeShipment(status.uuid);
-  } else {
-    let status = await db.dbs.ShippingItems.create({
-      uuid: utilities.uuid(),
-      flight_id: v.id,
-      type,
-      user_id: req.user.id,
-      shipment_num,
-      reference: payment_ref,
-      value,
-      pickup_location,
-      chargeable_weight,
-      cargo_id: cargo.id,
-      destination,
-      depature_date: depature_date.split("/").reverse().join("-"),
-      width,
-      length: length,
-      height,
-      sur_charge: route.sur_charge,
-      taxes: route.tax,
-      book_type: "Personal",
-      status: "pending",
-      shipment_routeId: route.id,
-      scan_code,
-      weight,
-      ratePerKg: route.ratePerKg,
-      logo_url: v.logo_url,
-      arrival_date: v.arrival_date,
-      booking_reference: shipment_ref,
-      volumetric_weight,
-      company_name: req.user.company_name,
-      payment_status: "pending",
-      price: price,
-      category,
-      ba_code_url,
-      promo_code: promo_code ? promo_code : null,
-      shipperName: req.user.first_name + " " + req.user.last_name,
-      organisation: req.user.organisation,
-      shipperNum: req.user.customer_id,
-      no_of_bags: req.body.items.length,
-      content,
-      reciever_firstname,
-      reciever_lastname,
-      reciever_email,
-      reciever_organisation,
-      reciever_primaryMobile,
-      reciever_secMobile,
-    });
-
-    utilities.helpers.removeShipment(status.uuid);
-  }
+  // utilities.helpers.logApiTransaction(
+  //   req.user.customer_id,
+  //   total_amount,
+  //   shipment_num
+  // );
 
   v.no_of_bags = parseInt(v.no_of_bags) + items.length;
   await v.save();
@@ -919,7 +1020,7 @@ const logPendingShipment = async (req: any, res: Response, item: any) => {
   let resp = {
     status: 200,
     message:
-      "Shipment moved to pending as you have insufficient funds in your wallet, kindly fund your wallet and make payment. This shipment will be discared in an our time",
+      "Shipment moved to pending as you have insufficient funds in your wallet, kindly fund your wallet and make payment. This shipment will be discarded in an our time",
   };
   return resp;
 };
@@ -940,9 +1041,10 @@ const removeShipment = async (param: string) => {
     v.totalAmount = parseFloat(v.totalAmount) - parseFloat(shipment.price);
     await v.save();
 
-    await db.dbs.ShippingItems.delete({
+    await db.dbs.ShippingItems.destroy({
       where: { uuid: param, payment_status: "pending" },
     });
+    // }, 200000);
   }, 3600000);
 };
 
@@ -1110,6 +1212,7 @@ module.exports = {
   logPendingShipment,
   addShipmentAndCreditUser,
   updateShipment,
+  logApiTransaction,
   checkPromo,
   checkMobile,
   timestamp,
