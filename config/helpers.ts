@@ -43,7 +43,8 @@ const logApiTransaction = async (
   customer_id: string,
   amount: number,
   shipment_num: any,
-  message: string
+  message: string,
+  data: any
 ) => {
   let user = await db.dbs.Users.findOne({
     where: { customer_id: customer_id },
@@ -79,7 +80,7 @@ const logApiTransaction = async (
     weight: item.weight,
     reciever_organisation: item.reciever_organisation,
     pricePerkeg: item.pricePerKg,
-    no_of_bags: item.items.length,
+    no_of_bags: data.length,
     type: "credit",
     method: "wallet",
     description: message,
@@ -700,7 +701,8 @@ const addShipmentAndCreditUser = async (
     req.user.customer_id,
     total_amount,
     shipment_num,
-    `On credit Payment for shipment with no ${shipment_num} of the sum of ${total_amount} to be deducted upon next wallet deposit`
+    `On credit Payment for shipment with no ${shipment_num} of the sum of ${total_amount} to be deducted upon next wallet deposit`,
+    items
   );
 
   v.no_of_bags = parseInt(v.no_of_bags) + items.length;

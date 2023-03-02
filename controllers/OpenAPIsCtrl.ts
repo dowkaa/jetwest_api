@@ -445,7 +445,8 @@ module.exports = {
       req.user.customer_id,
       total_amount,
       shipment_num,
-      `Payment for shipment with no ${shipment_num}`
+      `Payment for shipment with no ${shipment_num}`,
+      items
     );
     // if (status) {
     return res
