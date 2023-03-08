@@ -26,7 +26,7 @@ var options = {
   viewEngine: {
     extname: ".hbs",
     layoutsDir: __dirname + "/views",
-    defaultLayout: "team_welcome",
+    defaultLayout: "team_delete",
     extName: ".hbs",
   },
   viewPath: __dirname + "/views",
@@ -40,12 +40,12 @@ const sendMail = async (option: any) => {
     from: `${process.env.FROM_NAME} <${process.env.FROM_EMAIL}>`,
     to: option.email,
     subject: "Company user login Access on Dowkaa",
-    template: "team_welcome",
+    template: "team_delete",
     context: {
       name: option.name,
       message: `${option.message}`,
       password: option.password,
-      email: option.email
+      email: option.email,
     },
   };
 

@@ -61,6 +61,7 @@ exports.contactUs = require("../Mail/contactUs");
 exports.verify = require("../Mail/verify");
 exports.groundHandlerMail = require("../Mail/groundHandler");
 exports.teamWelcome = require("../Mail/team_welcome");
+exports.teamDelete = require("../Mail/team_delete");
 exports.adminBook = require("../Mail/adminBook");
 exports.shipperAPI = require("../Mail/shipperAPI");
 exports.SuperShipperAPIMail = require("../Mail/SuperShipperAPI");

@@ -1,16 +1,8 @@
 import { Request, Response, NextFunction } from "express";
 const util = require("../utils/packages");
 const { Op } = require("sequelize");
-import { Query } from "express-serve-static-core";
-import { stdout } from "process";
 const db = require("../database/mysql");
 const { paginate } = require("paginate-info");
-
-interface TypedRequestBody<T extends Query, U, R> extends Express.Request {
-  body: U;
-  query: T;
-  user: R;
-}
 
 module.exports = {
   getProfile: async (req: any, res: Response, next: NextFunction) => {
@@ -60,6 +52,7 @@ module.exports = {
       role_id: req.user.role_id,
       is_Admin: req.user.is_Admin,
       admin_type: req.user.admin_type,
+      team_status: req.user.team_id,
       companyFounded: req.user.companyFounded,
       type: req.user.type,
       ratePerKg: req.user.ratePerkg,
