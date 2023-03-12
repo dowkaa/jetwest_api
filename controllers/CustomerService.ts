@@ -64,11 +64,11 @@ module.exports = {
 
     for (const item of users.rows) {
       let totalShipments = await db.dbs.ShippingItems.count({
-        where: { user_id: item.uuid },
+        where: { user_id: { [Op.or]: [item.uuid, item.id] } },
       });
 
       let totalKg = await db.dbs.ShippingItems.sum("chargeable_weight", {
-        where: { user_id: item.uuid },
+        where: { user_id: { [Op.or]: [item.uuid, item.id] } },
       });
 
       let totalAmount = await db.dbs.Transactions.sum("amount", {
