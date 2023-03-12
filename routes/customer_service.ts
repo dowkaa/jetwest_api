@@ -50,6 +50,7 @@ router.get(
   [jwtMiddleWare, signatureSignerMiddleware],
   CustomerService.getUserUpdate
 );
+
 router.post(
   "/book-customer-shipment",
   [jwtMiddleWare, signatureSignerMiddleware],

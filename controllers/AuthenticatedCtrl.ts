@@ -555,6 +555,7 @@ module.exports = {
               )
             );
         }
+
         v.available_capacity =
           parseFloat(v.available_capacity) - parseFloat(weight);
         v.taw = parseFloat(v.taw) + parseFloat(weight);

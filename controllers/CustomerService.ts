@@ -166,11 +166,11 @@ module.exports = {
     });
 
     let totalShipments = await db.dbs.ShippingItems.count({
-      where: { user_id: user.uuid },
+      where: { user_id: { [Op.or]: [user.uuid, user.id] } },
     });
 
     let totalKg = await db.dbs.ShippingItems.sum("chargeable_weight", {
-      where: { user_id: user.uuid },
+      where: { user_id: { [Op.or]: [user.uuid, user.id] } },
     });
 
     return res.status(200).json({ totalAmount, totalKg, totalShipments });
@@ -219,7 +219,7 @@ module.exports = {
     var shipments = await db.dbs.ShippingItems.findAndCountAll({
       offset: offset,
       limit: limit,
-      where: { user_id: user.uuid, status: "pending" },
+      where: { user_id: { [Op.or]: [user.uuid, user.id] }, status: "pending" },
       order: [["id", "DESC"]],
     });
 
@@ -286,7 +286,7 @@ module.exports = {
     var shipments = await db.dbs.ShippingItems.findAndCountAll({
       offset: offset,
       limit: limit,
-      where: { user_id: user.uuid, status: "enroute" },
+      where: { user_id: { [Op.or]: [user.uuid, user.id] }, status: "enroute" },
       order: [["id", "DESC"]],
     });
 
@@ -353,7 +353,10 @@ module.exports = {
     var shipments = await db.dbs.ShippingItems.findAndCountAll({
       offset: offset,
       limit: limit,
-      where: { user_id: user.uuid, status: "completed" },
+      where: {
+        user_id: { [Op.or]: [user.uuid, user.id] },
+        status: "completed",
+      },
       order: [["id", "DESC"]],
     });
 
