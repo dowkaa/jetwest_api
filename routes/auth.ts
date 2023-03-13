@@ -125,6 +125,28 @@ routerr.get(
   AuthenticatedCtrl.getUpdate
 );
 
+routerr.get(
+  "/pending-payments",
+  [jwtMiddleWare, signatureSignerMiddleware],
+  AuthenticatedCtrl.pendingPayments
+);
 
+routerr.post(
+  "/make-payment",
+  [jwtMiddleWare, signatureSignerMiddleware],
+  AuthenticatedCtrl.makePayment
+);
+
+routerr.post(
+  "/add-payment-proof",
+  [jwtMiddleWare, signatureSignerMiddleware],
+  AuthenticatedCtrl.addPaymentProof
+);
+
+routerr.get(
+  "/get-payment-proof-docs",
+  [jwtMiddleWare, signatureSignerMiddleware],
+  AuthenticatedCtrl.viewPaymentProofs
+);
 
 module.exports = routerr;

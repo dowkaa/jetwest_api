@@ -57,4 +57,22 @@ router.post(
   CustomerService.bookCustomerShipment
 );
 
+router.get(
+  "/view-payment-docs",
+  [jwtMiddleWare, signatureSignerMiddleware],
+  CustomerService.viewPaymentDocs
+);
+
+router.post(
+  "/confirm-payment",
+  [jwtMiddleWare, signatureSignerMiddleware],
+  CustomerService.confirmPayment
+);
+
+router.get(
+  "/pending-payments",
+  [jwtMiddleWare, signatureSignerMiddleware],
+  CustomerService.pendingPayments
+);
+
 module.exports = router;

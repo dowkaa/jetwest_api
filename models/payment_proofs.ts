@@ -12,8 +12,9 @@ var PaymentProofs = (sequelize: any, type: any) => {
     user_id: Sequelize.STRING,
     proof_url: Sequelize.STRING,
     admin_id: Sequelize.STRING,
-    shipment_ref: Sequelize.STRING,
-    amount: Sequelize.DECIMAL(10, 2),
+    shipment_num: Sequelize.STRING,
+    status: Sequelize.STRING,
+    amount: Sequelize.DECIMAL(12, 2),
   });
 };
 

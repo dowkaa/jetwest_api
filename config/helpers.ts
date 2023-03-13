@@ -148,7 +148,7 @@ const validateTransaction = async (data: any) => {
         });
 
         if (!checkT) {
-          await db.dbs.Transactions.create({
+          let t = await db.dbs.Transactions.create({
             uuid: utilities.uuid(),
             user_id: data.id,
             amount: amount,
@@ -172,6 +172,15 @@ const validateTransaction = async (data: any) => {
             method: "paystack",
             description: `Payment for shipment with no ${shipment.shipment_num}`,
             status: "success",
+          });
+
+          let user = await db.dbs.Users.findOne({ where: { id: data.id } });
+
+          await db.dbs.CustomerAuditLog.create({
+            uuid: utilities.uuid(),
+            user_id: user.id,
+            description: `A user with name ${user.first_name} ${user.last_name} payment of the sum of ${amount} using the paystack checkout was successful`,
+            data: JSON.stringify(t),
           });
 
           let checker = await db.dbs.PaystackStarter.findOne({
@@ -235,7 +244,7 @@ const validateTransaction = async (data: any) => {
         });
 
         if (!checkT) {
-          await db.dbs.Transactions.create({
+          let t = await db.dbs.Transactions.create({
             uuid: utilities.uuid(),
             user_id: data.id,
             amount: amount,
@@ -258,6 +267,15 @@ const validateTransaction = async (data: any) => {
             method: "paystack",
             description: `Payment for shipment with no ${shipment.shipment_num}`,
             status: "failed",
+          });
+
+          let user = await db.dbs.Users.findOne({ where: { id: data.id } });
+
+          await db.dbs.CustomerAuditLog.create({
+            uuid: utilities.uuid(),
+            user_id: user.id,
+            description: `A user with name ${user.first_name} ${user.last_name} payment of the sum of ${amount} using the paystack checkout failed`,
+            data: JSON.stringify(t),
           });
 
           let checker = await db.dbs.PaystackStarter.findOne({

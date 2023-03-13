@@ -9,7 +9,7 @@ module.exports = {
      * Example:
      * await queryInterface.createTable('users', { id: Sequelize.INTEGER });
      */
-    await queryInterface.createTable("payment_proof", {
+    await queryInterface.createTable("customer_audit_logs", {
       id: {
         allowNull: false,
         autoIncrement: true,
@@ -24,27 +24,14 @@ module.exports = {
         allowNull: true,
         type: Sequelize.STRING,
       },
-      proof_url: {
+      description: {
         allowNull: true,
         type: Sequelize.STRING,
       },
-      admin_id: {
+      data: {
         allowNull: true,
-        type: Sequelize.STRING,
+        type: Sequelize.TEXT,
       },
-      status: {
-        allowNull: true,
-        type: Sequelize.STRING,
-      },
-      shipment_num: {
-        allowNull: true,
-        type: Sequelize.STRING,
-      },
-      amount: {
-        allowNull: true,
-        type: Sequelize.DECIMAL(12, 2),
-      },
-
       createdAt: {
         type: "TIMESTAMP",
         defaultValue: Sequelize.literal("CURRENT_TIMESTAMP"),
@@ -65,6 +52,6 @@ module.exports = {
      * Example:
      * await queryInterface.dropTable('users');
      */
-    await queryInterface.dropTable("payment_proof");
+    await queryInterface.dropTable("customer_audit_logs");
   },
 };

@@ -307,6 +307,13 @@ module.exports = {
 
             util.SuperShipperAPIMail.sendMail(option);
 
+             await db.dbs.CustomerAuditLog.create({
+               uuid: util.uuid(),
+               user_id: req.user.id,
+               description: `A user with name ${req.user.first_name} ${req.user.last_name} booked a shipment(on credit to be deducted upon their next wallet funding) using the open API service for shippers.`,
+               data: JSON.stringify(req.body),
+             });
+
             return res
               .status(resp.status)
               .json(
@@ -448,6 +455,13 @@ module.exports = {
       `Payment for shipment with no ${shipment_num}`,
       items
     );
+
+    await db.dbs.CustomerAuditLog.create({
+      uuid: util.uuid(),
+      user_id: req.user.id,
+      description: `A user with name ${req.user.first_name} ${req.user.last_name} booked a shipment using the open API service for shippers.`,
+      data: JSON.stringify(req.body),
+    });
     // if (status) {
     return res
       .status(200)

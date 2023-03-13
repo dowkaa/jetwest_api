@@ -780,7 +780,52 @@ module.exports = {
 
     util.adminBook.sendMail(option);
 
+    let amount = await db.dbs.ShippingItems.sum("price", {
+      where: { shipment_num: shipment_num },
+    });
+
+    // checkBalance.amount = parseFloat(checkBalance.amount) - amount;
+    // checkBalance.amount_deducted = amount;
+    // await checkBalance.save();
+
+    let item = await db.dbs.ShippingItems.findOne({
+      where: { shipment_num: shipment_num },
+    });
+
+    await db.dbs.Transactions.create({
+      uuid: util.uuid(),
+      user_id: user.id,
+      amount: amount,
+      reference: "nil",
+      // previous_balance: checkBalance.amount,
+      // new_balance: parseFloat(checkBalance.amount) - amount,
+      amount_deducted: amount,
+      departure: item.pickup_location,
+      arrival: item.destination,
+      cargo_id: item.cargo_id,
+      departure_date: item.depature_date.split("/").reverse().join("-"),
+      arrival_date: item.arrival_date,
+      shipment_no: shipment_num,
+      company_name: user.company_name,
+      weight: item.weight,
+      reciever_organisation: item.reciever_organisation,
+      pricePerkeg: item.pricePerKg,
+      no_of_bags: items.length,
+      type: "credit",
+      method: "wallet",
+      description:
+        "Payment for shipment booked on your behalf by the dowkaa system support.",
+      status: "pending",
+    });
+
     updateShipmentStatus(items);
+
+    await db.dbs.AuditLogs.create({
+      uuid: util.uuid(),
+      user_id: req.user.id,
+      description: `Admin ${req.user.first_name} ${req.user.last_name} booked a shipment for a customer with customer id ${user.customer_id}`,
+      data: JSON.stringify(req.body),
+    });
     // if (status) {
     return res
       .status(200)
@@ -792,14 +837,68 @@ module.exports = {
     // }
   },
 
+  viewPaymentDocs: async (req: any, res: Response): Promise<Response> => {
+    const { pageNum } = req.query;
+
+    if (!pageNum || isNaN(pageNum)) {
+      return res
+        .status(400)
+        .json(util.helpers.sendError("Kindly add a valid page number"));
+    }
+
+    var currentPage = parseInt(pageNum) ? parseInt(pageNum) : 1;
+
+    var page = currentPage - 1;
+    var pageSize = 25;
+    const offset = page * pageSize;
+    const limit = pageSize;
+
+    let paymentProof = await db.dbs.PaymentProofs.findAndCountAll({
+      offset: offset,
+      limit: limit,
+      where: { user_id: req.user.id, status: "pending" },
+      order: [["id", "DESC"]],
+    });
+
+    var next_page = currentPage + 1;
+    var prev_page = currentPage - 1;
+    var nextP =
+      `/api/jetwest/auth/pending-payment-proof-docs?pageNum=` + next_page;
+    var prevP =
+      `/api/jetwest/auth/pending-payment-proof-docs?pageNum=` + prev_page;
+
+    const meta = paginate(
+      currentPage,
+      paymentProof.count,
+      paymentProof.rows,
+      pageSize
+    );
+
+    return res.status(200).json({
+      status: "SUCCESS",
+      data: paymentProof,
+      per_page: pageSize,
+      current_page: currentPage,
+      last_page: meta.pageCount, //transactions.count,
+      first_page_url: `/api/jetwest/auth/pending-payment-proof-docs?pageNum=1`,
+      last_page_url:
+        `/api/jetwest/auth/pending-payment-proof-docs?pageNum=` +
+        meta.pageCount, //transactions.count,
+      next_page_url: nextP,
+      prev_page_url: prevP,
+      path: `/api/jetwest/auth/pending-payment-proof-docs?pageNum=`,
+      from: 1,
+      to: meta.pageCount, //transactions.count,
+    });
+  },
+
   // update bank transfers
   confirmPayment: async (req: any, res: Response): Promise<Response> => {
     const itemSchema = util.Joi.object()
       .keys({
-        proof_url: util.Joi.string().required(),
         user_id: util.Joi.string().required(),
-        shipment_ref: util.Joi.string().required(),
-        amount: util.Joi.string().required(),
+        shipment_num: util.Joi.string().required(),
+        status: util.Joi.string().required(),
       })
       .unknown();
 
@@ -812,16 +911,16 @@ module.exports = {
       return res.status(400).json(util.helpers.sendError(errorMessage));
     }
 
-    const { proof_url, user_id, shipment_ref, amount } = req.body;
+    const { user_id, shipment_num, status } = req.body;
 
-    let user = await db.dbs.Users.findOne({ where: { uuid: user_id } });
+    let user = await db.dbs.Users.findOne({ where: { id: user_id } });
 
     if (!user) {
       return res.status(400).json(util.helpers.sendError("User not found"));
     }
 
     let shipment = await db.dbs.ShippingItems.findOne({
-      where: { booking_reference: shipment_ref },
+      where: { shipment_num: shipment_num },
     });
 
     if (!shipment) {
@@ -830,23 +929,84 @@ module.exports = {
         .json(util.helpers.sendError("Shipments not found"));
     }
 
-    await db.dbs.ShippingItems.update(
-      { payment_reference: "SUCCESS" },
-      { where: { booking_reference: shipment_ref } }
+    if (status === "Approve") {
+      await db.dbs.ShippingItems.update(
+        { payment_status: "success" },
+        { where: { shipment_num: shipment_num } }
+      );
+
+      await db.dbs.PaymentProofs.update(
+        { status: "success" },
+        { where: { shipment_num: shipment_num } }
+      );
+
+      await db.dbs.Transactions.update(
+        { status: "success" },
+        { where: { shipment_no: shipment_num } }
+      );
+
+      const option = {
+        name: user.first_name + " " + user.last_name,
+        email: user.email,
+        message: `This is to inform you that your shipments with shipment number ${shipment_num} has been approved successfully`,
+      };
+
+      util.paymentApproval.sendMail(option);
+
+      let paymentProof = await db.dbs.PaymentProofs.findOne({
+        where: { shipment_num: shipment_num },
+      });
+
+      await db.dbs.AuditLogs.create({
+        uuid: util.uuid(),
+        user_id: req.user.id,
+        description: `Admin ${req.user.first_name} ${req.user.last_name} approved a payment with payment proof with id ${paymentProof.uuid}`,
+        data: JSON.stringify(req.body),
+      });
+
+      return res
+        .status(200)
+        .json(util.helpers.sendSuccess("payment successfully approved"));
+    }
+
+    await db.dbs.Transactions.update(
+      { status: "pending" },
+      { where: { shipment_num: shipment_num } }
     );
 
-    await db.dbs.PaymentProofs.create({
+    const option = {
+      name: user.first_name + " " + user.last_name,
+      email: user.email,
+      message: `This is to inform you that your shipments with shipment number ${shipment_num} was rejected, kindly review document uploaded and re-upload a new and valid payment document`,
+    };
+
+    util.paymentApproval.sendMail(option);
+
+    let paymentProof = await db.dbs.PaymentProofs.findOne({
+      where: { shipment_num: shipment_num },
+    });
+
+    await db.dbs.AuditLogs.create({
       uuid: util.uuid(),
-      user_id: user_id,
-      proof_url: proof_url,
-      admin_id: req.user.id,
-      shipment_ref: shipment_ref,
-      user_company: user.company_name,
-      amount: amount,
+      user_id: req.user.id,
+      description: `Admin ${req.user.first_name} ${req.user.last_name} disapproved a payment with payment proof with id ${paymentProof.uuid}`,
+      data: JSON.stringify(req.body),
     });
 
     return res
       .status(200)
-      .json(util.helpers.sendSuccess("payment successfully verified"));
+      .json(util.helpers.sendSuccess("payment successfully approved"));
+  },
+
+  pendingPayments: async (
+    req: any,
+    res: Response,
+    next: NextFunction
+  ): Promise<Response> => {
+    let pendingPayments = await db.dbs.Transactions.findAll({
+      where: { status: "pending verification" },
+    });
+
+    return res.status(200).json({ pendingPayments });
   },
 };

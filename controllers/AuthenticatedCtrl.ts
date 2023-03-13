@@ -13,6 +13,21 @@ module.exports = {
     //   req.user.uuid
     // );
 
+    // let users = await db.dbs.Users.findOne({
+    //   attributes: { exclude: ["id", "password", "otp", "locked", "activated"] },
+    //   where: { uuid: req.user.uuid },
+    //   include: [
+    //     {
+    //       model: db.dbs.BusinessCompliance,
+    //       as: "business_compliance",
+    //     },
+    //     {
+    //       model: db.dbs.Directors,
+    //       as: "directors",
+    //     },
+    //   ],
+    // });
+
     // console.log({ rr });
     const Directors = await db.dbs.Directors.findAll({
       where: { user_id: { [Op.or]: [req.user.uuid, req.user.id] } },
@@ -37,6 +52,7 @@ module.exports = {
     });
 
     const user = {
+      uuid: req.user.uuid,
       first_name: req.user.first_name,
       last_name: req.user.last_name,
       customer_id: req.user.customer_id,
@@ -191,6 +207,13 @@ module.exports = {
           )
         );
     }
+
+    await db.dbs.CustomerAuditLog.create({
+      uuid: util.uuid(),
+      user_id: req.user.id,
+      description: `A user with name ${req.user.first_name} ${req.user.last_name} added a cargo to their cargos list`,
+      data: JSON.stringify(req.body),
+    });
 
     return res
       .status(400)
@@ -1494,6 +1517,13 @@ module.exports = {
       user.password = util.bcrypt.hashSync(new_password);
       await user.save();
 
+      await db.dbs.CustomerAuditLog.create({
+        uuid: util.uuid(),
+        user_id: user.id,
+        description: `A user with name ${user.first_name} ${user.last_name} updated his/her password`,
+        data: JSON.stringify(req.body),
+      });
+
       return res
         .status(200)
         .json(util.helpers.sendSuccess("Password updated successfully"));
@@ -1594,6 +1624,273 @@ module.exports = {
         totalCancelled,
         totalkg,
       },
+    });
+  },
+
+  pendingPayments: async (
+    req: any,
+    res: Response,
+    next: NextFunction
+  ): Promise<Response> => {
+    let pendingPayments = await db.dbs.Transactions.findAll({
+      where: { user_id: req.user.id, status: "pending" },
+    });
+
+    return res.status(200).json({ pendingPayments });
+  },
+
+  makePayment: async (
+    req: any,
+    res: Response,
+    next: NextFunction
+  ): Promise<Response> => {
+    const itemSchema = util.Joi.object()
+      .keys({
+        proof_url: util.Joi.string().required(),
+        shipment_num: util.Joi.string().required(),
+        amount: util.Joi.number().required(),
+      })
+      .unknown();
+
+    const validate1 = itemSchema.validate(req.body);
+
+    if (validate1.error != null) {
+      const errorMessage = validate1.error.details
+        .map((i: any) => i.message)
+        .join(".");
+      return res.status(400).json(util.helpers.sendError(errorMessage));
+    }
+
+    const { proof_url, shipment_num, amount } = req.body;
+
+    let user = await db.dbs.Users.findOne({ where: { uuid: req.user.uuid } });
+
+    let checker = await db.dbs.Transactions.findOne({
+      where: { amount: amount, shipment_no: shipment_num },
+    });
+
+    if (!checker) {
+      return res
+        .status(400)
+        .json(util.helpers.sendError("Transaction not found"));
+    }
+
+    if (checker.status === "success") {
+      return res
+        .status(400)
+        .json(util.helpers.sendError("payment already verified."));
+    } else if (checker.status === "pending verification") {
+      return res
+        .status(400)
+        .json(
+          util.helpers.sendError(
+            "Document already uploaded and awaiting verification."
+          )
+        );
+    }
+
+    await db.dbs.PaymentProofs.create({
+      uuid: util.uuid(),
+      user_id: user.id,
+      proof_url: proof_url,
+      shipment_num: shipment_num,
+      user_company: user.company_name,
+      status: "pending",
+      amount: amount,
+    });
+
+    checker.status = "pending verification";
+    await checker.save();
+
+    let admin = await db.dbs.Users.findAll({
+      where: { admin_type: "Customer Support" },
+    });
+
+    let arr = [];
+
+    for (const ad of admin) {
+      arr.push(ad.email);
+    }
+
+    const option = {
+      name: "Customer Support",
+      email: arr,
+      message:
+        "A customer has uploaded a payment document for shipment booked by a customer support admin person on the admin backend. Kindly check through and verify payment",
+    };
+
+    util.paymentValidation.sendMail(option);
+
+    await db.dbs.CustomerAuditLog.create({
+      uuid: util.uuid(),
+      user_id: user.id,
+      description: `A user with name ${user.first_name} ${user.last_name} uploaded proof of payment for shipment booked by admin customer service with shipment number ${shipment_num}`,
+      data: JSON.stringify(req.body),
+    });
+
+    return res
+      .status(200)
+      .json(
+        util.helpers.sendSuccess(
+          "payment successfully updated, our customer support would reach you upon payment validation. Thanks."
+        )
+      );
+  },
+
+  addPaymentProof: async (
+    req: any,
+    res: Response,
+    next: NextFunction
+  ): Promise<Response> => {
+    const itemSchema = util.Joi.object()
+      .keys({
+        proof_url: util.Joi.string().required(),
+        shipment_num: util.Joi.string().required(),
+      })
+      .unknown();
+
+    const validate1 = itemSchema.validate(req.body);
+
+    if (validate1.error != null) {
+      const errorMessage = validate1.error.details
+        .map((i: any) => i.message)
+        .join(".");
+      return res.status(400).json(util.helpers.sendError(errorMessage));
+    }
+
+    const { proof_url, shipment_num } = req.body;
+
+    let checker = await db.dbs.Transactions.findOne({
+      where: { shipment_no: shipment_num },
+    });
+
+    if (!checker) {
+      return res
+        .status(400)
+        .json(util.helpers.sendError("Transaction not found"));
+    }
+
+    if (checker.status === "success") {
+      return res
+        .status(400)
+        .json(util.helpers.sendError("payment already verified."));
+    } else if (checker.status === "pending verification") {
+      return res
+        .status(400)
+        .json(
+          util.helpers.sendError(
+            "Document already uploaded and awaiting verification."
+          )
+        );
+    }
+
+    let paymentProof = await db.dbs.PaymentProofs.findOne({
+      where: { shipment_num: shipment_num },
+    });
+
+    await db.dbs.PaymentProofs.create({
+      uuid: util.uuid(),
+      user_id: req.user.id,
+      proof_url: proof_url,
+      shipment_num: shipment_num,
+      user_company: req.user.company_name,
+      status: "pending",
+      amount: paymentProof.amount,
+    });
+
+    checker.status = "pending verification";
+    await checker.save();
+
+    let admin = await db.dbs.Users.findAll({
+      where: { admin_type: "Customer Support" },
+    });
+
+    let arr = [];
+
+    for (const ad of admin) {
+      arr.push(ad.email);
+    }
+
+    const option = {
+      name: "Customer Support",
+      email: arr,
+      message:
+        "A customer has uploaded a payment document for shipment booked by a customer support admin person on the admin backend. Kindly check through and verify payment",
+    };
+
+    util.paymentValidation.sendMail(option);
+
+    let user = await db.dbs.Users.findOne({ where: { uuid: req.user.uuid } });
+
+    await db.dbs.CustomerAuditLog.create({
+      uuid: util.uuid(),
+      user_id: user.id,
+      description: `A user with name ${user.first_name} ${user.last_name} added a proof of payment for shipment booked by admin customer service with shipment number ${shipment_num}`,
+      data: JSON.stringify(req.body),
+    });
+
+    return res
+      .status(200)
+      .json(
+        util.helpers.sendSuccess(
+          "payment successfully added, our customer support would reach you upon payment validation. Thanks."
+        )
+      );
+  },
+
+  viewPaymentProofs: async (
+    req: any,
+    res: Response,
+    next: NextFunction
+  ): Promise<Response> => {
+    const { pageNum } = req.query;
+
+    if (!pageNum || isNaN(pageNum)) {
+      return res
+        .status(400)
+        .json(util.helpers.sendError("Kindly add a valid page number"));
+    }
+
+    var currentPage = parseInt(pageNum) ? parseInt(pageNum) : 1;
+
+    var page = currentPage - 1;
+    var pageSize = 25;
+    const offset = page * pageSize;
+    const limit = pageSize;
+
+    let paymentProof = await db.dbs.PaymentProofs.findAndCountAll({
+      offset: offset,
+      limit: limit,
+      where: { user_id: req.user.id },
+      order: [["id", "DESC"]],
+    });
+
+    var next_page = currentPage + 1;
+    var prev_page = currentPage - 1;
+    var nextP = `/api/jetwest/auth/get-payment-proof-docs?pageNum=` + next_page;
+    var prevP = `/api/jetwest/auth/get-payment-proof-docs?pageNum=` + prev_page;
+
+    const meta = paginate(
+      currentPage,
+      paymentProof.count,
+      paymentProof.rows,
+      pageSize
+    );
+
+    return res.status(200).json({
+      status: "SUCCESS",
+      data: paymentProof,
+      per_page: pageSize,
+      current_page: currentPage,
+      last_page: meta.pageCount, //transactions.count,
+      first_page_url: `/api/jetwest/auth/get-payment-proof-docs?pageNum=1`,
+      last_page_url:
+        `/api/jetwest/auth/get-payment-proof-docs?pageNum=` + meta.pageCount, //transactions.count,
+      next_page_url: nextP,
+      prev_page_url: prevP,
+      path: `/api/jetwest/auth/get-payment-proof-docs?pageNum=`,
+      from: 1,
+      to: meta.pageCount, //transactions.count,
     });
   },
 };

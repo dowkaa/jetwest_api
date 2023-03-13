@@ -61,6 +61,10 @@ dbs.PaystackStarter = require("../models/paystck_starter")(
   Sequelizes
 );
 dbs.AuditLogs = require("../models/audit_logs")(sequelize, Sequelizes);
+dbs.CustomerAuditLog = require("../models/customer_audit_log")(
+  sequelize,
+  Sequelizes
+);
 dbs.ScheduleLogs = require("../models/scheduled_audits")(sequelize, Sequelizes);
 dbs.Roles = require("../models/roles")(sequelize, Sequelizes);
 dbs.Permissions = require("../models/permissions")(sequelize, Sequelizes);
