@@ -341,7 +341,7 @@ module.exports = {
     var shipments = await db.dbs.ScheduleFlights.findAndCountAll({
       offset: offset,
       limit: limit,
-      where: { aircraft_owner: checker.uuid },
+      where: { aircraft_owner: { [Op.or]: [checker.uuid, checker.id] } },
       order: [["id", "DESC"]],
     });
     //1`;
@@ -405,7 +405,10 @@ module.exports = {
     var shipments = await db.dbs.ScheduleFlights.findAndCountAll({
       offset: offset,
       limit: limit,
-      where: { aircraft_owner: checker.uuid, status: "completed" },
+      where: {
+        aircraft_owner: { [Op.or]: [checker.uuid, checker.id] },
+        status: "completed",
+      },
       order: [["id", "DESC"]],
     });
 
@@ -467,7 +470,10 @@ module.exports = {
     var shipments = await db.dbs.ScheduleFlights.findAndCountAll({
       offset: offset,
       limit: limit,
-      where: { aircraft_owner: checker.uuid, status: "enroute" },
+      where: {
+        aircraft_owner: { [Op.or]: [checker.uuid, checker.id] },
+        status: "enroute",
+      },
       order: [["id", "DESC"]],
     });
 
