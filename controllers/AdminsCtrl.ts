@@ -1997,7 +1997,7 @@ with note ${note}`,
     });
 
     let aircraftOwner = await db.dbs.Users.findOne({
-      where: { uuid: cargo.owner_id },
+      where: { id: cargo.owner_id },
     });
 
     if (status === "Deactivated") {
