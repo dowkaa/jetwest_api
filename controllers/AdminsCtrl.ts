@@ -404,7 +404,7 @@ module.exports = {
     }
 
     let carrier = await db.dbs.Users.findOne({
-      where: { uuid: aircraftChecker.owner_id },
+      where: { id: aircraftChecker.owner_id },
     });
 
     let dateString = departure_date.split("/").reverse().join("-");
