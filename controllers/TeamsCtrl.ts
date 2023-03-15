@@ -226,11 +226,19 @@ module.exports = {
     return res.status(200).json(utill.helpers.sendSuccess("Success!"));
   },
 
-  addSuperAdmin: async (
+  updateUserRole: async (
     req: any,
     res: Response,
     next: NextFunction
   ): Promise<Response> => {
+    let { type, uuid } = req.query;
+
+    if (!uuid) {
+      return res
+        .status(400)
+        .json(utill.helpers.sendError("Kindly add a valid admin id"));
+    }
+
     let admin = await db.dbs.Users.findOne({ where: { uuid: req.user.uuid } });
 
     if (admin.team_id !== "Admin") {
@@ -242,13 +250,6 @@ module.exports = {
           )
         );
     }
-    let uuid = req.query.uuid;
-
-    if (!uuid) {
-      return res
-        .status(400)
-        .json(utill.helpers.sendError("Kindly add a valid admin id"));
-    }
 
     let user = await db.dbs.Users.findOne({ where: { uuid: uuid } });
 
@@ -256,7 +257,7 @@ module.exports = {
       return res.status(400).json(utill.helpers.sendError("User not found"));
     }
 
-    user.team_id = "Admin";
+    user.team_id = type;
     await user.save();
 
     return res

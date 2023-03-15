@@ -29,7 +29,7 @@ router.get(
 router.get(
   "/update-team-member",
   [jwtMiddleWare, signatureSignerMiddleware],
-  TeamCtrl.addSuperAdmin
+  TeamCtrl.updateUserRole
 );
 
 router.get(
