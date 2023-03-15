@@ -1632,11 +1632,55 @@ module.exports = {
     res: Response,
     next: NextFunction
   ): Promise<Response> => {
-    let pendingPayments = await db.dbs.Transactions.findAll({
+    const { pageNum } = req.query;
+
+    if (!pageNum || isNaN(pageNum)) {
+      return res
+        .status(400)
+        .json(util.helpers.sendError("Kindly add a valid page number"));
+    }
+
+    var currentPage = parseInt(pageNum) ? parseInt(pageNum) : 1;
+
+    var page = currentPage - 1;
+    var pageSize = 25;
+    const offset = page * pageSize;
+    const limit = pageSize;
+
+    let pendingPayments = await db.dbs.Transactions.findAndCountAll({
       where: { user_id: req.user.id, status: "pending" },
+      offset: offset,
+      limit: limit,
+      order: [["id", "DESC"]],
     });
 
-    return res.status(200).json({ pendingPayments });
+    var next_page = currentPage + 1;
+    var prev_page = currentPage - 1;
+    var nextP = `/api/jetwest/auth/pending-payments?pageNum=` + next_page;
+    var prevP = `/api/jetwest/auth/pending-payments?pageNum=` + prev_page;
+
+    const meta = paginate(
+      currentPage,
+      pendingPayments.count,
+      pendingPayments.rows,
+      pageSize
+    );
+
+    return res.status(200).json({
+      status: "SUCCESS",
+      data: pendingPayments,
+      per_page: pageSize,
+      current_page: currentPage,
+      last_page: meta.pageCount, //transactions.count,
+      first_page_url: `/api/jetwest/auth/pending-payments?pageNum=1`,
+      last_page_url:
+        `/api/jetwest/auth/pending-payments?pageNum=` + meta.pageCount, //transactions.count,
+      next_page_url: nextP,
+      prev_page_url: prevP,
+      path: `/api/jetwest/auth/pending-payments?pageNum=`,
+      from: 1,
+      to: meta.pageCount, //transactions.count,
+    });
   },
 
   makePayment: async (

@@ -145,7 +145,7 @@ module.exports = {
 
       if (user.type === "Carrier") {
         let cargo = await db.dbs.Cargo.findOne({
-          where: { owner_id: user.uuid },
+          where: { owner_id: { [Op.or]: [user.uuid, user.id] } },
         });
 
         if (!cargo) {
@@ -172,18 +172,27 @@ module.exports = {
         }
 
         var totalCompletedShipments = await db.dbs.ShippingItems.count({
-          where: { cargo_id: cargo.uuid, status: "completed" },
+          where: {
+            cargo_id: { [Op.or]: [cargo.uuid, cargo.id] },
+            status: "completed",
+          },
           order: [["id", "DESC"]],
         });
 
         var totalCancelled = await db.dbs.ShippingItems.count({
-          where: { cargo_id: cargo.uuid, status: "cancelled" },
+          where: {
+            cargo_id: { [Op.or]: [cargo.uuid, cargo.id] },
+            status: "cancelled",
+          },
           order: [["id", "DESC"]],
         });
 
         const totalSuccessfullTransactionsAmount =
           await db.dbs.Transactions.findAll({
-            where: { cargo_id: cargo.uuid, status: "success" },
+            where: {
+              cargo_id: { [Op.or]: [cargo.uuid, cargo.id] },
+              status: "success",
+            },
             attributes: [
               [
                 util.sequelize.fn("sum", util.sequelize.col("amount")),
@@ -194,7 +203,7 @@ module.exports = {
           });
 
         const totalkg = await db.dbs.ShippingItems.findAll({
-          where: { cargo_id: cargo.uuid },
+          where: { cargo_id: { [Op.or]: [cargo.uuid, cargo.id] } },
           attributes: [
             [
               util.sequelize.fn("sum", util.sequelize.col("chargeable_weight")),
@@ -243,7 +252,7 @@ module.exports = {
     }
 
     let cargo = await db.dbs.Cargo.findOne({
-      where: { owner_id: req.user.uuid },
+      where: { owner_id: { [Op.or]: [req.user.uuid, req.user.id] } },
     });
 
     if (!cargo) {
