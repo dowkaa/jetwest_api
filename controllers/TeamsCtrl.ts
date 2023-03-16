@@ -97,6 +97,7 @@ module.exports = {
       organisation: user.organisation,
       profileDoc: user.profileDoc,
       company_address: user.company_address,
+      invite_status: 0,
       companyFounded: user.companyFounded,
     });
 
@@ -112,6 +113,8 @@ module.exports = {
     } catch (e: any) {
       console.log({ e });
     }
+
+    utill.helpers.updateInvite(email);
 
     return res
       .status(200)
@@ -157,6 +160,16 @@ module.exports = {
           )
         );
     }
+
+    if (user.invite_status === 0) {
+      return res
+        .status(400)
+        .json(
+          utill.helpers.sendError(
+            "Email already resent to team member, kindly wait for 5 minutes before sending another email"
+          )
+        );
+    }
     var password = utill.helpers.generateReftId(6);
 
     const option = {
@@ -174,6 +187,7 @@ module.exports = {
     } catch (e: any) {
       console.log({ e });
     }
+    utill.helpers.updateInvite(user.email);
 
     return res
       .status(200)

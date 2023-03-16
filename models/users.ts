@@ -40,6 +40,7 @@ var User = (sequelize: any, type: any) => {
     activated: Sequelize.INTEGER,
     team_id: Sequelize.STRING,
     company_role: Sequelize.STRING,
+    invite_status: Sequelize.INTEGER,
   });
 };
 

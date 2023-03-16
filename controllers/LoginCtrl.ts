@@ -132,6 +132,12 @@ module.exports = {
 
       const token = signTokens(user, random);
 
+      // for company team members login verification
+      if (user.invite_status === 0) {
+        user.invite_status = 1;
+        await user.save();
+      }
+
       if (user.type === "Shipper") {
         var totalCompletedShipments = await db.dbs.ShippingItems.count({
           where: { user_id: user.uuid, status: "completed" },

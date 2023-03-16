@@ -19,6 +19,17 @@ if (process.env.STATE === "dev") {
   paystack_key = process.env.PAYSTACK_TEST_SECRET_KEY;
 }
 
+// give company admin access to resend team invite mail after 5 minutes
+const updateInvite = async (req: any) => {
+  setTimeout(async () => {
+    const user = await db.dbs.Users.findOne({ where: { email: req } });
+    if (user.invite_status !== 1) {
+      user.invite_status = null;
+      await user.save();
+    }
+  }, 1800000);
+};
+
 const validateHarsh = async (secret: string, user_id: string) => {
   let user = await db.dbs.Users.findOne({ where: { uuid: user_id } });
 
@@ -1231,6 +1242,7 @@ module.exports = {
   removeShipment,
   logPendingShipment,
   addShipmentAndCreditUser,
+  updateInvite,
   updateShipment,
   logApiTransaction,
   checkPromo,
