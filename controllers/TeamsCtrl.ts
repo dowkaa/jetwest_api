@@ -179,6 +179,7 @@ module.exports = {
       password,
     };
 
+    user.invite_status = 0;
     user.password = utill.bcrypt.hashSync(password);
     await user.save();
 
