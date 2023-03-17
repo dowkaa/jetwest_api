@@ -553,4 +553,81 @@ module.exports = {
 
     return res.status(200).json(utilz.helpers.sendSuccess("Flight available"));
   },
+
+  getApiDocs: async (
+    req: any,
+    res: Response,
+    next: NextFunction
+  ): Promise<Response> => {
+    let email = req.query.email;
+    if (!email) {
+      return res
+        .status(400)
+        .json(utilz.helpers.sendError("Kindly add a valid email"));
+    }
+
+    let user = await db.dbs.Users.findOne({ where: { email: email } });
+
+    if (!user) {
+      return res
+        .status(400)
+        .json(
+          utilz.helpers.sendError(
+            "Kindly register an account with us to get our API documentation"
+          )
+        );
+    }
+
+    if (user.verification_status !== "completed") {
+      return res
+        .status(400)
+        .json(
+          utilz.helpers.sendError(
+            "Account under verification, kindly try again later."
+          )
+        );
+    }
+
+    let option;
+
+    if (user.type === "Carrier") {
+      option = {
+        message:
+          "Kindly find below a link to the postman API documentation. Thanks",
+        name: user.first_name + " " + user.last_name,
+        type: "Carriers",
+        link: "https://documenter.getpostman.com/view/20849152/2s93CKNZXZ",
+        email: user.email,
+      };
+    } else if (user.type === "Shipper") {
+      option = {
+        message:
+          "Kindly find below a link to the postman API documentation. Thanks",
+        name: user.first_name + " " + user.last_name,
+        type: "Shippers",
+        link: "https://documenter.getpostman.com/view/20849152/2s93CKNZXX",
+        email: user.email,
+      };
+    } else if (user.type === "Agent") {
+      option = {
+        message:
+          "Kindly find below a link to the postman API documentation. Thanks",
+        name: user.first_name + " " + user.last_name,
+        type: "Agents",
+        link: "https://documenter.getpostman.com/view/20849152/2s93CKNZXc",
+        email: user.email,
+      };
+    } else {
+    }
+
+    utilz.apiDocs.sendMail(option);
+
+    return res
+      .status(200)
+      .json(
+        utilz.helpers.sendSuccess(
+          "Kindly check your email for API documentation. Thanks."
+        )
+      );
+  },
 };

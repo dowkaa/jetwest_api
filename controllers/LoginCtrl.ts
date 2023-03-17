@@ -122,7 +122,6 @@ module.exports = {
       };
 
       if (parseInt(user.login_count) === 0) {
-        console.log("Hello world");
         utill.introduction.sendMail(opt);
       }
       user.login_count = parseInt(user.login_count) + 1;

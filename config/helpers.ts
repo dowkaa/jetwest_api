@@ -107,219 +107,334 @@ const checkUserTransaction = async (reference: string) => {
   return await db.dbs.Transactions.findOne({ where: { reference: reference } });
 };
 
-const validateTransaction = async (data: any) => {
-  var validateTransaction = await utilities.helpers.checkUserTransaction(
-    data.reference
-  );
+const validateTransaction = async (data: any, type: string) => {
+  if (type === "payment") {
+    var validateTransaction = await utilities.helpers.checkUserTransaction(
+      data.reference
+    );
 
-  if (validateTransaction) {
-    return;
-  }
-
-  let paystackCheck = await db.dbs.PaystackStarter.findOne({
-    where: { reference: data.reference },
-  });
-
-  if (!paystackCheck) {
-    await db.dbs.PaystackStarter.create({
-      reference: data.reference,
-      status: "pending",
-      user_id: data.customer_id,
-    });
-  }
-
-  var url = `https://api.paystack.co/transaction/verify/${data.reference}`;
-
-  var option = {
-    method: "get",
-    url: url,
-    headers: {
-      Authorization: `Bearer ${paystack_key}`,
-      "Content-Type": "application/json",
-      "Accept-Encoding": "application/json",
-    },
-  };
-
-  try {
-    const result = await utilities.axios(option);
-
-    if (result.data.data.status == "success") {
-      console.log({ data1: data, data });
-      try {
-        var amount = result.data.data.amount / 100;
-
-        let shipment = await db.dbs.ShippingItems.findOne({
-          where: { shipment_num: data.shipment_num },
-        });
-
-        let checkT = await db.dbs.Transactions.findOne({
-          where: {
-            reference: data.reference,
-          },
-        });
-
-        if (!checkT) {
-          let t = await db.dbs.Transactions.create({
-            uuid: utilities.uuid(),
-            user_id: data.id,
-            amount: amount,
-            reference: data.reference,
-            departure: shipment.pickup_location,
-            arrival: shipment.destination,
-            cargo_id: shipment.cargo_id,
-            departure_date: shipment.depature_date,
-            arrival_date: shipment.arrival_date,
-            company_name: data.company_name,
-            shipment_no: data.shipment_num,
-            weight:
-              parseFloat(shipment.volumetric_weight) >
-              parseFloat(shipment.weight)
-                ? shipment.volumetric_weight
-                : shipment.weight,
-            reciever_organisation: shipment.reciever_organisation,
-            pricePerkeg: shipment.ratePerKg,
-            no_of_bags: shipment.no_of_bags,
-            type: "credit",
-            method: "paystack",
-            description: `Payment for shipment with no ${shipment.shipment_num}`,
-            status: "success",
-          });
-
-          let user = await db.dbs.Users.findOne({ where: { id: data.id } });
-
-          await db.dbs.CustomerAuditLog.create({
-            uuid: utilities.uuid(),
-            user_id: user.id,
-            description: `A user with name ${user.first_name} ${user.last_name} payment of the sum of ${amount} using the paystack checkout was successful`,
-            data: JSON.stringify(t),
-          });
-
-          let checker = await db.dbs.PaystackStarter.findOne({
-            where: { reference: data.reference },
-          });
-
-          if (checker) {
-            checker.status = "success";
-            await checker.save();
-          }
-
-          await db.dbs.ShippingItems.update(
-            { payment_status: "SUCCESS" },
-            {
-              where: {
-                reference: data.reference,
-              },
-            }
-          );
-        }
-
-        if (shipment.agent_id) {
-          let checker = await db.dbs.Users.findOne({
-            where: { id: shipment.agent_id },
-          });
-
-          const opts1 = {
-            name: checker.first_name + " " + checker.last_name,
-            email: checker.email,
-            shipment_num: shipment.shipment_num,
-          };
-          utilities.agent.sendMail(opts1);
-        }
-
-        const opts2 = {
-          name: shipment.reciever_firstname + " " + shipment.reciever_lastname,
-          email: shipment.reciever_email,
-          shipment_num: shipment.shipment_num,
-          shipper_name: shipment.shipperName,
-          arrival_date: shipment.arrival_date,
-        };
-        utilities.reciever.sendMail(opts2);
-
-        return "success";
-      } catch (error: any) {
-        console.log({ error1: error });
-      }
-    } else {
-      console.log({ data2: data, data });
-      try {
-        var amount = result.data.data.amount / 100;
-
-        let shipment = await db.dbs.ShippingItems.findOne({
-          where: { shipment_num: data.shipment_num },
-        });
-
-        let checkT = await db.dbs.Transactions.findOne({
-          where: {
-            reference: data.reference,
-          },
-        });
-
-        if (!checkT) {
-          let t = await db.dbs.Transactions.create({
-            uuid: utilities.uuid(),
-            user_id: data.id,
-            amount: amount,
-            reference: data.reference,
-            departure: shipment.pickup_location,
-            arrival: shipment.destination,
-            departure_date: shipment.depature_date,
-            company_name: data.company_name,
-            arrival_date: shipment.arrival_date,
-            shipment_no: data.shipment_num,
-            weight:
-              parseFloat(shipment.volumetric_weight) >
-              parseFloat(shipment.weight)
-                ? shipment.volumetric_weight
-                : shipment.weight,
-            pricePerkeg: shipment.ratePerKg,
-            reciever_organisation: shipment.reciever_organisation,
-            no_of_bags: shipment.no_of_bags,
-            type: "credit",
-            method: "paystack",
-            description: `Payment for shipment with no ${shipment.shipment_num}`,
-            status: "failed",
-          });
-
-          let user = await db.dbs.Users.findOne({ where: { id: data.id } });
-
-          await db.dbs.CustomerAuditLog.create({
-            uuid: utilities.uuid(),
-            user_id: user.id,
-            description: `A user with name ${user.first_name} ${user.last_name} payment of the sum of ${amount} using the paystack checkout failed`,
-            data: JSON.stringify(t),
-          });
-
-          let checker = await db.dbs.PaystackStarter.findOne({
-            where: { reference: data.reference },
-          });
-
-          if (checker) {
-            checker.status = "failed";
-            await checker.save();
-          }
-
-          await db.dbs.ShippingItems.update(
-            { payment_status: "FAILED" },
-            {
-              where: {
-                reference: data.reference,
-              },
-            }
-          );
-        }
-        return "failed";
-      } catch (error) {
-        console.log({ error2: error });
-      }
+    if (validateTransaction) {
+      return;
     }
-  } catch (err: any) {
-    console.log({ err, message: err.response.data });
-    await db.dbs.PaystackError.create({
-      uuid: utilities.uuid(),
-      data: JSON.stringify(err),
+
+    let paystackCheck = await db.dbs.PaystackStarter.findOne({
+      where: { reference: data.reference },
     });
 
-    return "failed";
+    if (!paystackCheck) {
+      await db.dbs.PaystackStarter.create({
+        reference: data.reference,
+        status: "pending",
+        user_id: data.customer_id,
+      });
+    }
+
+    var url = `https://api.paystack.co/transaction/verify/${data.reference}`;
+
+    var option = {
+      method: "get",
+      url: url,
+      headers: {
+        Authorization: `Bearer ${paystack_key}`,
+        "Content-Type": "application/json",
+        "Accept-Encoding": "application/json",
+      },
+    };
+
+    try {
+      const result = await utilities.axios(option);
+
+      if (result.data.data.status == "success") {
+        console.log({ data1: data, data });
+        try {
+          var amount = result.data.data.amount / 100;
+
+          let shipment = await db.dbs.ShippingItems.findOne({
+            where: { shipment_num: data.shipment_num },
+          });
+
+          let checkT = await db.dbs.Transactions.findOne({
+            where: {
+              reference: data.reference,
+            },
+          });
+
+          if (!checkT) {
+            let t = await db.dbs.Transactions.create({
+              uuid: utilities.uuid(),
+              user_id: data.id,
+              amount: amount,
+              reference: data.reference,
+              departure: shipment.pickup_location,
+              arrival: shipment.destination,
+              cargo_id: shipment.cargo_id,
+              departure_date: shipment.depature_date,
+              arrival_date: shipment.arrival_date,
+              company_name: data.company_name,
+              shipment_no: data.shipment_num,
+              weight:
+                parseFloat(shipment.volumetric_weight) >
+                parseFloat(shipment.weight)
+                  ? shipment.volumetric_weight
+                  : shipment.weight,
+              reciever_organisation: shipment.reciever_organisation,
+              pricePerkeg: shipment.ratePerKg,
+              no_of_bags: shipment.no_of_bags,
+              type: "credit",
+              method: "paystack",
+              description: `Payment for shipment with no ${shipment.shipment_num}`,
+              status: "success",
+            });
+
+            let user = await db.dbs.Users.findOne({ where: { id: data.id } });
+
+            await db.dbs.CustomerAuditLog.create({
+              uuid: utilities.uuid(),
+              user_id: user.id,
+              description: `A user with name ${user.first_name} ${user.last_name} payment of the sum of ${amount} using the paystack checkout was successful`,
+              data: JSON.stringify(t),
+            });
+
+            let checker = await db.dbs.PaystackStarter.findOne({
+              where: { reference: data.reference },
+            });
+
+            if (checker) {
+              checker.status = "success";
+              await checker.save();
+            }
+
+            await db.dbs.ShippingItems.update(
+              { payment_status: "SUCCESS" },
+              {
+                where: {
+                  reference: data.reference,
+                },
+              }
+            );
+          }
+
+          if (shipment.agent_id) {
+            let checker = await db.dbs.Users.findOne({
+              where: { id: shipment.agent_id },
+            });
+
+            const opts1 = {
+              name: checker.first_name + " " + checker.last_name,
+              email: checker.email,
+              shipment_num: shipment.shipment_num,
+            };
+            utilities.agent.sendMail(opts1);
+          }
+
+          const opts2 = {
+            name:
+              shipment.reciever_firstname + " " + shipment.reciever_lastname,
+            email: shipment.reciever_email,
+            shipment_num: shipment.shipment_num,
+            shipper_name: shipment.shipperName,
+            arrival_date: shipment.arrival_date,
+          };
+          utilities.reciever.sendMail(opts2);
+
+          return "success";
+        } catch (error: any) {
+          console.log({ error1: error });
+          await db.dbs.PaystackError.create({
+            uuid: utilities.uuid(),
+            data: JSON.stringify(error.response.data),
+          });
+
+          return "error";
+        }
+      } else {
+        console.log({ data2: data, data });
+        try {
+          var amount = result.data.data.amount / 100;
+
+          let shipment = await db.dbs.ShippingItems.findOne({
+            where: { shipment_num: data.shipment_num },
+          });
+
+          let checkT = await db.dbs.Transactions.findOne({
+            where: {
+              reference: data.reference,
+            },
+          });
+
+          if (!checkT) {
+            let t = await db.dbs.Transactions.create({
+              uuid: utilities.uuid(),
+              user_id: data.id,
+              amount: amount,
+              reference: data.reference,
+              departure: shipment.pickup_location,
+              arrival: shipment.destination,
+              departure_date: shipment.depature_date,
+              company_name: data.company_name,
+              arrival_date: shipment.arrival_date,
+              shipment_no: data.shipment_num,
+              weight:
+                parseFloat(shipment.volumetric_weight) >
+                parseFloat(shipment.weight)
+                  ? shipment.volumetric_weight
+                  : shipment.weight,
+              pricePerkeg: shipment.ratePerKg,
+              reciever_organisation: shipment.reciever_organisation,
+              no_of_bags: shipment.no_of_bags,
+              type: "credit",
+              method: "paystack",
+              description: `Payment for shipment with no ${shipment.shipment_num}`,
+              status: "failed",
+            });
+
+            let user = await db.dbs.Users.findOne({ where: { id: data.id } });
+
+            await db.dbs.CustomerAuditLog.create({
+              uuid: utilities.uuid(),
+              user_id: user.id,
+              description: `A user with name ${user.first_name} ${user.last_name} payment of the sum of ${amount} using the paystack checkout failed`,
+              data: JSON.stringify(t),
+            });
+
+            let checker = await db.dbs.PaystackStarter.findOne({
+              where: { reference: data.reference },
+            });
+
+            if (checker) {
+              checker.status = "failed";
+              await checker.save();
+            }
+
+            await db.dbs.ShippingItems.update(
+              { payment_status: "FAILED" },
+              {
+                where: {
+                  reference: data.reference,
+                },
+              }
+            );
+          }
+          return "failed";
+        } catch (error: any) {
+          console.log({ error2: error });
+          await db.dbs.PaystackError.create({
+            uuid: utilities.uuid(),
+            data: JSON.stringify(error.response.data),
+          });
+
+          return "error";
+        }
+      }
+    } catch (err: any) {
+      console.log({ err, message: err.response.data });
+      await db.dbs.PaystackError.create({
+        uuid: utilities.uuid(),
+        data: JSON.stringify(err.response.data),
+      });
+
+      return "failed";
+    }
+  } else {
+    var validateTransaction = await utilities.helpers.checkUserTransaction(
+      data.reference
+    );
+
+    if (validateTransaction) {
+      return "exists";
+    }
+
+    let paystackCheck = await db.dbs.PaystackStarter.findOne({
+      where: { reference: data.reference },
+    });
+
+    if (!paystackCheck) {
+      await db.dbs.PaystackStarter.create({
+        reference: data.reference,
+        status: "pending",
+        user_id: data.customer_id,
+      });
+    }
+
+    var url = `https://api.paystack.co/transaction/verify/${data.reference}`;
+
+    var option = {
+      method: "get",
+      url: url,
+      headers: {
+        Authorization: `Bearer ${paystack_key}`,
+        "Content-Type": "application/json",
+        "Accept-Encoding": "application/json",
+      },
+    };
+
+    try {
+      const result = await utilities.axios(option);
+
+      if (result.data.data.status == "success") {
+        try {
+          var amount = result.data.data.amount / 100;
+
+          await db.dbs.ShippingItems.update(
+            { payment_status: "success" },
+            { where: { shipment_num: data.shipment_num } }
+          );
+
+          let transaction = await db.dbs.Transactions.findOne({
+            where: { shipment_no: data.shipment_num },
+          });
+
+          if (amount < parseFloat(transaction.amount)) {
+            return "Amount paid is less than amount charged for shipments, kindly contact customer support.";
+          }
+
+          transaction.reference = data.reference;
+          transaction.type = "credit";
+          transaction.method = "paystack";
+          transaction.status = "success";
+          await transaction.save();
+
+          return "success";
+        } catch (error: any) {
+          await db.dbs.PaystackError.create({
+            uuid: utilities.uuid(),
+            data: JSON.stringify(error.response.data),
+          });
+
+          return "error";
+        }
+      } else {
+        try {
+          var amount = result.data.data.amount / 100;
+
+          let transaction = await db.dbs.Transactions.findOne({
+            where: { shipment_no: data.shipment_num },
+          });
+
+          transaction.reference = data.reference;
+          transaction.type = "credit";
+          transaction.method = "paystack";
+          transaction.status = "failed";
+          await transaction.save();
+
+          return "failed";
+        } catch (error: any) {
+          await db.dbs.PaystackError.create({
+            uuid: utilities.uuid(),
+            data: JSON.stringify(error.response.data),
+          });
+
+          return "error";
+        }
+      }
+    } catch (err: any) {
+      await db.dbs.PaystackError.create({
+        uuid: utilities.uuid(),
+        data: JSON.stringify(err.response.data),
+      });
+
+      return err.response.data.message;
+    }
   }
 };
 

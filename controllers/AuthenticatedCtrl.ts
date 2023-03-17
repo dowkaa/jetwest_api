@@ -697,7 +697,7 @@ module.exports = {
       customer_id: req.user.customer_id,
     };
 
-    let response = await util.helpers.validateTransaction(option);
+    let response = await util.helpers.validateTransaction(option, "payment");
 
     // if (status) {
     return res
@@ -1690,9 +1690,11 @@ module.exports = {
   ): Promise<Response> => {
     const itemSchema = util.Joi.object()
       .keys({
-        proof_url: util.Joi.string().required(),
+        proof_url: util.Joi.string().allow(""),
         shipment_num: util.Joi.string().required(),
         amount: util.Joi.number().required(),
+        reference: util.Joi.string().allow(""),
+        method: util.Joi.string().allow(""),
       })
       .unknown();
 
@@ -1705,7 +1707,9 @@ module.exports = {
       return res.status(400).json(util.helpers.sendError(errorMessage));
     }
 
-    const { proof_url, shipment_num, amount } = req.body;
+    const { proof_url, shipment_num, amount, method, reference } = req.body;
+
+    console.log({ method });
 
     let user = await db.dbs.Users.findOne({ where: { uuid: req.user.uuid } });
 
@@ -1733,52 +1737,107 @@ module.exports = {
         );
     }
 
-    await db.dbs.PaymentProofs.create({
-      uuid: util.uuid(),
-      user_id: user.id,
-      proof_url: proof_url,
-      shipment_num: shipment_num,
-      user_company: user.company_name,
-      status: "pending",
-      amount: amount,
-    });
+    if (method === "payment_proof") {
+      if (!proof_url) {
+        return res
+          .status(400)
+          .json(util.helpers.sendError("Proof of payment is required"));
+      }
+      if (!amount) {
+        return res
+          .status(400)
+          .json(util.helpers.sendError("payment amount is required"));
+      }
+      await db.dbs.PaymentProofs.create({
+        uuid: util.uuid(),
+        user_id: user.id,
+        proof_url: proof_url,
+        shipment_num: shipment_num,
+        user_company: user.company_name,
+        status: "pending",
+        amount: amount,
+      });
 
-    checker.status = "pending verification";
-    await checker.save();
+      checker.status = "pending verification";
+      await checker.save();
 
-    let admin = await db.dbs.Users.findAll({
-      where: { admin_type: "Customer Support" },
-    });
+      let admin = await db.dbs.Users.findAll({
+        where: { admin_type: "Customer Support" },
+      });
 
-    let arr = [];
+      let arr = [];
 
-    for (const ad of admin) {
-      arr.push(ad.email);
+      for (const ad of admin) {
+        arr.push(ad.email);
+      }
+
+      const option = {
+        name: "Customer Support",
+        email: arr,
+        message:
+          "A customer has uploaded a payment document for shipment booked by a customer support admin person on the admin backend. Kindly check through and verify payment",
+      };
+
+      util.paymentValidation.sendMail(option);
+
+      return res
+        .status(200)
+        .json(
+          util.helpers.sendSuccess(
+            "payment successfully updated, our customer support would reach you upon payment validation. Thanks."
+          )
+        );
+    } else if (method === "wallet") {
+      return res.status(200).json(util.helpers.sendSuccess("coming soon"));
+    } else if (method === "paystack") {
+      if (!reference) {
+        return res
+          .status(400)
+          .json(util.helpers.sendError("payment reference is required."));
+      }
+      const option = {
+        reference: reference,
+        shipment_num,
+        id: req.user.id,
+        company_name: req.user.company_name,
+        customer_id: req.user.customer_id,
+      };
+      let response = await util.helpers.validateTransaction(
+        option,
+        "verification"
+      );
+
+      console.log({ response });
+
+      if (response === "success") {
+        await db.dbs.CustomerAuditLog.create({
+          uuid: util.uuid(),
+          user_id: user.id,
+          description: `A user with name ${user.first_name} ${user.last_name} uploaded proof of payment for shipment booked by admin customer service with shipment number ${shipment_num}`,
+          data: JSON.stringify(req.body),
+        });
+
+        return res
+          .status(200)
+          .json(
+            util.helpers.sendSuccess("payment approved successfully Thanks.")
+          );
+      } else if (response === "exists") {
+        return res
+          .status(400)
+          .json(
+            util.helpers.sendError(
+              "transaction with reference number already exists"
+            )
+          );
+      } else {
+        return res.status(400).json(util.helpers.sendError(response));
+      }
     }
 
-    const option = {
-      name: "Customer Support",
-      email: arr,
-      message:
-        "A customer has uploaded a payment document for shipment booked by a customer support admin person on the admin backend. Kindly check through and verify payment",
-    };
-
-    util.paymentValidation.sendMail(option);
-
-    await db.dbs.CustomerAuditLog.create({
-      uuid: util.uuid(),
-      user_id: user.id,
-      description: `A user with name ${user.first_name} ${user.last_name} uploaded proof of payment for shipment booked by admin customer service with shipment number ${shipment_num}`,
-      data: JSON.stringify(req.body),
-    });
-
     return res
-      .status(200)
-      .json(
-        util.helpers.sendSuccess(
-          "payment successfully updated, our customer support would reach you upon payment validation. Thanks."
-        )
-      );
+      .status(400)
+      .json(util.helpers.sendError("Invalid payment method"));
   },
 
   addPaymentProof: async (

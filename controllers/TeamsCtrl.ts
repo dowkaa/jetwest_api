@@ -166,7 +166,7 @@ module.exports = {
         .status(400)
         .json(
           utill.helpers.sendError(
-            "Email already resent to team member, kindly wait for 5 minutes before sending another email"
+            "Email already resent to team member, kindly wait for 30 minutes before sending another email"
           )
         );
     }
