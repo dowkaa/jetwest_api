@@ -229,7 +229,14 @@ module.exports = {
     var shipments = await db.dbs.ShippingItems.findAndCountAll({
       offset: offset,
       limit: limit,
-      where: { user_id: { [Op.or]: [user.uuid, user.id] }, status: "pending" },
+      where: {
+        [Op.or]: [
+          { user_id: { [Op.or]: [user.uuid, user.id] } },
+          { company_name: user.company_name },
+        ],
+        status: "pending",
+      },
+
       order: [["id", "DESC"]],
     });
 
@@ -296,7 +303,13 @@ module.exports = {
     var shipments = await db.dbs.ShippingItems.findAndCountAll({
       offset: offset,
       limit: limit,
-      where: { user_id: { [Op.or]: [user.uuid, user.id] }, status: "enroute" },
+      where: {
+        [Op.or]: [
+          { user_id: { [Op.or]: [user.uuid, user.id] } },
+          { company_name: user.company_name },
+        ],
+        status: "enroute",
+      },
       order: [["id", "DESC"]],
     });
 
@@ -364,7 +377,10 @@ module.exports = {
       offset: offset,
       limit: limit,
       where: {
-        user_id: { [Op.or]: [user.uuid, user.id] },
+        [Op.or]: [
+          { user_id: { [Op.or]: [user.uuid, user.id] } },
+          { company_name: user.company_name },
+        ],
         status: "completed",
       },
       order: [["id", "DESC"]],
