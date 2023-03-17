@@ -56,7 +56,7 @@ module.exports = {
     var users = await db.dbs.Users.findAndCountAll({
       offset: offset,
       limit: limit,
-      where: { type: type },
+      where: { type: type, team_id: "Admin" },
       order: [["id", "DESC"]],
     });
 
@@ -64,11 +64,21 @@ module.exports = {
 
     for (const item of users.rows) {
       let totalShipments = await db.dbs.ShippingItems.count({
-        where: { user_id: { [Op.or]: [item.uuid, item.id] } },
+        where: {
+          [Op.or]: [
+            { user_id: { [Op.or]: [item.uuid, item.id] } },
+            { company_name: item.company_name },
+          ],
+        },
       });
 
       let totalKg = await db.dbs.ShippingItems.sum("chargeable_weight", {
-        where: { user_id: { [Op.or]: [item.uuid, item.id] } },
+        where: {
+          [Op.or]: [
+            { user_id: { [Op.or]: [item.uuid, item.id] } },
+            { company_name: item.company_name },
+          ],
+        },
       });
 
       let totalAmount = await db.dbs.Transactions.sum("amount", {
