@@ -879,10 +879,11 @@ module.exports = {
     const offset = page * pageSize;
     const limit = pageSize;
 
-    let paymentProof = await db.dbs.PaymentProofs.findAndCountAll({
+    let paymentProof = await db.dbs.Transactions.findAndCountAll({
       offset: offset,
       limit: limit,
-      where: { user_id: req.user.id, status: "pending" },
+      where: { user_id: req.user.id, status: "pending verification" },
+      include: [{ model: db.dbs.PaymentProofs, as: "payment_proof" }],
       order: [["id", "DESC"]],
     });
 

@@ -135,4 +135,9 @@ dbs.Users.hasOne(dbs.ApiKeys, {
   foreignKey: "user_id",
   as: "api_secret",
 });
+
+dbs.Transactions.hasMany(dbs.PaymentProofs, {
+  foreignKey: "transaction_id",
+  as: "payment_proof",
+});
 exports.dbs = dbs;

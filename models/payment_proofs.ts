@@ -14,6 +14,7 @@ var PaymentProofs = (sequelize: any, type: any) => {
     admin_id: Sequelize.STRING,
     shipment_num: Sequelize.STRING,
     status: Sequelize.STRING,
+    transaction_id: Sequelize.STRING,
     amount: Sequelize.DECIMAL(12, 2),
   });
 };

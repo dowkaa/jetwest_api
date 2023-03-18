@@ -1690,7 +1690,6 @@ module.exports = {
   ): Promise<Response> => {
     const itemSchema = util.Joi.object()
       .keys({
-        proof_url: util.Joi.string().allow(""),
         shipment_num: util.Joi.string().required(),
         amount: util.Joi.number().required(),
         reference: util.Joi.string().allow(""),
@@ -1707,9 +1706,7 @@ module.exports = {
       return res.status(400).json(util.helpers.sendError(errorMessage));
     }
 
-    const { proof_url, shipment_num, amount, method, reference } = req.body;
-
-    console.log({ method });
+    const { shipment_num, amount, method, reference } = req.body;
 
     let user = await db.dbs.Users.findOne({ where: { uuid: req.user.uuid } });
 
@@ -1737,57 +1734,7 @@ module.exports = {
         );
     }
 
-    if (method === "payment_proof") {
-      if (!proof_url) {
-        return res
-          .status(400)
-          .json(util.helpers.sendError("Proof of payment is required"));
-      }
-      if (!amount) {
-        return res
-          .status(400)
-          .json(util.helpers.sendError("payment amount is required"));
-      }
-      await db.dbs.PaymentProofs.create({
-        uuid: util.uuid(),
-        user_id: user.id,
-        proof_url: proof_url,
-        shipment_num: shipment_num,
-        user_company: user.company_name,
-        status: "pending",
-        amount: amount,
-      });
-
-      checker.status = "pending verification";
-      await checker.save();
-
-      let admin = await db.dbs.Users.findAll({
-        where: { admin_type: "Customer Support" },
-      });
-
-      let arr = [];
-
-      for (const ad of admin) {
-        arr.push(ad.email);
-      }
-
-      const option = {
-        name: "Customer Support",
-        email: arr,
-        message:
-          "A customer has uploaded a payment document for shipment booked by a customer support admin person on the admin backend. Kindly check through and verify payment",
-      };
-
-      util.paymentValidation.sendMail(option);
-
-      return res
-        .status(200)
-        .json(
-          util.helpers.sendSuccess(
-            "payment successfully updated, our customer support would reach you upon payment validation. Thanks."
-          )
-        );
-    } else if (method === "wallet") {
+    if (method === "wallet") {
       return res.status(200).json(util.helpers.sendSuccess("coming soon"));
     } else if (method === "paystack") {
       if (!reference) {
@@ -1848,6 +1795,7 @@ module.exports = {
     const itemSchema = util.Joi.object()
       .keys({
         proof_url: util.Joi.string().required(),
+        amount: util.Joi.string().required(),
         shipment_num: util.Joi.string().required(),
       })
       .unknown();
@@ -1861,7 +1809,7 @@ module.exports = {
       return res.status(400).json(util.helpers.sendError(errorMessage));
     }
 
-    const { proof_url, shipment_num } = req.body;
+    const { proof_url, shipment_num, amount } = req.body;
 
     let checker = await db.dbs.Transactions.findOne({
       where: { shipment_no: shipment_num },
@@ -1887,28 +1835,15 @@ module.exports = {
         );
     }
 
-    let paymentProof = await db.dbs.PaymentProofs.findOne({
-      where: { shipment_num: shipment_num },
-    });
-
-    if(!paymentProof){
-       return res
-        .status(400)
-        .json(
-          util.helpers.sendError(
-            "Payment proof not uploaded, kindly upload payment proof before adding another payment proof"
-          )
-        );
-    }
-
     await db.dbs.PaymentProofs.create({
       uuid: util.uuid(),
       user_id: req.user.id,
       proof_url: proof_url,
       shipment_num: shipment_num,
       user_company: req.user.company_name,
+      transaction_id: checker.id,
       status: "pending",
-      amount: paymentProof.amount,
+      amount: amount,
     });
 
     checker.status = "pending verification";
