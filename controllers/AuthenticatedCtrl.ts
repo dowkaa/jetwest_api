@@ -1846,7 +1846,7 @@ module.exports = {
       amount: parseFloat(amount),
     });
 
-    checker.status = "pending verification";
+    checker.status = "pending_verification";
     await checker.save();
 
     let admin = await db.dbs.Users.findAll({
