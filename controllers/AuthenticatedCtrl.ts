@@ -1891,6 +1891,16 @@ module.exports = {
       where: { shipment_num: shipment_num },
     });
 
+    if(!paymentProof){
+       return res
+        .status(400)
+        .json(
+          util.helpers.sendError(
+            "Payment proof not uploaded, kindly upload payment proof before adding another payment proof"
+          )
+        );
+    }
+
     await db.dbs.PaymentProofs.create({
       uuid: util.uuid(),
       user_id: req.user.id,
@@ -1921,7 +1931,11 @@ module.exports = {
         "A customer has uploaded a payment document for shipment booked by a customer support admin person on the admin backend. Kindly check through and verify payment",
     };
 
-    util.paymentValidation.sendMail(option);
+    try {
+      util.paymentValidation.sendMail(option);
+    } catch (error: any) {
+      console.log({ error });
+    }
 
     let user = await db.dbs.Users.findOne({ where: { uuid: req.user.uuid } });
 
