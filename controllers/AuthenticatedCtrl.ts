@@ -1895,12 +1895,18 @@ module.exports = {
     res: Response,
     next: NextFunction
   ): Promise<Response> => {
-    const { pageNum } = req.query;
+    const { pageNum, shipment_num } = req.query;
 
     if (!pageNum || isNaN(pageNum)) {
       return res
         .status(400)
         .json(util.helpers.sendError("Kindly add a valid page number"));
+    }
+
+    if (!shipment_num) {
+      return res
+        .status(400)
+        .json(util.helpers.sendError("Kindly add a valid shipment number"));
     }
 
     var currentPage = parseInt(pageNum) ? parseInt(pageNum) : 1;
@@ -1913,7 +1919,7 @@ module.exports = {
     let paymentProof = await db.dbs.PaymentProofs.findAndCountAll({
       offset: offset,
       limit: limit,
-      where: { user_id: req.user.id },
+      where: { user_id: req.user.id, shipment_num: shipment_num },
       order: [["id", "DESC"]],
     });
 
