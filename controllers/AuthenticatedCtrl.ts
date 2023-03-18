@@ -1648,10 +1648,10 @@ module.exports = {
     const limit = pageSize;
 
     let pendingPayments = await db.dbs.Transactions.findAndCountAll({
-      where: { user_id: req.user.id, status: "pending" },
+      where: { user_id: req.user.id },
       offset: offset,
       limit: limit,
-      order: [["id", "DESC"]],
+      order: [["createdAt", "DESC"]],
     });
 
     var next_page = currentPage + 1;
@@ -1795,7 +1795,7 @@ module.exports = {
     const itemSchema = util.Joi.object()
       .keys({
         proof_url: util.Joi.string().required(),
-        amount: util.Joi.string().required(),
+        amount: util.Joi.number().required(),
         shipment_num: util.Joi.string().required(),
       })
       .unknown();
@@ -1843,7 +1843,7 @@ module.exports = {
       user_company: req.user.company_name,
       transaction_id: checker.id,
       status: "pending",
-      amount: amount,
+      amount: parseFloat(amount),
     });
 
     checker.status = "pending verification";

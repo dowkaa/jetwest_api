@@ -926,6 +926,7 @@ module.exports = {
         user_id: util.Joi.string().required(),
         shipment_num: util.Joi.string().required(),
         status: util.Joi.string().required(),
+        message: util.Joi.string().required(),
       })
       .unknown();
 
@@ -938,7 +939,7 @@ module.exports = {
       return res.status(400).json(util.helpers.sendError(errorMessage));
     }
 
-    const { user_id, shipment_num, status } = req.body;
+    const { user_id, shipment_num, status, message } = req.body;
 
     let user = await db.dbs.Users.findOne({ where: { id: user_id } });
 
@@ -975,7 +976,8 @@ module.exports = {
       const option = {
         name: user.first_name + " " + user.last_name,
         email: user.email,
-        message: `This is to inform you that your shipments with shipment number ${shipment_num} has been approved successfully`,
+        message: message,
+        // message: `This is to inform you that your shipments with shipment number ${shipment_num} has been approved successfully`,
       };
 
       util.paymentApproval.sendMail(option);
