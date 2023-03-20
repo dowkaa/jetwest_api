@@ -217,7 +217,10 @@ module.exports = {
     var transactions = await db.dbs.Transactions.findAndCountAll({
       offset: offset,
       limit: limit,
-      where: { user_id: { [Op.or]: [req.user.customer_id, req.user.id] } },
+      where: {
+        user_id: { [Op.or]: [req.user.customer_id, req.user.id] },
+        status: "success",
+      },
       order: [["id", "DESC"]],
     });
 

@@ -876,6 +876,7 @@ module.exports = {
       where: {
         user_id: { [Op.or]: [req.user.uuid, req.user.id] },
         status: "pending",
+        payment_status: "SUCCESS",
       },
       order: [["id", "DESC"]],
     });

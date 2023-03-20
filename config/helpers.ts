@@ -376,7 +376,7 @@ const validateTransaction = async (data: any, type: string) => {
           var amount = result.data.data.amount / 100;
 
           await db.dbs.ShippingItems.update(
-            { payment_status: "success" },
+            { payment_status: "SUCCESS" },
             { where: { shipment_num: data.shipment_num } }
           );
 
