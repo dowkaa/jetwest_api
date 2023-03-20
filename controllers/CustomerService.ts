@@ -882,7 +882,7 @@ module.exports = {
     let paymentProof = await db.dbs.Transactions.findAndCountAll({
       offset: offset,
       limit: limit,
-      where: { user_id: req.user.id, status: "pending verification" },
+      where: { user_id: req.user.id, status: "pending_verification" },
       include: [{ model: db.dbs.PaymentProofs, as: "payment_proof" }],
       order: [["id", "DESC"]],
     });
@@ -1033,7 +1033,7 @@ module.exports = {
     next: NextFunction
   ): Promise<Response> => {
     let pendingPayments = await db.dbs.Transactions.findAll({
-      where: { status: "pending verification" },
+      where: { status: "pending_verification" },
     });
 
     return res.status(200).json({ pendingPayments });
