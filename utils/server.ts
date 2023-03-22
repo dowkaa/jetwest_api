@@ -1,4 +1,5 @@
 const packages = require("./packages");
+require("dotenv").config();
 function createServer() {
   const app = packages.express();
 
@@ -52,11 +53,12 @@ function createServer() {
   //   const option = {};
   //   // packages.initialize.processJob(option);
   // }, 2000);
-
-  setInterval(() => {
-    const option = {};
-    packages.scheduleItem.processJob(option);
-  }, 60000);
+  if (process.env.STATE === "prod") {
+    setInterval(() => {
+      const option = {};
+      packages.scheduleItem.processJob(option);
+    }, 60000);
+  }
 
   app.use(packages.bodyParser.urlencoded({ extended: true }));
   app.use(packages.bodyParser.json());
@@ -73,6 +75,7 @@ function createServer() {
   app.use("/api/dowkaa/team/", packages.team);
   app.use("/api/jetwest/customer-service/", packages.CustomerRoutes);
   app.use("/api/jetwest/carriers/", packages.carriers);
+  app.use("/api/jetwest/space/", packages.space);
   app.use("/api/jetwest/admin/", packages.admin);
   app.use("/api/jetwest/transactions/", packages.transactions);
   app.use("/api/jetwest/auth/", packages.authRouth);

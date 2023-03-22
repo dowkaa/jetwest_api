@@ -4,13 +4,6 @@ const nodemailer = require("nodemailer");
 const hbs = require("nodemailer-express-handlebars");
 require("dotenv").config();
 
-// console.log({
-//   pass: process.env.MAIL_PASSWORD,
-//   host: process.env.MAIL_HOST,
-//   port: process.env.MAIL_PORT,
-//   user: process.env.MAIL_USERNAME,
-// });
-
 var transporter = nodemailer.createTransport({
   host: process.env.MAIL_HOST,
   port: process.env.MAIL_PORT,
@@ -26,7 +19,7 @@ var options = {
   viewEngine: {
     extname: ".hbs",
     layoutsDir: __dirname + "/views",
-    defaultLayout: "apiDocs",
+    defaultLayout: "shipment_arrival",
     extName: ".hbs",
   },
   viewPath: __dirname + "/views",
@@ -39,13 +32,12 @@ const sendMail = async (option: any) => {
   const message = {
     from: `${process.env.FROM_NAME} <${process.env.FROM_EMAIL}>`,
     to: option.email,
-    subject: `Dowkaa API Documentation for ${option.type}`,
-    template: "apiDocs",
+    subject: "Shipment Arrival Notification",
+    template: "shipment_arrival",
     context: {
       name: option.name,
-      message: `${option.message}`,
-      link: option.link,
-      type: option.type
+      shipment_ref: `${option.shipment_ref}`,
+      destination_airport: option.destination_airport,
     },
   };
 

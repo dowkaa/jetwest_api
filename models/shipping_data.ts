@@ -57,6 +57,8 @@ var shippingItems = (sequelize: any, type: any) => {
     company_name: Sequelize.STRING,
     reciever_primaryMobile: Sequelize.STRING,
     reciever_secMobile: Sequelize.STRING,
+    shipment_model: Sequelize.STRING,
+    is_confirmed: Sequelize.BOOLEAN,
   });
 };
 

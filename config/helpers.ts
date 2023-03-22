@@ -30,6 +30,26 @@ const updateInvite = async (req: any) => {
   }, 1800000);
 };
 
+const checkBaggageConfirmation = async (option: any) => {
+  setInterval(async () => {
+    const notConfirmedShipment = await db.dbs.ShippingItems.findOne({
+      where: { shipment_num: option.shipment_num, is_confirmed: false },
+    });
+    if (notConfirmedShipment) {
+      let flight = await db.db.ScheduleFlights.findOne({
+        where: { id: notConfirmedShipment.flight_id },
+      });
+
+      if (
+        flight.stod - Date.now() < 15000000 ||
+        flight.stod - Date.now() >= 14400000
+      ) {
+        utilities.beforeTakeOff(option);
+      }
+    }
+  }, 600000);
+};
+
 const validateHarsh = async (secret: string, user_id: string) => {
   let user = await db.dbs.Users.findOne({ where: { uuid: user_id } });
 
@@ -159,6 +179,8 @@ const validateTransaction = async (data: any, type: string) => {
             },
           });
 
+          let user = await db.dbs.Users.findOne({ where: { id: data.id } });
+
           if (!checkT) {
             let t = await db.dbs.Transactions.create({
               uuid: utilities.uuid(),
@@ -185,8 +207,6 @@ const validateTransaction = async (data: any, type: string) => {
               description: `Payment for shipment with no ${shipment.shipment_num}`,
               status: "success",
             });
-
-            let user = await db.dbs.Users.findOne({ where: { id: data.id } });
 
             await db.dbs.CustomerAuditLog.create({
               uuid: utilities.uuid(),
@@ -235,7 +255,15 @@ const validateTransaction = async (data: any, type: string) => {
             shipper_name: shipment.shipperName,
             arrival_date: shipment.arrival_date,
           };
+
+          const opts3 = {
+            email: user.email,
+            name: user.shipperName,
+            amount: amount,
+            shipment_ref: shipment.booking_reference,
+          };
           utilities.reciever.sendMail(opts2);
+          utilities.paymentSuccess.sendMail(opts3);
 
           return "success";
         } catch (error: any) {
@@ -1355,6 +1383,7 @@ module.exports = {
   deactivateOtp,
   validateTransaction,
   removeShipment,
+  checkBaggageConfirmation,
   logPendingShipment,
   addShipmentAndCreditUser,
   updateInvite,

@@ -1019,6 +1019,35 @@ module.exports = {
     flight.status = "completed";
     await flight.save();
 
+    let shipment = await db.dbs.ShippingItems.findOne({
+      where: { flight_id: flight.id },
+    });
+
+    if (shipment) {
+      let route = await db.dbs.ShipmentRoutes.findOne({
+        where: { destination_name: shipment.destination },
+      });
+      let user = await db.dbs.Users.findOne({
+        where: { id: shipment.user_id },
+      });
+      const option = {
+        shipment_ref: shipment.booking_reference,
+        name: shipment.shipperName,
+        email: user.email,
+        destination_airport: route.destination_airport,
+      };
+
+      const option2 = {
+        shipment_ref: shipment.booking_reference,
+        name: shipment.reciever_firstname + " " + shipment.reciever_lastname,
+        email: shipment.reciever_email,
+        destination_airport: route.destination_airport,
+      };
+
+      utill.shipmentArrival.sendMail(option);
+      utill.shipmentArrival.sendMail(option2);
+    }
+
     return res
       .status(200)
       .json(utill.helpers.sendSuccess("Flight successfully completed"));

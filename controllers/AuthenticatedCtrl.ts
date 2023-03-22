@@ -464,7 +464,7 @@ module.exports = {
       // if no available flight then save the data to a table for pending luggage and sent mail to admin that will
     }
 
-    if (v.available_capacity < parseInt(total_weight)) {
+    if (parseFloat(v.available_capacity) < parseInt(total_weight)) {
       return res
         .status(400)
         .json(
@@ -473,6 +473,16 @@ module.exports = {
           )
         );
     }
+
+    if (parseFloat(v.available_capacity) <= 0) {
+          return res
+            .status(400)
+            .json(
+              util.helpers.sendError(
+                "Flight not availbale to carry total weight, kindly book another flight or contact customer support"
+              )
+            );
+        }
 
     if (Date.parse(stod) - new Date().getTime() <= 1079999) {
       return res
@@ -621,6 +631,7 @@ module.exports = {
           volumetric_weight,
           company_name: req.user.company_name,
           payment_status: "pending",
+          shipment_model: "select",
           price: price,
           category,
           ba_code_url,
@@ -668,6 +679,7 @@ module.exports = {
           volumetric_weight,
           company_name: req.user.company_name,
           payment_status: "pending",
+          shipment_model: "select",
           price: price,
           category,
           ba_code_url,
@@ -698,6 +710,7 @@ module.exports = {
     };
 
     let response = await util.helpers.validateTransaction(option, "payment");
+    util.helpers.checkBaggageConfirmation(option);
 
     // if (status) {
     return res
