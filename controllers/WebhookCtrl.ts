@@ -5,7 +5,7 @@ require("dotenv").config();
 
 let paystack_key: any;
 
-if (process.env.STATE === "dev") {
+if (process.env.STATE === "local" || process.env.STATE === "test") {
   paystack_key = process.env.PAYSTACK_TEST_SECRET_KEY;
 } else {
   paystack_key = process.env.PAYSTACK_LIVE_SECRET_KEY;
