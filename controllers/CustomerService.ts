@@ -926,7 +926,7 @@ module.exports = {
         user_id: util.Joi.string().required(),
         shipment_num: util.Joi.string().required(),
         status: util.Joi.string().required(),
-        message: util.Joi.string().required(),
+        message: util.Joi.string().allow(""),
       })
       .unknown();
 
@@ -973,14 +973,26 @@ module.exports = {
         { where: { shipment_no: shipment_num } }
       );
 
-      const option = {
-        name: user.first_name + " " + user.last_name,
-        email: user.email,
-        message: message,
-        // message: `This is to inform you that your shipments with shipment number ${shipment_num} has been approved successfully`,
-      };
+      if (message) {
 
-      util.paymentApproval.sendMail(option);
+        const option = {
+          name: user.first_name + " " + user.last_name,
+          email: user.email,
+          message: message,
+          // message: `This is to inform you that your shipments with shipment number ${shipment_num} has been approved successfully`,
+        };
+
+        util.paymentApproval.sendMail(option);
+      } else {
+
+        const option = {
+          name: user.first_name + " " + user.last_name,
+          email: user.email,
+          message: `This is to inform you that your shipments with shipment number ${shipment_num} has been approved successfully`,
+        };
+
+        util.paymentApproval.sendMail(option);
+      }
 
       let paymentProof = await db.dbs.PaymentProofs.findOne({
         where: { shipment_num: shipment_num },
