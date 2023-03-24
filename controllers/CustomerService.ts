@@ -957,6 +957,16 @@ module.exports = {
         .json(util.helpers.sendError("Shipments not found"));
     }
 
+    let transactionChecker = await db.dbs.Transactions.findOne({
+      where: { shipment_no: shipment_num },
+    });
+
+    if (transactionChecker.status === "pending") {
+      return res
+        .status(400)
+        .json(util.helpers.sendError("Transaction already declined"));
+    }
+
     if (status === "Approve") {
       await db.dbs.ShippingItems.update(
         { payment_status: "success" },
@@ -1013,13 +1023,23 @@ module.exports = {
       { where: { shipment_no: shipment_num } }
     );
 
-    const option = {
-      name: user.first_name + " " + user.last_name,
-      email: user.email,
-      message: `This is to inform you that your shipments with shipment number ${shipment_num} was rejected, kindly review document uploaded and re-upload a new and valid payment document`,
-    };
+    if (message) {
+      const option = {
+        name: user.first_name + " " + user.last_name,
+        email: user.email,
+        message: message,
+      };
 
-    util.paymentApproval.sendMail(option);
+      util.paymentApproval.sendMail(option);
+    } else {
+      const option = {
+        name: user.first_name + " " + user.last_name,
+        email: user.email,
+        message: `This is to inform you that your shipments with shipment number ${shipment_num} was rejected, kindly review document uploaded and re-upload a new and valid payment document`,
+      };
+
+      util.paymentApproval.sendMail(option);
+    }
 
     let paymentProof = await db.dbs.PaymentProofs.findOne({
       where: { shipment_num: shipment_num },
