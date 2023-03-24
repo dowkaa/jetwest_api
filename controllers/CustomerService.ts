@@ -974,7 +974,6 @@ module.exports = {
       );
 
       if (message) {
-
         const option = {
           name: user.first_name + " " + user.last_name,
           email: user.email,
@@ -984,7 +983,6 @@ module.exports = {
 
         util.paymentApproval.sendMail(option);
       } else {
-
         const option = {
           name: user.first_name + " " + user.last_name,
           email: user.email,
@@ -1036,7 +1034,7 @@ module.exports = {
 
     return res
       .status(200)
-      .json(util.helpers.sendSuccess("payment successfully approved"));
+      .json(util.helpers.sendSuccess("payment successfully rejected"));
   },
 
   pendingPayments: async (
