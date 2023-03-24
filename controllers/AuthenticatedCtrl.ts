@@ -361,7 +361,7 @@ module.exports = {
       .keys({
         items: util.Joi.array().required(),
         pickup_location: util.Joi.string().required(),
-        payment_ref: util.Joi.string().required(),
+        payment_ref: util.Joi.string().allow(""),
         destination: util.Joi.string().required(),
         total_weight: util.Joi.number().required(),
         stod: util.Joi.string().required(),
@@ -475,14 +475,14 @@ module.exports = {
     }
 
     if (parseFloat(v.available_capacity) <= 0) {
-          return res
-            .status(400)
-            .json(
-              util.helpers.sendError(
-                "Flight not availbale to carry total weight, kindly book another flight or contact customer support"
-              )
-            );
-        }
+      return res
+        .status(400)
+        .json(
+          util.helpers.sendError(
+            "Flight not availbale to carry total weight, kindly book another flight or contact customer support"
+          )
+        );
+    }
 
     if (Date.parse(stod) - new Date().getTime() <= 1079999) {
       return res

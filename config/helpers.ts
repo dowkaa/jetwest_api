@@ -13,10 +13,10 @@ const sendError = (message: string) => {
 
 let paystack_key: any;
 
-if (process.env.STATE === "dev") {
+if (process.env.STATE === "local" || process.env.STATE === "test") {
   paystack_key = process.env.PAYSTACK_TEST_SECRET_KEY;
 } else {
-  paystack_key = process.env.PAYSTACK_TEST_SECRET_KEY;
+  paystack_key = process.env.PAYSTACK_LIVE_SECRET_KEY;
 }
 
 // give company admin access to resend team invite mail after 5 minutes
@@ -28,6 +28,75 @@ const updateInvite = async (req: any) => {
       await user.save();
     }
   }, 1800000);
+};
+
+const paymentForShipmentBookingByReceipt = async (option: any) => {
+  let shipment = await db.dbs.ShippingItems.findOne({
+    where: { shipment_num: option.shipment_num },
+  });
+  let totalWeight = await db.dbs.ShippingItems.sum("volumetric_weight", {
+    where: { shipment_num: option.shipment_num },
+  });
+
+  let payment = await db.dbs.Transactions.create({
+    uuid: utilities.uuid(),
+    user_id: option.user.id,
+    amount: option.amount,
+    reference: "nil",
+    // previous_balance: checkBalance.amount,
+    // new_balance: parseFloat(checkBalance.amount) - amount,
+    amount_deducted: option.amount,
+    departure: shipment.pickup_location,
+    arrival: shipment.destination,
+    cargo_id: shipment.cargo_id,
+    departure_date: shipment.depature_date.split("/").reverse().join("-"),
+    arrival_date: shipment.arrival_date,
+    shipment_no: option.shipment_num,
+    company_name: option.user.company_name,
+    weight: totalWeight,
+    reciever_organisation: shipment.reciever_organisation,
+    pricePerkeg: shipment.pricePerKg,
+    no_of_bags: shipment.no_of_bags,
+    type: "credit",
+    method: "wallet",
+    description:
+      "Payment for shipment booked on your behalf by the dowkaa system support.",
+    status: "pending",
+  });
+
+  await db.dbs.PaymentProofs.create({
+    uuid: utilities.uuid(),
+    user_id: option.user.id,
+    proof_url: option.payment_doc_url,
+    shipment_num: option.shipment_num,
+    user_company: option.user.company_name,
+    transaction_id: payment.id,
+    status: "pending",
+    amount: parseFloat(option.amount),
+  });
+
+  let admin = await db.dbs.Users.findAll({
+    where: { admin_type: "Customer Support" },
+  });
+
+  let arr = [];
+
+  for (const ad of admin) {
+    arr.push(ad.email);
+  }
+
+  const opts = {
+    name: "Customer Support",
+    email: arr,
+    message:
+      "A customer has uploaded a payment document for shipment booked by a customer support admin person on the admin backend. Kindly check through and verify payment",
+  };
+
+  try {
+    utilities.paymentValidation.sendMail(opts);
+  } catch (error: any) {
+    console.log({ error });
+  }
 };
 
 const checkBaggageConfirmation = async (option: any) => {
@@ -1382,6 +1451,7 @@ module.exports = {
   validateHarsh,
   deactivateOtp,
   validateTransaction,
+  paymentForShipmentBookingByReceipt,
   removeShipment,
   checkBaggageConfirmation,
   logPendingShipment,

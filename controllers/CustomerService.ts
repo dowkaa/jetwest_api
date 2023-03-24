@@ -1012,7 +1012,7 @@ module.exports = {
 
     await db.dbs.Transactions.update(
       { status: "pending" },
-      { where: { shipment_num: shipment_num } }
+      { where: { shipment_no: shipment_num } }
     );
 
     const option = {
