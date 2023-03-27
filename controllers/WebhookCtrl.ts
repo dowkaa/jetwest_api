@@ -26,7 +26,7 @@ module.exports = {
     var secret = paystack_key;
     //validate event
     var hash = util.crypto
-      .createHmac("sha512", "sk_test_87c7081a3269181a1a163eb7792c8cf67ac1b2ff")
+      .createHmac("sha512", "sk_live_ae5e2b2506f67911c5cde3e8a63c031f38cfa4c2")
       .update(JSON.stringify(req.body))
       .digest("hex");
 

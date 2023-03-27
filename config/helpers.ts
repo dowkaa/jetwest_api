@@ -467,7 +467,7 @@ const validateTransaction = async (data: any, type: string) => {
       method: "get",
       url: url,
       headers: {
-        Authorization: `Bearer sk_test_87c7081a3269181a1a163eb7792c8cf67ac1b2ff`,
+        Authorization: `Bearer sk_live_ae5e2b2506f67911c5cde3e8a63c031f38cfa4c2`,
         "Content-Type": "application/json",
         "Accept-Encoding": "application/json",
       },
