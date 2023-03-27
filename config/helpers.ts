@@ -44,6 +44,7 @@ const paymentForShipmentBookingByReceipt = async (option: any) => {
     user_id: option.user.id,
     amount: option.amount,
     reference: "nil",
+    booked_by: shipment.shipperName,
     // previous_balance: checkBalance.amount,
     // new_balance: parseFloat(checkBalance.amount) - amount,
     amount_deducted: option.amount,
@@ -179,6 +180,7 @@ const logApiTransaction = async (
     cargo_id: item.cargo_id,
     departure_date: item.depature_date.split("/").reverse().join("-"),
     arrival_date: item.arrival_date,
+    booked_by: item.shipperName,
     shipment_no: shipment_num,
     company_name: user.company_name,
     weight: item.weight,
@@ -232,7 +234,7 @@ const validateTransaction = async (data: any, type: string) => {
       method: "get",
       url: url,
       headers: {
-        Authorization: `Bearer sk_test_87c7081a3269181a1a163eb7792c8cf67ac1b2ff`,
+        Authorization: `Bearer ${process.env.PAYSTACK_KEY}`,
         "Content-Type": "application/json",
         "Accept-Encoding": "application/json",
       },
@@ -269,6 +271,7 @@ const validateTransaction = async (data: any, type: string) => {
               cargo_id: shipment.cargo_id,
               departure_date: shipment.depature_date,
               arrival_date: shipment.arrival_date,
+              booked_by: shipment.shipperName,
               company_name: data.company_name,
               shipment_no: data.shipment_num,
               weight:
@@ -378,6 +381,7 @@ const validateTransaction = async (data: any, type: string) => {
               departure_date: shipment.depature_date,
               company_name: data.company_name,
               arrival_date: shipment.arrival_date,
+              booked_by: shipment.shipperName,
               shipment_no: data.shipment_num,
               weight:
                 parseFloat(shipment.volumetric_weight) >
@@ -467,7 +471,7 @@ const validateTransaction = async (data: any, type: string) => {
       method: "get",
       url: url,
       headers: {
-        Authorization: `Bearer sk_live_ae5e2b2506f67911c5cde3e8a63c031f38cfa4c2`,
+        Authorization: `Bearer sk_test_87c7081a3269181a1a163eb7792c8cf67ac1b2ff`,
         "Content-Type": "application/json",
         "Accept-Encoding": "application/json",
       },

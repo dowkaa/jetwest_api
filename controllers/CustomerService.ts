@@ -833,6 +833,7 @@ module.exports = {
       arrival_date: item.arrival_date,
       shipment_no: shipment_num,
       company_name: user.company_name,
+      booked_by: req.user.first_name + " " + req.user.last_name,
       weight: item.weight,
       reciever_organisation: item.reciever_organisation,
       pricePerkeg: item.pricePerKg,

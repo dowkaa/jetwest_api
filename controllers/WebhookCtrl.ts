@@ -6,10 +6,8 @@ require("dotenv").config();
 let paystack_key: any;
 
 if (process.env.ENV === "test") {
-  console.log("11111111112222222222");
   paystack_key = process.env.PAYSTACK_TEST_SECRET_KEY;
 } else {
-  console.log("33333333333333335555555555555555");
   paystack_key = process.env.PAYSTACK_LIVE_SECRET_KEY;
 }
 
@@ -26,7 +24,7 @@ module.exports = {
     var secret = paystack_key;
     //validate event
     var hash = util.crypto
-      .createHmac("sha512", "sk_live_ae5e2b2506f67911c5cde3e8a63c031f38cfa4c2")
+      .createHmac("sha512", process.env.PAYSTACK_KEY)
       .update(JSON.stringify(req.body))
       .digest("hex");
 
@@ -71,6 +69,7 @@ module.exports = {
             reference: reference,
             departure: shipment.pickup_location,
             arrival: shipment.destination,
+            booked_by: shipment.shipperName,
             cargo_id: shipment.cargo_id,
             departure_date: shipment.depature_date,
             arrival_date: shipment.arrival_date,
