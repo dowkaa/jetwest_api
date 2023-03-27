@@ -35,7 +35,7 @@ const paymentForShipmentBookingByReceipt = async (option: any) => {
   let shipment = await db.dbs.ShippingItems.findOne({
     where: { shipment_num: option.shipment_num },
   });
-  let totalWeight = await db.dbs.ShippingItems.sum("volumetric_weight", {
+  let totalWeight = await db.dbs.ShippingItems.sum("chargeable_weight", {
     where: { shipment_num: option.shipment_num },
   });
 

@@ -136,6 +136,26 @@ module.exports = {
       shipment_num = util.helpers.generateReftId(10);
     }
 
+    if(payment_ref){
+      var validateTransaction = await util.helpers.checkUserTransaction(payment_ref)
+
+      if (validateTransaction) {
+        return res.status(400).json(util.helpers.sendError("Transaction reference already logged"));
+      }
+    }
+
+    let payment_methods = ["verto", "paystack", "receipt"];
+
+    if (!payment_methods.includes(payment_type)) {
+      return res
+        .status(400)
+        .json(
+          util.helpers.sendError(
+            "Kindly use a valid payment method either verto, paystack or receipt"
+          )
+        );
+    }
+
     let v = await db.dbs.ScheduleFlights.findOne({
       where: {
         departure_station: pickup_location,
