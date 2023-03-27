@@ -5,7 +5,7 @@ require("dotenv").config();
 
 let paystack_key: any;
 
-if (process.env.env === "test") {
+if (process.env.ENV === "test") {
   console.log("11111111112222222222");
   paystack_key = process.env.PAYSTACK_TEST_SECRET_KEY;
 } else {

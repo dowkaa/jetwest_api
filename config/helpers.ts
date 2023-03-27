@@ -14,7 +14,7 @@ const sendError = (message: string) => {
 
 let paystack_key: any;
 
-if (process.env.STATE === "dev" || process.env.STATE === "test") {
+if (process.env.ENV === "test") {
   paystack_key = process.env.PAYSTACK_TEST_SECRET_KEY;
 } else {
   paystack_key = process.env.PAYSTACK_LIVE_SECRET_KEY;
@@ -111,17 +111,11 @@ const checkBaggageConfirmation = async (option: any) => {
       where: { shipment_num: option.shipment_num, is_confirmed: 0 },
     });
 
-    console.log({ notConfirmedShipment });
+    console.log({ notConfirmedShipment: notConfirmedShipment.stod });
     if (notConfirmedShipment) {
-      let flight = await db.db.ScheduleFlights.findOne({
-        where: { id: notConfirmedShipment.flight_id },
-      });
-
-      console.log({ flight });
-
       if (
-        flight.stod - Date.now() < 15000000 ||
-        flight.stod - Date.now() >= 14400000
+        notConfirmedShipment.stod - Date.now() < 15000000 ||
+        notConfirmedShipment.stod - Date.now() >= 14400000
       ) {
         utilities.beforeTakeOff(option);
       }
@@ -215,6 +209,10 @@ const validateTransaction = async (data: any, type: string) => {
     if (validateTransaction) {
       return;
     }
+
+    console.log("00000000000000000000000000");
+    console.log({ paystack_key });
+    console.log("2222222222222222222222222");
 
     let paystackCheck = await db.dbs.PaystackStarter.findOne({
       where: { reference: data.reference },
