@@ -467,7 +467,7 @@ const validateTransaction = async (data: any, type: string) => {
       method: "get",
       url: url,
       headers: {
-        Authorization: `Bearer ${paystack_key}`,
+        Authorization: `Bearer sk_test_87c7081a3269181a1a163eb7792c8cf67ac1b2ff`,
         "Content-Type": "application/json",
         "Accept-Encoding": "application/json",
       },
