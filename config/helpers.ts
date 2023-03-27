@@ -105,14 +105,19 @@ const paymentForShipmentBookingByReceipt = async (option: any) => {
 };
 
 const checkBaggageConfirmation = async (option: any) => {
+  console.log({ option });
   setInterval(async () => {
     const notConfirmedShipment = await db.dbs.ShippingItems.findOne({
-      where: { shipment_num: option.shipment_num, is_confirmed: false },
+      where: { shipment_num: option.shipment_num, is_confirmed: 0 },
     });
+
+    console.log({ notConfirmedShipment });
     if (notConfirmedShipment) {
       let flight = await db.db.ScheduleFlights.findOne({
         where: { id: notConfirmedShipment.flight_id },
       });
+
+      console.log({ flight });
 
       if (
         flight.stod - Date.now() < 15000000 ||

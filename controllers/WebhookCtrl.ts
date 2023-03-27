@@ -6,8 +6,10 @@ require("dotenv").config();
 let paystack_key: any;
 
 if (process.env.env === "test") {
+  console.log("11111111112222222222");
   paystack_key = process.env.PAYSTACK_TEST_SECRET_KEY;
 } else {
+  console.log("33333333333333335555555555555555");
   paystack_key = process.env.PAYSTACK_LIVE_SECRET_KEY;
 }
 
@@ -27,6 +29,8 @@ module.exports = {
       .createHmac("sha512", secret)
       .update(JSON.stringify(req.body))
       .digest("hex");
+
+    console.log({ secret, paystack_key, hash });
 
     if (hash == req.headers["x-paystack-signature"]) {
       // Retrieve the request's body
