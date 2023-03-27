@@ -1013,6 +1013,23 @@ module.exports = {
         data: JSON.stringify(req.body),
       });
 
+      const opts2 = {
+        name: shipment.reciever_firstname + " " + shipment.reciever_lastname,
+        email: shipment.reciever_email,
+        shipment_num: shipment.shipment_num,
+        shipper_name: shipment.shipperName,
+        arrival_date: shipment.arrival_date,
+      };
+
+      const opts3 = {
+        email: user.email,
+        name: user.shipperName,
+        amount: transactionChecker.amount,
+        shipment_ref: shipment.booking_reference,
+      };
+      util.reciever.sendMail(opts2);
+      util.paymentSuccess.sendMail(opts3);
+
       return res
         .status(200)
         .json(util.helpers.sendSuccess("payment successfully approved"));
@@ -1037,7 +1054,6 @@ module.exports = {
         email: user.email,
         message: `This is to inform you that your shipments with shipment number ${shipment_num} was rejected, kindly review document uploaded and re-upload a new and valid payment document`,
       };
-
       util.paymentApproval.sendMail(option);
     }
 

@@ -9,7 +9,7 @@ module.exports = {
       }),
       queryInterface.addColumn("shipping_items", "is_confirmed", {
         allowNull: false,
-        default: false,
+        defaultValue: false,
         type: Sequelize.BOOLEAN,
       }),
     ]);

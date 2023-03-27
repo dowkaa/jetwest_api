@@ -1,5 +1,6 @@
 const utilities = require("../utils/packages");
 const db = require("../database/mysql");
+const { Op } = require("sequelize");
 import { Request, Response, NextFunction } from "express";
 
 const sendError = (message: string) => {
@@ -13,7 +14,7 @@ const sendError = (message: string) => {
 
 let paystack_key: any;
 
-if (process.env.STATE === "local" || process.env.STATE === "test") {
+if (process.env.STATE === "dev" || process.env.STATE === "test") {
   paystack_key = process.env.PAYSTACK_TEST_SECRET_KEY;
 } else {
   paystack_key = process.env.PAYSTACK_LIVE_SECRET_KEY;
@@ -61,7 +62,7 @@ const paymentForShipmentBookingByReceipt = async (option: any) => {
     method: "wallet",
     description:
       "Payment for shipment booked on your behalf by the dowkaa system support.",
-    status: "pending",
+    status: "pending_verification",
   });
 
   await db.dbs.PaymentProofs.create({
@@ -76,7 +77,11 @@ const paymentForShipmentBookingByReceipt = async (option: any) => {
   });
 
   let admin = await db.dbs.Users.findAll({
-    where: { admin_type: "Customer Support" },
+    where: {
+      admin_type: {
+        [Op.in]: ["Revenue Officer", "Super Admin"],
+      },
+    },
   });
 
   let arr = [];
@@ -86,7 +91,7 @@ const paymentForShipmentBookingByReceipt = async (option: any) => {
   }
 
   const opts = {
-    name: "Customer Support",
+    name: "Revenue Officer",
     email: arr,
     message:
       "A customer has uploaded a payment document for shipment booked by a customer support admin person on the admin backend. Kindly check through and verify payment",

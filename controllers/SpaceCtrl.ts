@@ -46,7 +46,6 @@ module.exports = {
       .keys({
         items: util.Joi.array().required(),
         pickup_location: util.Joi.string().required(),
-        payment_ref: util.Joi.string().required(),
         destination: util.Joi.string().required(),
         total_weight: util.Joi.number().required(),
         stod: util.Joi.string().required(),
@@ -57,6 +56,10 @@ module.exports = {
         reciever_organisation: util.Joi.string().required(),
         reciever_primaryMobile: util.Joi.string().required(),
         reciever_secMobile: util.Joi.string().allow(""),
+        payment_ref: util.Joi.string().allow(""),
+        payment_type: util.Joi.string().required(),
+        amount: util.Joi.string().allow(""),
+        payment_doc_url: util.Joi.string().allow(""),
       })
       .unknown();
 
@@ -109,6 +112,9 @@ module.exports = {
       reciever_organisation,
       reciever_primaryMobile,
       reciever_secMobile,
+      payment_type,
+      amount,
+      payment_doc_url,
     } = req.body;
 
     let shipment_num = util.helpers.generateReftId(10);
@@ -392,10 +398,46 @@ module.exports = {
       id: req.user.id,
       company_name: req.user.company_name,
       customer_id: req.user.customer_id,
+      amount,
+      payment_doc_url,
+      user: req.user,
     };
 
-    let response = await util.helpers.validateTransaction(option, "payment");
-    util.helpers.checkBaggageConfirmation(option);
+    if (payment_type === "paystack") {
+      if (!payment_ref) {
+        return res
+          .status(400)
+          .json(
+            util.helpers.sendError(
+              "Kindly add a valid paystack payment reference to validate your payment."
+            )
+          );
+      }
+      let response = await util.helpers.validateTransaction(option, "payment");
+      util.helpers.checkBaggageConfirmation(option);
+    } else if (payment_type === "receipt") {
+      if (!(payment_doc_url && amount)) {
+        return res
+          .status(400)
+          .json(
+            util.helpers.sendError(
+              "You need to fill the amount and payment_doc_url if you want to make payment via transfer and reciept upload. "
+            )
+          );
+      }
+      util.helpers.paymentForShipmentBookingByReceipt(option);
+    } else {
+      return res
+        .status(400)
+        .json(
+          util.helpers.sendError(
+            "Payment method not available, kindly proceed to pending payments to payments to make payment"
+          )
+        );
+    }
+
+    // let response = await util.helpers.validateTransaction(option, "payment");
+    // util.helpers.checkBaggageConfirmation(option);
 
     // if (status) {
     return res

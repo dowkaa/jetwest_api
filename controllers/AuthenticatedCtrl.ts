@@ -361,7 +361,6 @@ module.exports = {
       .keys({
         items: util.Joi.array().required(),
         pickup_location: util.Joi.string().required(),
-        payment_ref: util.Joi.string().allow(""),
         destination: util.Joi.string().required(),
         total_weight: util.Joi.number().required(),
         stod: util.Joi.string().required(),
@@ -372,6 +371,10 @@ module.exports = {
         reciever_organisation: util.Joi.string().required(),
         reciever_primaryMobile: util.Joi.string().required(),
         reciever_secMobile: util.Joi.string().allow(""),
+        payment_ref: util.Joi.string().allow(""),
+        payment_type: util.Joi.string().required(),
+        amount: util.Joi.string().allow(""),
+        payment_doc_url: util.Joi.string().allow(""),
       })
       .unknown();
 
@@ -424,6 +427,9 @@ module.exports = {
       reciever_organisation,
       reciever_primaryMobile,
       reciever_secMobile,
+      payment_type,
+      amount,
+      payment_doc_url,
     } = req.body;
 
     let shipment_num = util.helpers.generateReftId(10);
@@ -698,6 +704,7 @@ module.exports = {
         });
       }
     }
+
     v.no_of_bags = parseInt(v.no_of_bags) + items.length;
     await v.save();
 
@@ -706,11 +713,44 @@ module.exports = {
       shipment_num,
       id: req.user.id,
       company_name: req.user.company_name,
+      amount,
+      payment_doc_url,
+      user: req.user,
       customer_id: req.user.customer_id,
     };
 
-    let response = await util.helpers.validateTransaction(option, "payment");
-    util.helpers.checkBaggageConfirmation(option);
+    if (payment_type === "paystack") {
+      if (!payment_ref) {
+        return res
+          .status(400)
+          .json(
+            util.helpers.sendError(
+              "Kindly add a valid paystack payment reference to validate your payment."
+            )
+          );
+      }
+      let response = await util.helpers.validateTransaction(option, "payment");
+      util.helpers.checkBaggageConfirmation(option);
+    } else if (payment_type === "receipt") {
+      if (!(payment_doc_url && amount)) {
+        return res
+          .status(400)
+          .json(
+            util.helpers.sendError(
+              "You need to fill the amount and payment_doc_url if you want to make payment via transfer and reciept upload. "
+            )
+          );
+      }
+      util.helpers.paymentForShipmentBookingByReceipt(option);
+    } else {
+      return res
+        .status(400)
+        .json(
+          util.helpers.sendError(
+            "Payment method not available, kindly proceed to pending payments to payments to make payment"
+          )
+        );
+    }
 
     // if (status) {
     return res
@@ -1143,6 +1183,7 @@ module.exports = {
       where: {
         agent_id: { [Op.or]: [req.user.uuid, req.user.id] },
         status: "pending",
+        payment_status: "SUCCESS",
       },
       order: [["id", "DESC"]],
     });
@@ -1738,7 +1779,7 @@ module.exports = {
       return res
         .status(400)
         .json(util.helpers.sendError("payment already verified."));
-    } else if (checker.status === "pending verification") {
+    } else if (checker.status === "pending_verification") {
       return res
         .status(400)
         .json(
@@ -1839,7 +1880,7 @@ module.exports = {
       return res
         .status(400)
         .json(util.helpers.sendError("payment already verified."));
-    } else if (checker.status === "pending verification") {
+    } else if (checker.status === "pending_verification") {
       return res
         .status(400)
         .json(
@@ -1864,7 +1905,11 @@ module.exports = {
     await checker.save();
 
     let admin = await db.dbs.Users.findAll({
-      where: { admin_type: "Customer Support" },
+      where: {
+        admin_type: {
+          [Op.in]: ["Revenue Officer", "Super Admin"],
+        },
+      },
     });
 
     let arr = [];
@@ -1874,7 +1919,7 @@ module.exports = {
     }
 
     const option = {
-      name: "Customer Support",
+      name: "Revenue Officer",
       email: arr,
       message:
         "A customer has uploaded a payment document for shipment booked by a customer support admin person on the admin backend. Kindly check through and verify payment",
