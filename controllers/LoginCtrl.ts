@@ -1,5 +1,6 @@
 const utill = require("../utils/packages");
 import { Request, Response, NextFunction } from "express";
+const { Op } = require("sequelize");
 const db = require("../database/mysql");
 
 const signTokens = (user: any, token: string) => {
@@ -139,18 +140,27 @@ module.exports = {
 
       if (user.type === "Shipper") {
         var totalCompletedShipments = await db.dbs.ShippingItems.count({
-          where: { user_id: user.uuid, status: "completed" },
+          where: {
+            user_id: { [Op.or]: [user.uuid, user.id] },
+            status: "completed",
+          },
           order: [["id", "DESC"]],
         });
 
         var totalCancelled = await db.dbs.ShippingItems.count({
-          where: { user_id: user.uuid, status: "cancelled" },
+          where: {
+            user_id: { [Op.or]: [user.uuid, user.id] },
+            status: "cancelled",
+          },
           order: [["id", "DESC"]],
         });
 
         const totalSuccessfullTransactionsAmount =
           await db.dbs.Transactions.findAll({
-            where: { user_id: user.customer_id, status: "success" },
+            where: {
+              user_id: { [Op.or]: [user.customer_id, user.id] },
+              status: "success",
+            },
             attributes: [
               [
                 utill.sequelize.fn("sum", utill.sequelize.col("amount")),
@@ -161,7 +171,7 @@ module.exports = {
           });
 
         const totalkg = await db.dbs.ShippingItems.findAll({
-          where: { user_id: user.uuid },
+          where: { user_id: { [Op.or]: [user.uuid, user.id] } },
           attributes: [
             [
               utill.sequelize.fn(

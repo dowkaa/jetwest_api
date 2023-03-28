@@ -136,11 +136,15 @@ module.exports = {
       shipment_num = util.helpers.generateReftId(10);
     }
 
-    if(payment_ref){
-      var validateTransaction = await util.helpers.checkUserTransaction(payment_ref)
-
+    if (payment_ref) {
+      var validateTransaction = await util.helpers.checkUserTransaction(
+        payment_ref
+      );
+      
       if (validateTransaction) {
-        return res.status(400).json(util.helpers.sendError("Transaction reference already logged"));
+        return res
+          .status(400)
+          .json(util.helpers.sendError("Transaction reference already logged"));
       }
     }
 
@@ -464,7 +468,7 @@ module.exports = {
       .status(200)
       .json(
         util.helpers.sendSuccess(
-          "Shipment booked successfully, the Dowkaa team would reach out to to soon."
+          "Shipment booked successfully, the Dowkaa team would reach out to you soon."
         )
       );
   },
