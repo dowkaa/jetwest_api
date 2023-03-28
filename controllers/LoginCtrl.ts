@@ -141,8 +141,21 @@ module.exports = {
       if (user.type === "Shipper") {
         var totalCompletedShipments = await db.dbs.ShippingItems.count({
           where: {
-            user_id: { [Op.or]: [user.uuid, user.id] },
+            [Op.or]: {
+              user_id: { [Op.or]: [user.uuid, user.id] },
+              company_name: user.company_name,
+            },
             status: "completed",
+          },
+          order: [["id", "DESC"]],
+        });
+
+        var totalShipments = await db.dbs.ShippingItems.count({
+          where: {
+            [Op.or]: {
+              user_id: { [Op.or]: [user.uuid, user.id] },
+              company_name: user.company_name,
+            },
           },
           order: [["id", "DESC"]],
         });
@@ -158,7 +171,10 @@ module.exports = {
         const totalSuccessfullTransactionsAmount =
           await db.dbs.Transactions.findAll({
             where: {
-              user_id: { [Op.or]: [user.customer_id, user.id] },
+              [Op.or]: {
+                user_id: { [Op.or]: [user.customer_id, user.id] },
+                company_name: user.company_name,
+              },
               status: "success",
             },
             attributes: [
@@ -171,7 +187,12 @@ module.exports = {
           });
 
         const totalkg = await db.dbs.ShippingItems.findAll({
-          where: { user_id: { [Op.or]: [user.uuid, user.id] } },
+          where: {
+            [Op.or]: {
+              user_id: { [Op.or]: [user.uuid, user.id] },
+              company_name: user.company_name,
+            },
+          },
           attributes: [
             [
               utill.sequelize.fn(
@@ -190,6 +211,7 @@ module.exports = {
             email: user.email,
             login_status: user.reg_status,
             account_type: user.type,
+            totalShipments,
             totalCompletedShipments,
             totalSuccessfullTransactionsAmount,
             totalCancelled,
