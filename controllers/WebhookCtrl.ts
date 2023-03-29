@@ -50,7 +50,7 @@ module.exports = {
       } else {
         if (event.data.status == "success") {
           var amount = event.data.amount / 100;
-          let checker = await db.Transactions.findOne({
+          let checker = await db.dbs.Transactions.findOne({
             where: { reference: reference },
           });
 
