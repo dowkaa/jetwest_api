@@ -719,7 +719,9 @@ module.exports = {
         }
         v.available_capacity =
           parseFloat(v.available_capacity) - parseFloat(weight);
-        v.totalAmount = parseFloat(v.totalAmount) + price;
+        v.totalAmount =
+          parseFloat(v.totalAmount) +
+          price * parseFloat(route.dailyExchangeRate);
         v.taw = parseFloat(v.taw) + parseFloat(weight);
         await v.save();
       } else {
@@ -735,7 +737,9 @@ module.exports = {
         v.available_capacity =
           parseFloat(v.available_capacity) - parseFloat(weight);
         v.taw = parseFloat(v.taw) + parseFloat(weight);
-        v.totalAmount = parseFloat(v.totalAmount) + price;
+        v.totalAmount =
+          parseFloat(v.totalAmount) +
+          price * parseFloat(route.dailyExchangeRate);
         await v.save();
       }
 

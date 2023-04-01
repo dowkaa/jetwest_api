@@ -72,6 +72,7 @@ function createServer() {
   app.use("/api/jetwest/password/", packages.password);
   app.use("/api/jetwest/webhook/", packages.Webhook);
   app.use("/api/dowkaa/open-api/", packages.openApi);
+  app.use("/api/dowkaa/members/", packages.members);
   app.use("/api/dowkaa/team/", packages.team);
   app.use("/api/jetwest/customer-service/", packages.CustomerRoutes);
   app.use("/api/jetwest/carriers/", packages.carriers);

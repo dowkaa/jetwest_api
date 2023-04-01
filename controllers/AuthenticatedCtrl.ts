@@ -605,7 +605,9 @@ module.exports = {
         }
         v.available_capacity =
           parseFloat(v.available_capacity) - parseFloat(weight);
-        v.totalAmount = parseFloat(v.totalAmount) + price;
+        v.totalAmount =
+          parseFloat(v.totalAmount) +
+          price * parseFloat(route.dailyExchangeRate);
         v.taw = parseFloat(v.taw) + parseFloat(weight);
         await v.save();
       } else {
@@ -622,7 +624,9 @@ module.exports = {
         v.available_capacity =
           parseFloat(v.available_capacity) - parseFloat(weight);
         v.taw = parseFloat(v.taw) + parseFloat(weight);
-        v.totalAmount = parseFloat(v.totalAmount) + price;
+        v.totalAmount =
+          parseFloat(v.totalAmount) +
+          price * parseFloat(route.dailyExchangeRate);
         await v.save();
       }
 
@@ -755,6 +759,8 @@ module.exports = {
       }
       let response = await util.helpers.validateTransaction(option, "payment");
       util.helpers.checkBaggageConfirmation(option);
+
+      return res.status(200).json(util.helpers.sendSuccess(response));
     } else if (payment_type === "receipt") {
       if (!(payment_doc_url && amount)) {
         return res
@@ -766,6 +772,10 @@ module.exports = {
           );
       }
       util.helpers.paymentForShipmentBookingByReceipt(option);
+
+       return res
+         .status(200)
+         .json(util.helpers.sendSuccess("Document uploaded successfully"));
     } else {
       return res
         .status(400)
@@ -776,15 +786,6 @@ module.exports = {
         );
     }
 
-    // if (status) {
-    return res
-      .status(200)
-      .json(
-        util.helpers.sendSuccess(
-          "Shipment booked successfully, the Dowkaa team would reach out to you soon."
-        )
-      );
-    // }
   },
 
   trackShipment: async (req: any, res: Response, next: NextFunction) => {
@@ -1416,6 +1417,12 @@ module.exports = {
         .json(util.helpers.sendError("Operation not allowed"));
     }
 
+    let agent = await db.dbs.Users.findOne({ where: { uuid: agent_id } });
+
+    if (!agent) {
+      return res.status(400).json(util.helpers.sendError("Agent not found"));
+    }
+
     let now = Date.now().toString();
     if (shipment.depature_date - Date.parse(now) < 181000000) {
       return res
@@ -1423,9 +1430,14 @@ module.exports = {
         .json(util.helpers.sendError("Operation not allowed"));
     }
 
-    shipment.depature_date = date;
-    shipment.agent_id = agent_id;
-    await shipment.save();
+    if (agent_id) {
+      shipment.depature_date = date;
+      shipment.agent_id = agent_id;
+      await shipment.save();
+    } else {
+      shipment.depature_date = date;
+      await shipment.save();
+    }
     // });
 
     // if (status) {

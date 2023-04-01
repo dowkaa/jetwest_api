@@ -60,6 +60,10 @@ dbs.PaystackStarter = require("../models/paystck_starter")(
   sequelize,
   Sequelizes
 );
+dbs.ShipmentTracker = require("../models/shipment_tracker")(
+  sequelize,
+  Sequelizes
+);
 dbs.AuditLogs = require("../models/audit_logs")(sequelize, Sequelizes);
 dbs.CustomerAuditLog = require("../models/customer_audit_log")(
   sequelize,

@@ -1,47 +1,13 @@
 export {};
 import { Request, Response, NextFunction } from "express";
 const util = require("../utils/packages");
-const { Op, QueryTypes } = require("sequelize");
+const { Op } = require("sequelize");
 const db = require("../database/mysql");
+const sms = require("../services/sms");
 const { paginate } = require("paginate-info");
 
 module.exports = {
-  getDailyFlightSchedule: async (
-    req: any,
-    res: Response,
-    next: NextFunction
-  ): Promise<Response> => {
-    let { departure_station, destination_station } = req.query;
-
-    if (!departure_station && !destination_station) {
-      return res
-        .status(400)
-        .json(
-          util.helpers.sendError(
-            "Kindly add a departure airport and a destination airport to your request"
-          )
-        );
-    }
-
-    let schedule_flights = await db.dbs.ScheduleFlights.findAll({
-      where: {
-        departure_station: departure_station,
-        destination_station: destination_station,
-        available_capacity: {
-          [Op.gt]: 0,
-        },
-      },
-      order: [["createdAt", "DESC"]],
-    });
-
-    return res.status(200).json({ schedule_flights });
-  },
-
-  bookShipment: async (
-    req: any,
-    res: Response,
-    next: NextFunction
-  ): Promise<Response> => {
+  bookShipping: async (req: any, res: Response, next: NextFunction) => {
     const itemSchema = util.Joi.object()
       .keys({
         items: util.Joi.array().required(),
@@ -50,6 +16,11 @@ module.exports = {
         total_weight: util.Joi.number().required(),
         stod: util.Joi.string().required(),
         agent_id: util.Joi.string().allow(""),
+        first_name: util.Joi.string().required(),
+        last_name: util.Joi.string().required(),
+        mobile: util.Joi.string().required(),
+        country: util.Joi.string().required(),
+        email: util.Joi.string().required(),
         reciever_firstname: util.Joi.string().required(),
         reciever_lastname: util.Joi.string().required(),
         reciever_email: util.Joi.string().required(),
@@ -115,7 +86,42 @@ module.exports = {
       payment_type,
       amount,
       payment_doc_url,
+      first_name,
+      last_name,
+      mobile,
+      country,
+      email,
     } = req.body;
+
+    var code = util.helpers.generateClientId(6);
+    var customer_id = util.helpers.generateClientId(10);
+
+    let checker = await db.dbs.Users.findOne({
+      where: {
+        mobile_number: mobile,
+        first_name: first_name,
+        last_name: last_name,
+        country: country,
+        email: email,
+      },
+    });
+
+    let user;
+
+    if (!checker) {
+      user = await db.dbs.Users.create({
+        customer_id,
+        uuid: util.uuid(),
+        mobile_number: mobile,
+        first_name,
+        last_name,
+        reg_status: "completed",
+        country,
+        email,
+      });
+    } else {
+      user = checker;
+    }
 
     let shipment_num = util.helpers.generateReftId(10);
     let scan_code = util.helpers.generateReftId(10);
@@ -140,7 +146,7 @@ module.exports = {
       var validateTransaction = await util.helpers.checkUserTransaction(
         payment_ref
       );
-      
+
       if (validateTransaction) {
         return res
           .status(400)
@@ -179,7 +185,7 @@ module.exports = {
       // if no available flight then save the data to a table for pending luggage and sent mail to admin that will
     }
 
-    if (parseFloat(v.available_capacity) - parseInt(total_weight) < 0) {
+    if (parseFloat(v.available_capacity) < parseInt(total_weight)) {
       return res
         .status(400)
         .json(
@@ -323,7 +329,7 @@ module.exports = {
           uuid: util.uuid(),
           flight_id: v.id,
           type,
-          user_id: req.user.id,
+          user_id: user.id,
           agent_id: agent.id,
           shipment_num,
           reference: payment_ref,
@@ -348,16 +354,16 @@ module.exports = {
           arrival_date: v.arrival_date,
           booking_reference: shipment_ref,
           volumetric_weight,
-          company_name: req.user.company_name,
+          company_name: user.company_name,
           payment_status: "pending",
-          shipment_model: "space",
+          shipment_model: "select",
           price: price,
           category,
           ba_code_url,
           promo_code: promo_code ? promo_code : null,
-          shipperName: req.user.first_name + " " + req.user.last_name,
-          organisation: req.user.organisation,
-          shipperNum: req.user.customer_id,
+          shipperName: user.first_name + " " + user.last_name,
+          organisation: user.organisation,
+          shipperNum: user.customer_id,
           no_of_bags: items.length,
           content,
           reciever_firstname,
@@ -372,7 +378,7 @@ module.exports = {
           uuid: util.uuid(),
           flight_id: v.id,
           type,
-          user_id: req.user.id,
+          user_id: user.id,
           shipment_num,
           reference: payment_ref,
           value,
@@ -396,16 +402,16 @@ module.exports = {
           arrival_date: v.arrival_date,
           booking_reference: shipment_ref,
           volumetric_weight,
-          company_name: req.user.company_name,
+          company_name: user.company_name,
           payment_status: "pending",
-          shipment_model: "space",
+          shipment_model: "select",
           price: price,
           category,
           ba_code_url,
           promo_code: promo_code ? promo_code : null,
-          shipperName: req.user.first_name + " " + req.user.last_name,
-          organisation: req.user.organisation,
-          shipperNum: req.user.customer_id,
+          shipperName: user.first_name + " " + user.last_name,
+          organisation: user.organisation,
+          shipperNum: user.customer_id,
           no_of_bags: items.length,
           content,
           reciever_firstname,
@@ -417,18 +423,87 @@ module.exports = {
         });
       }
     }
+
     v.no_of_bags = parseInt(v.no_of_bags) + items.length;
     await v.save();
 
     const option = {
-      reference: payment_ref,
       shipment_num,
-      id: req.user.id,
-      company_name: req.user.company_name,
-      customer_id: req.user.customer_id,
+    };
+
+    util.helpers.bookingExpiry(option);
+
+    // if (status) {
+    return res.status(200).json(
+      util.helpers.sendSuccess({
+        message:
+          "Shipment booked successfully, the Dowkaa team would reach out to you soon.",
+        shipment_num,
+      })
+    );
+    // }
+  },
+
+  makePayment: async (
+    req: any,
+    res: Response,
+    next: NextFunction
+  ): Promise<Response> => {
+    const itemSchema = util.Joi.object()
+      .keys({
+        payment_ref: util.Joi.string().allow(""),
+        payment_type: util.Joi.string().required(),
+        amount: util.Joi.string().allow(""),
+        mobile: util.Joi.string().required(),
+        shipment_num: util.Joi.string().required(),
+        first_name: util.Joi.string().required(),
+        last_name: util.Joi.string().required(),
+        payment_doc_url: util.Joi.string().allow(""),
+      })
+      .unknown();
+
+    const validate1 = itemSchema.validate(req.body);
+
+    if (validate1.error != null) {
+      const errorMessage = validate1.error.details
+        .map((i: any) => i.message)
+        .join(".");
+      return res.status(400).json(util.helpers.sendError(errorMessage));
+    }
+    const {
+      payment_ref,
+      shipment_num,
       amount,
       payment_doc_url,
-      user: req.user,
+      payment_type,
+      first_name,
+      mobile,
+      last_name,
+    } = req.body;
+
+    let user = await db.dbs.Users.findOne({
+      where: {
+        first_name: first_name,
+        last_name: last_name,
+        mobile_number: mobile,
+      },
+    });
+
+    if (!user) {
+      return res
+        .status(400)
+        .json(util.helpers.sendError("Customer details not found"));
+    }
+
+    const option = {
+      reference: payment_ref,
+      shipment_num,
+      id: user.id,
+      company_name: user.company_name,
+      amount,
+      payment_doc_url,
+      user: user,
+      customer_id: user.customer_id,
     };
 
     if (payment_type === "paystack") {
@@ -441,8 +516,37 @@ module.exports = {
             )
           );
       }
-      let response = await util.helpers.validateTransaction(option, "payment");
+      let response = await util.helpers.validateTransaction(option, "members");
       util.helpers.checkBaggageConfirmation(option);
+
+      let shipment = await db.dbs.ShippingItems.findOne({
+        where: { shipment_num: shipment_num },
+      });
+
+      let tracker = util.helpers.generateReftId(5);
+      const expiredAt = new Date();
+
+      await db.dbs.ShipmentTracker.create({
+        uuid: util.uuid(),
+        shipment_id: shipment.id,
+        track_num: tracker,
+        expiredAt: new Date(
+          expiredAt.setTime(expiredAt.getTime() + 15 * 60 * 1000)
+        ).toUTCString(),
+      });
+
+      const opt = {
+        email: user.email,
+        name: first_name + " " + last_name,
+        shipment_num: shipment_num,
+        message: `Dear esteemed customer, kindly use the id ${tracker} to to confirm receipt of your shipment`,
+        tracking_id: tracker,
+      };
+
+      util.tag.sendMail(opt);
+      sms.send(shipment.reciever_primaryMobile, opt.message);
+
+      return res.status(200).json(util.helpers.sendSuccess(response));
     } else if (payment_type === "receipt") {
       if (!(payment_doc_url && amount)) {
         return res
@@ -454,6 +558,37 @@ module.exports = {
           );
       }
       util.helpers.paymentForShipmentBookingByReceipt(option);
+
+      let shipment = await db.dbs.ShippingItems.findOne({
+        where: { shipment_num: shipment_num },
+      });
+
+      let tracker = util.helpers.generateReftId(5);
+      const expiredAt = new Date();
+
+      await db.dbs.ShipmentTracker.create({
+        uuid: util.uuid(),
+        shipment_id: shipment.id,
+        track_num: tracker,
+        expiredAt: new Date(
+          expiredAt.setTime(expiredAt.getTime() + 15 * 60 * 1000)
+        ).toUTCString(),
+      });
+
+      const opt = {
+        email: user.email,
+        name: first_name + " " + last_name,
+        shipment_num: shipment_num,
+        message: `Dear esteemed customer, kindly use the id ${tracker} to to confirm receipt of your shipment`,
+        tracking_id: tracker,
+      };
+
+      util.tag.sendMail(opt);
+      sms.send(user.mobile, opt.message);
+
+      return res
+        .status(200)
+        .json(util.helpers.sendSuccess("Document uploaded successfully"));
     } else {
       return res
         .status(400)
@@ -463,17 +598,151 @@ module.exports = {
           )
         );
     }
+  },
 
-    // let response = await util.helpers.validateTransaction(option, "payment");
-    // util.helpers.checkBaggageConfirmation(option);
+  sendPartiesMail: async (
+    req: any,
+    res: Response,
+    next: NextFunction
+  ): Promise<Response> => {
+    const itemSchema = util.Joi.object()
+      .keys({
+        pickup_location: util.Joi.string().required(),
+        destination: util.Joi.string().required(),
+        shipment_num: util.Joi.string().required(),
+        agent_id: util.Joi.string().allow(""),
+        email: util.Joi.string().required(),
+        reciever_firstname: util.Joi.string().required(),
+        reciever_lastname: util.Joi.string().required(),
+        reciever_email: util.Joi.string().required(),
+        reciever_organisation: util.Joi.string().required(),
+        reciever_primaryMobile: util.Joi.string().required(),
+        reciever_secMobile: util.Joi.string().allow(""),
+      })
+      .unknown();
 
-    // if (status) {
+    const validate1 = itemSchema.validate(req.body);
+
+    if (validate1.error != null) {
+      const errorMessage = validate1.error.details
+        .map((i: any) => i.message)
+        .join(".");
+      return res.status(400).json(util.helpers.sendError(errorMessage));
+    }
+
+    const {
+      pickup_location,
+      destination,
+      total_weight,
+      agent_id,
+      shipment_num,
+      email,
+      reciever_firstname,
+      reciever_lastname,
+      reciever_email,
+      reciever_organisation,
+      reciever_primaryMobile,
+      reciever_secMobile,
+    } = req.body;
+
+    let agent = await db.dbs.Users.findOne({ where: { uuid: agent_id } });
+
+    if (!agent) {
+      return res.status(400).json(util.helpers.sendError("Agent not found"));
+    }
+
+    const option = {
+      departure: pickup_location,
+      destination,
+      total_weight,
+      shipment_num,
+      agent_email: agent.email,
+      agent_first_name: agent.first_name,
+      agent_last_name: agent.last_name,
+      agent_mobile: agent.mobile,
+      agent_company: agent.company_name,
+      email,
+      reciever_firstname,
+      reciever_lastname,
+      reciever_email,
+      reciever_organisation,
+      reciever_primaryMobile,
+      reciever_secMobile,
+    };
+
+    util.customerMail.sendMail(option);
+
     return res
       .status(200)
-      .json(
-        util.helpers.sendSuccess(
-          "Shipment booked successfully, the Dowkaa team would reach out to you soon."
-        )
-      );
+      .json(util.helpers.sendSuccess("Email sent successfully"));
+  },
+
+  confirmShipment: async (
+    req: any,
+    res: Response,
+    next: NextFunction
+  ): Promise<Response> => {
+    const schema = util.Joi.object()
+      .keys({
+        otp: util.Joi.string().required(),
+      })
+      .unknown();
+
+    const validate = schema.validate(req.body);
+
+    if (validate.error != null) {
+      const errorMessage = validate.error.details
+        .map((i: any) => i.message)
+        .join(".");
+      return res.status(200).json(util.helpers.sendSuccess(errorMessage));
+    }
+
+    let { otp } = req.body;
+
+    let verifyToken = await db.dbs.ShipmentTracker.findOne({
+      where: { expiredAt: otp, is_used: 0 },
+    });
+
+    if (!verifyToken) {
+      return res
+        .status(400)
+        .json(
+          util.helpers.sendError(
+            "Invalid confirmation token sent or token already used"
+          )
+        );
+    }
+
+    let shipments = await db.dbs.ShippingItems.findOne({
+      where: { id: verifyToken.shipment_id },
+    });
+
+    if (!shipments) {
+      return res.status(400).json(util.helpers.sendError("No shipment found"));
+    }
+
+    if (Date.parse(verifyToken.expiredAt) < new Date().getTime()) {
+      return res.status(400).json({
+        status: "ERROR",
+        code: "01",
+        message: "Shipment confirmation token expired",
+      });
+    }
+
+    await db.dbs.ShippingItems.update(
+      { is_confirmed: true },
+      {
+        where: {
+          shipment_num: shipments.shipment_num,
+        },
+      }
+    );
+
+    verifyToken.is_used = 1;
+    await verifyToken.save();
+
+    return res
+      .status(200)
+      .json(util.helpers.sendSuccess("Shpments confirmation successful"));
   },
 };
