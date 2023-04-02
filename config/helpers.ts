@@ -531,6 +531,8 @@ const validateTransaction = async (data: any, type: string) => {
 
           let user = await db.dbs.Users.findOne({ where: { id: data.id } });
 
+          console.log("1111111111111111111111111111111111111111111111111");
+
           if (!checkT) {
             let t = await db.dbs.Transactions.create({
               uuid: utilities.uuid(),
@@ -559,6 +561,8 @@ const validateTransaction = async (data: any, type: string) => {
               status: "success",
             });
 
+            console.log("2222222222222222222222222222");
+
             await db.dbs.CustomerAuditLog.create({
               uuid: utilities.uuid(),
               user_id: user.id,
@@ -566,14 +570,22 @@ const validateTransaction = async (data: any, type: string) => {
               data: JSON.stringify(t),
             });
 
+            console.log({ data });
+
+            console.log("333333333333333333333333");
+
             let checker = await db.dbs.PaystackStarter.findOne({
               where: { reference: data.reference },
             });
+
+            console.log("4444444444444444444444444444");
 
             if (checker) {
               checker.status = "success";
               await checker.save();
             }
+
+            console.log("55555555555555555555555");
 
             await db.dbs.ShippingItems.update(
               { payment_status: "SUCCESS" },
@@ -585,10 +597,13 @@ const validateTransaction = async (data: any, type: string) => {
             );
           }
 
+          console.log("666666666666666666666666666666");
+
           if (shipment.agent_id) {
             let checker = await db.dbs.Users.findOne({
               where: { id: shipment.agent_id },
             });
+            console.log("777777777777777777777777777777");
 
             const opts1 = {
               name: checker.first_name + " " + checker.last_name,
@@ -596,6 +611,7 @@ const validateTransaction = async (data: any, type: string) => {
               shipment_num: shipment.shipment_num,
             };
             utilities.agent.sendMail(opts1);
+            console.log("88888888888888888888888888888888");
           }
 
           const opts2 = {
@@ -606,6 +622,7 @@ const validateTransaction = async (data: any, type: string) => {
             shipper_name: shipment.shipperName,
             arrival_date: shipment.arrival_date,
           };
+          console.log("9999999999999999999999999999999999");
 
           const opts3 = {
             email: user.email,
@@ -613,6 +630,7 @@ const validateTransaction = async (data: any, type: string) => {
             amount: amount,
             shipment_ref: shipment.booking_reference,
           };
+          console.log("00000000000000000000000000000");
           utilities.reciever.sendMail(opts2);
           utilities.paymentSuccess.sendMail(opts3);
 
