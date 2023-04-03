@@ -516,12 +516,21 @@ module.exports = {
             )
           );
       }
-      let response = await util.helpers.validateTransaction(option, "members");
-      util.helpers.checkBaggageConfirmation(option);
 
       let shipment = await db.dbs.ShippingItems.findOne({
         where: { shipment_num: shipment_num },
       });
+
+      if (!shipment) {
+        return res
+          .status(400)
+          .json(
+            util.helpers.sendError("Shipment number not recognised by system")
+          );
+      }
+
+      let response = await util.helpers.validateTransaction(option, "members");
+      util.helpers.checkBaggageConfirmation(option);
 
       let tracker = util.helpers.generateReftId(5);
       const expiredAt = new Date();
@@ -557,11 +566,20 @@ module.exports = {
             )
           );
       }
-      util.helpers.paymentForShipmentBookingByReceipt(option);
 
       let shipment = await db.dbs.ShippingItems.findOne({
         where: { shipment_num: shipment_num },
       });
+
+      if (!shipment) {
+        return res
+          .status(400)
+          .json(
+            util.helpers.sendError("Shipment number not recognised by system")
+          );
+      }
+
+      util.helpers.paymentForShipmentBookingByReceipt(option);
 
       let tracker = util.helpers.generateReftId(5);
       const expiredAt = new Date();
