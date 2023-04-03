@@ -44,6 +44,10 @@ module.exports = {
         where: { reference: reference },
       });
 
+      let route = await db.dbs.ShipmentRoutes.findOne({
+        where: { destination_name: shipment.destination },
+      });
+
       if (validateTransaction) {
         console.log("got here");
         return res.sendStatus(200);
@@ -65,7 +69,7 @@ module.exports = {
           await db.dbs.Transactions.create({
             uuid: util.uuid(),
             user_id: user.id,
-            amount: amount,
+            amount: amount * parseFloat(route.dailyExchangeRate),
             reference: reference,
             departure: shipment.pickup_location,
             arrival: shipment.destination,
@@ -84,8 +88,8 @@ module.exports = {
             pricePerkeg: shipment.ratePerKg,
             no_of_bags: shipment.no_of_bags,
             type: "credit",
-            method: "paystack",
-            description: `Payment for shipment with no ${shipment.shipment_num}`,
+            method: "paystack webhook",
+            description: `Payment for shipment with no ${shipment.shipment_num} via paystack webhook`,
             status: "success",
           });
 
