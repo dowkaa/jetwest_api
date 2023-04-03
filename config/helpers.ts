@@ -523,6 +523,10 @@ const validateTransaction = async (data: any, type: string) => {
             where: { shipment_num: data.shipment_num },
           });
 
+          if (!shipment) {
+             return "Shipment number not recognised by system";
+          }
+
           let checkT = await db.dbs.Transactions.findOne({
             where: {
               reference: data.reference,
