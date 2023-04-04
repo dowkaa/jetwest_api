@@ -175,14 +175,12 @@ module.exports = {
       // if no available flight then save the data to a table for pending luggage and sent mail to admin that will
     }
 
-    console.log({ v: v.departure_date, depature_date });
-
     if (v.departure_date !== depature_date) {
       return res
         .status(400)
         .json(
           util.helpers.sendError(
-            `Scheduled flight not available for the departure date entered kindly reschedule for ${v.depature_date}`
+            `Scheduled flight not available for the departure date entered kindly reschedule for ${v.departure_date}`
           )
         );
     }
