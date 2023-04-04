@@ -166,6 +166,7 @@ module.exports = {
 
     for (const item of items) {
       let price;
+      let insurance;
       const {
         type,
         width,
@@ -217,6 +218,7 @@ module.exports = {
         let price1 = price * parseFloat(route.sur_charge);
         let price2 = price * parseFloat(route.tax);
         let price3 = value * parseFloat(route.insurance);
+        insurance = price3;
         let totalPrice = price + price1 + price2 + price3;
         price = totalPrice;
       } else {
@@ -307,12 +309,12 @@ module.exports = {
 
             util.SuperShipperAPIMail.sendMail(option);
 
-             await db.dbs.CustomerAuditLog.create({
-               uuid: util.uuid(),
-               user_id: req.user.id,
-               description: `A user with name ${req.user.first_name} ${req.user.last_name} booked a shipment(on credit to be deducted upon their next wallet funding) using the open API service for shippers.`,
-               data: JSON.stringify(req.body),
-             });
+            await db.dbs.CustomerAuditLog.create({
+              uuid: util.uuid(),
+              user_id: req.user.id,
+              description: `A user with name ${req.user.first_name} ${req.user.last_name} booked a shipment(on credit to be deducted upon their next wallet funding) using the open API service for shippers.`,
+              data: JSON.stringify(req.body),
+            });
 
             return res
               .status(resp.status)
@@ -356,8 +358,9 @@ module.exports = {
           width,
           length: length,
           height,
-          sur_charge: route.sur_charge,
-          taxes: route.tax,
+          insurance,
+          sur_charge: price * (parseFloat(route.sur_charge) / 100),
+          taxes: price * (parseFloat(route.tax) / 100),
           book_type: "Personal",
           status: "pending",
           shipment_routeId: route.id,
@@ -403,8 +406,9 @@ module.exports = {
           width,
           length: length,
           height,
-          sur_charge: route.sur_charge,
-          taxes: route.tax,
+          insurance,
+          sur_charge: price * (parseFloat(route.sur_charge) / 100),
+          taxes: price * (parseFloat(route.tax) / 100),
           book_type: "Personal",
           status: "pending",
           shipment_routeId: route.id,
