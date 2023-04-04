@@ -14,9 +14,6 @@ module.exports = http.listen(port || 2023, () => {
   console.log(`Server started on port ${port}`);
   // let date = utils.moment().add(1, "hour").format("YYYY-MM-DD HH:mm:ss");
   let date = utils.moment("2023-5-7 12:00:00").format("YYYY-MM-DD HH:mm:ss");
-  let date2 = utils.moment("2023-5-3 12:00:00").format("YYYY-MM-DD HH:mm:ss");
-
-  console.log({ newDate: date - date2 });
 
   console.log({
     date: new Date(),
