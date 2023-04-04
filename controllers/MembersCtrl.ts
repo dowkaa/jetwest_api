@@ -18,19 +18,14 @@ module.exports = {
         agent_id: util.Joi.string().allow(""),
         first_name: util.Joi.string().required(),
         last_name: util.Joi.string().required(),
+        depature_date: util.Joi.string().required(),
         mobile: util.Joi.string().required(),
         country: util.Joi.string().required(),
         email: util.Joi.string().required(),
         reciever_firstname: util.Joi.string().required(),
         reciever_lastname: util.Joi.string().required(),
         reciever_email: util.Joi.string().required(),
-        reciever_organisation: util.Joi.string().required(),
         reciever_primaryMobile: util.Joi.string().required(),
-        reciever_secMobile: util.Joi.string().allow(""),
-        payment_ref: util.Joi.string().allow(""),
-        payment_type: util.Joi.string().required(),
-        amount: util.Joi.string().allow(""),
-        payment_doc_url: util.Joi.string().allow(""),
       })
       .unknown();
 
@@ -45,8 +40,6 @@ module.exports = {
 
     const bookingSchema = util.Joi.object()
       .keys({
-        type: util.Joi.string().required(),
-        depature_date: util.Joi.string().required(),
         shipment_ref: util.Joi.string().required(),
         width: util.Joi.number().required(),
         length: util.Joi.number().required(),
@@ -56,6 +49,7 @@ module.exports = {
         promo_code: util.Joi.string().allow(""),
         value: util.Joi.number().required(),
         content: util.Joi.string().required(),
+        invoice_url: util.Joi.array().allow(""),
         ba_code_url: util.Joi.string().allow(""),
       })
       .unknown();
@@ -71,6 +65,7 @@ module.exports = {
 
     const {
       items,
+      depature_date,
       pickup_location,
       destination,
       stod,
@@ -80,12 +75,7 @@ module.exports = {
       reciever_email,
       reciever_firstname,
       reciever_lastname,
-      reciever_organisation,
       reciever_primaryMobile,
-      reciever_secMobile,
-      payment_type,
-      amount,
-      payment_doc_url,
       first_name,
       last_name,
       mobile,
@@ -142,29 +132,29 @@ module.exports = {
       shipment_num = util.helpers.generateReftId(10);
     }
 
-    if (payment_ref) {
-      var validateTransaction = await util.helpers.checkUserTransaction(
-        payment_ref
-      );
+    // if (payment_ref) {
+    //   var validateTransaction = await util.helpers.checkUserTransaction(
+    //     payment_ref
+    //   );
 
-      if (validateTransaction) {
-        return res
-          .status(400)
-          .json(util.helpers.sendError("Transaction reference already logged"));
-      }
-    }
+    //   if (validateTransaction) {
+    //     return res
+    //       .status(400)
+    //       .json(util.helpers.sendError("Transaction reference already logged"));
+    //   }
+    // }
 
-    let payment_methods = ["verto", "paystack", "receipt"];
+    // let payment_methods = ["verto", "paystack", "receipt"];
 
-    if (!payment_methods.includes(payment_type)) {
-      return res
-        .status(400)
-        .json(
-          util.helpers.sendError(
-            "Kindly use a valid payment method either verto, paystack or receipt"
-          )
-        );
-    }
+    // if (!payment_methods.includes(payment_type)) {
+    //   return res
+    //     .status(400)
+    //     .json(
+    //       util.helpers.sendError(
+    //         "Kindly use a valid payment method either verto, paystack or receipt"
+    //       )
+    //     );
+    // }
 
     let v = await db.dbs.ScheduleFlights.findOne({
       where: {
@@ -183,6 +173,18 @@ module.exports = {
           )
         );
       // if no available flight then save the data to a table for pending luggage and sent mail to admin that will
+    }
+
+    console.log({ v: v.departure_date, depature_date });
+
+    if (v.departure_date !== depature_date) {
+      return res
+        .status(400)
+        .json(
+          util.helpers.sendError(
+            `Scheduled flight not available for the departure date entered kindly reschedule for ${v.depature_date}`
+          )
+        );
     }
 
     if (parseFloat(v.available_capacity) < parseInt(total_weight)) {
@@ -224,7 +226,6 @@ module.exports = {
     for (const item of items) {
       let price;
       const {
-        type,
         width,
         height,
         weight,
@@ -233,9 +234,9 @@ module.exports = {
         category,
         ba_code_url,
         promo_code,
-        depature_date,
         value,
         content,
+        invoice_url,
       } = item;
 
       let route = await db.dbs.ShipmentRoutes.findOne({
@@ -328,7 +329,7 @@ module.exports = {
         let status = await db.dbs.ShippingItems.create({
           uuid: util.uuid(),
           flight_id: v.id,
-          type,
+          type: null,
           user_id: user.id,
           agent_id: agent.id,
           shipment_num,
@@ -369,15 +370,22 @@ module.exports = {
           reciever_firstname,
           reciever_lastname,
           reciever_email,
-          reciever_organisation,
           reciever_primaryMobile,
-          reciever_secMobile,
         });
+
+        if (agent_id && invoice_url.length > 0) {
+          await db.dbs.ShipmentInvoives.create({
+            uuid: util.uuid(),
+            user_id: user.id,
+            invoice_url: JSON.stringify(invoice_url),
+            shipment_id: status.id,
+          });
+        }
       } else {
         let status = await db.dbs.ShippingItems.create({
           uuid: util.uuid(),
           flight_id: v.id,
-          type,
+          type: null,
           user_id: user.id,
           shipment_num,
           reference: payment_ref,
@@ -417,10 +425,17 @@ module.exports = {
           reciever_firstname,
           reciever_lastname,
           reciever_email,
-          reciever_organisation,
           reciever_primaryMobile,
-          reciever_secMobile,
         });
+
+        if (agent_id && invoice_url.length > 0) {
+          await db.dbs.ShipmentInvoives.create({
+            uuid: util.uuid(),
+            user_id: user.id,
+            invoice_url: JSON.stringify(invoice_url),
+            shipment_id: status.id,
+          });
+        }
       }
     }
 
@@ -470,6 +485,7 @@ module.exports = {
         .join(".");
       return res.status(400).json(util.helpers.sendError(errorMessage));
     }
+
     const {
       payment_ref,
       shipment_num,
@@ -506,6 +522,18 @@ module.exports = {
       customer_id: user.customer_id,
     };
 
+    let shipment = await db.dbs.ShippingItems.findOne({
+      where: { shipment_num: shipment_num },
+    });
+
+    if (!shipment) {
+      return res
+        .status(400)
+        .json(
+          util.helpers.sendError("Shipment number not recognised by system")
+        );
+    }
+
     if (payment_type === "paystack") {
       if (!payment_ref) {
         return res
@@ -514,18 +542,6 @@ module.exports = {
             util.helpers.sendError(
               "Kindly add a valid paystack payment reference to validate your payment."
             )
-          );
-      }
-
-      let shipment = await db.dbs.ShippingItems.findOne({
-        where: { shipment_num: shipment_num },
-      });
-
-      if (!shipment) {
-        return res
-          .status(400)
-          .json(
-            util.helpers.sendError("Shipment number not recognised by system")
           );
       }
 
@@ -564,18 +580,6 @@ module.exports = {
             util.helpers.sendError(
               "You need to fill the amount and payment_doc_url if you want to make payment via transfer and reciept upload. "
             )
-          );
-      }
-
-      let shipment = await db.dbs.ShippingItems.findOne({
-        where: { shipment_num: shipment_num },
-      });
-
-      if (!shipment) {
-        return res
-          .status(400)
-          .json(
-            util.helpers.sendError("Shipment number not recognised by system")
           );
       }
 

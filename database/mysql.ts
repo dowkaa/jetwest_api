@@ -87,6 +87,10 @@ dbs.ScheduleFlights = require("../models/shedule_flights")(
   sequelize,
   Sequelizes
 );
+dbs.ShipmentInvoives = require("../models/shipment_invoice")(
+  sequelize,
+  Sequelizes
+);
 dbs.Destinations = require("../models/destinations")(sequelize, Sequelizes);
 dbs.BusinessCompliance = require("../models/business_compliance")(
   sequelize,
@@ -130,6 +134,26 @@ dbs.ScheduleFlights.hasMany(dbs.ShippingItems, {
   as: "shipping_items",
 });
 
+dbs.ShipmentInvoives.belongsTo(dbs.Users, {
+  foreignKey: "user_id",
+  as: "user_shipment_invoive",
+});
+
+dbs.Users.hasMany(dbs.ShipmentInvoives, {
+  foreignKey: "user_id",
+  as: "user_shipment_invoive",
+});
+
+dbs.ShipmentInvoives.belongsTo(dbs.ShippingItems, {
+  foreignKey: "shipment_id",
+  as: "shipment_invoive",
+});
+
+dbs.ShippingItems.hasMany(dbs.ShipmentInvoives, {
+  foreignKey: "shipment_id",
+  as: "shipment_invoive",
+});
+
 dbs.ApiKeys.belongsTo(dbs.Users, {
   foreignKey: "user_id",
   as: "api_secret",
@@ -144,4 +168,5 @@ dbs.Transactions.hasMany(dbs.PaymentProofs, {
   foreignKey: "transaction_id",
   as: "payment_proof",
 });
+
 exports.dbs = dbs;

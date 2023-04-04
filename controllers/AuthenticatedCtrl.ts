@@ -396,6 +396,7 @@ module.exports = {
         length: util.Joi.number().required(),
         weight: util.Joi.number().required(),
         height: util.Joi.number().required(),
+        invoice_url: util.Joi.array().allow(""),
         category: util.Joi.string().allow(""),
         promo_code: util.Joi.string().allow(""),
         value: util.Joi.number().required(),
@@ -504,15 +505,16 @@ module.exports = {
         );
     }
 
-    if (parseFloat(v.available_capacity) <= 0) {
-      return res
-        .status(400)
-        .json(
-          util.helpers.sendError(
-            "Flight not availbale to carry total weight, kindly book another flight or contact customer support"
-          )
-        );
-    }
+    if (util.moment(v))
+      if (parseFloat(v.available_capacity) <= 0) {
+        return res
+          .status(400)
+          .json(
+            util.helpers.sendError(
+              "Flight not availbale to carry total weight, kindly book another flight or contact customer support"
+            )
+          );
+      }
 
     if (Date.parse(stod) - new Date().getTime() <= 1079999) {
       return res
@@ -545,6 +547,7 @@ module.exports = {
         depature_date,
         value,
         content,
+        invoice_url,
       } = item;
 
       let route = await db.dbs.ShipmentRoutes.findOne({
@@ -682,6 +685,16 @@ module.exports = {
           reciever_primaryMobile,
           reciever_secMobile,
         });
+
+        if (agent_id && invoice_url.length > 0) {
+          await db.dbs.ShipmentInvoives.create({
+            uuid: util.uuid(),
+            user_id: req.user.id,
+            invoice_url: JSON.stringify(invoice_url),
+            company_name: req.user.company_name,
+            shipment_id: status.id,
+          });
+        }
       } else {
         let status = await db.dbs.ShippingItems.create({
           uuid: util.uuid(),
@@ -730,6 +743,16 @@ module.exports = {
           reciever_primaryMobile,
           reciever_secMobile,
         });
+
+        if (agent_id && invoice_url.length > 0) {
+          await db.dbs.ShipmentInvoives.create({
+            uuid: util.uuid(),
+            invoice_url: JSON.stringify(invoice_url),
+            user_id: req.user.id,
+            company_name: req.user.company_name,
+            shipment_id: status.id,
+          });
+        }
       }
     }
 
@@ -773,9 +796,9 @@ module.exports = {
       }
       util.helpers.paymentForShipmentBookingByReceipt(option);
 
-       return res
-         .status(200)
-         .json(util.helpers.sendSuccess("Document uploaded successfully"));
+      return res
+        .status(200)
+        .json(util.helpers.sendSuccess("Document uploaded successfully"));
     } else {
       return res
         .status(400)
@@ -785,7 +808,6 @@ module.exports = {
           )
         );
     }
-
   },
 
   trackShipment: async (req: any, res: Response, next: NextFunction) => {
