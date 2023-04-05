@@ -190,11 +190,7 @@ module.exports = {
     user.reg_status = "step-2";
     user.activated = 1;
     await user.save();
-    const option = {
-      name: `${user.first_name} ${user.last_name}`,
-      email: user.email,
-    };
-    utillz.verifySuccess.sendMail(option);
+
 
     let random = utillz.uuid();
 

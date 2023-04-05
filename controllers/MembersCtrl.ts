@@ -20,6 +20,7 @@ module.exports = {
         last_name: util.Joi.string().required(),
         depature_date: util.Joi.string().required(),
         mobile: util.Joi.string().required(),
+        address: util.Joi.string().required(),
         country: util.Joi.string().required(),
         email: util.Joi.string().required(),
         reciever_firstname: util.Joi.string().required(),
@@ -79,6 +80,7 @@ module.exports = {
       first_name,
       last_name,
       mobile,
+      address,
       country,
       email,
     } = req.body;
@@ -103,6 +105,7 @@ module.exports = {
         customer_id,
         uuid: util.uuid(),
         mobile_number: mobile,
+        company_name: address,
         first_name,
         last_name,
         reg_status: "completed",
@@ -457,7 +460,7 @@ module.exports = {
     return res.status(200).json(
       util.helpers.sendSuccess({
         message:
-          "Shipment booked successfully, the Dowkaa team would reach out to you soon.",
+          "Shipment booked successfully, kindly proceed to make payment as booked shipment would expire after 30 minutes.",
         shipment_num,
       })
     );
@@ -639,6 +642,7 @@ module.exports = {
         shipment_num: util.Joi.string().required(),
         agent_id: util.Joi.string().allow(""),
         email: util.Joi.string().required(),
+        address: util.Joi.string().required(),
         reciever_firstname: util.Joi.string().required(),
         reciever_lastname: util.Joi.string().required(),
         reciever_email: util.Joi.string().required(),
@@ -664,6 +668,7 @@ module.exports = {
       agent_id,
       shipment_num,
       email,
+      address,
       reciever_firstname,
       reciever_lastname,
       reciever_email,
@@ -689,6 +694,7 @@ module.exports = {
       agent_mobile: agent.mobile,
       agent_company: agent.company_name,
       email,
+      address,
       reciever_firstname,
       reciever_lastname,
       reciever_email,

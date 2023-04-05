@@ -3337,6 +3337,12 @@ with note ${note}`,
     user.verification_status = state;
     await user.save();
 
+    const option = {
+      name: `${user.first_name} ${user.last_name}`,
+      email: user.email,
+    };
+    utill.verifySuccess.sendMail(option);
+
     return res
       .status(200)
       .json(utill.helpers.sendSuccess("User status updated successfully"));
