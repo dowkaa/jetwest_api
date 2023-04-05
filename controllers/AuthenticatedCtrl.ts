@@ -688,15 +688,16 @@ module.exports = {
           reciever_primaryMobile,
           reciever_secMobile,
         });
-
-        if (agent_id && invoice_url.length > 0) {
-          await db.dbs.ShipmentInvoives.create({
-            uuid: util.uuid(),
-            user_id: req.user.id,
-            invoice_url: JSON.stringify(invoice_url),
-            company_name: req.user.company_name,
-            shipment_id: status.id,
-          });
+        if (invoice_url) {
+          if (agent_id && invoice_url.length > 0) {
+            await db.dbs.ShipmentInvoives.create({
+              uuid: util.uuid(),
+              user_id: req.user.id,
+              invoice_url: JSON.stringify(invoice_url),
+              company_name: req.user.company_name,
+              shipment_id: status.id,
+            });
+          }
         }
       } else {
         let status = await db.dbs.ShippingItems.create({
@@ -748,14 +749,16 @@ module.exports = {
           reciever_secMobile,
         });
 
-        if (agent_id && invoice_url.length > 0) {
-          await db.dbs.ShipmentInvoives.create({
-            uuid: util.uuid(),
-            invoice_url: JSON.stringify(invoice_url),
-            user_id: req.user.id,
-            company_name: req.user.company_name,
-            shipment_id: status.id,
-          });
+        if (invoice_url) {
+          if (agent_id && invoice_url.length > 0) {
+            await db.dbs.ShipmentInvoives.create({
+              uuid: util.uuid(),
+              invoice_url: JSON.stringify(invoice_url),
+              user_id: req.user.id,
+              company_name: req.user.company_name,
+              shipment_id: status.id,
+            });
+          }
         }
       }
     }
