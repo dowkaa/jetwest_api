@@ -20,6 +20,115 @@ if (process.env.ENV === "test") {
   paystack_key = process.env.PAYSTACK_LIVE_SECRET_KEY;
 }
 
+// daily, weekly,bi-weekly dates
+function getDatesOnDaysOfWeek(options: any) {
+  const result = [];
+
+  var days = [
+    "Sunday",
+    "Monday",
+    "Tuesday",
+    "Wednesday",
+    "Thursday",
+    "Friday",
+    "Saturday",
+  ];
+  var start = utilities.moment(
+      options.startDate.split("/").reverse().join("-")
+    ), //e.g "2023-01-01"
+    end = utilities.moment(options.end_date.split("/").reverse().join("-")), //e.g "2023-05-02"
+    day_num,
+    daysOfWeek = [];
+  let arr = [];
+  for (var i = 0; i < options.dayNames.length; i++) {
+    day_num = days.indexOf(options.dayNames[i]);
+    daysOfWeek.push(day_num);
+  }
+
+  const startDate = new Date(start);
+  const endDate = new Date(end);
+
+  while (startDate <= endDate) {
+    if (daysOfWeek.includes(startDate.getDay())) {
+      result.push(utilities.moment(new Date(startDate)).format("YYYY-MM-DD"));
+    }
+    startDate.setDate(startDate.getDate() + 1);
+  }
+
+  return result;
+}
+
+const getMonthlyDate = async (option: any) => {
+  function monthDiff(d1: string, d2: string) {
+    let date1 = new Date(d1);
+    let date2 = new Date(d2);
+    var months;
+    months = (date2.getFullYear() - date1.getFullYear()) * 12;
+    months -= date1.getMonth();
+    months += date2.getMonth();
+    return months <= 0 ? 0 : months;
+  }
+
+  let m = monthDiff(option.startDate, option.end_date);
+  let startYear = utilities.moment(option.startDate).format("YYYY");
+  let startMonth = utilities.moment(option.startDate).format("MM");
+  let endMonth = utilities.moment(option.end_date).format("MM");
+  let endYear = utilities.moment(option.end_date).format("YYYY");
+
+  let count = 0;
+  let arr = [];
+  let c;
+  for (var i = 0; i <= m; i++) {
+    count++;
+    c = startYear + "-" + (parseInt(startMonth) + count);
+    for (let j = 1; j <= parseInt(endYear) - parseInt(startYear) + 1; j++) {
+      if (parseInt(startYear) <= parseInt(endYear)) {
+        c = parseInt(startYear) + (j - 1) + "-" + count;
+        if (utilities.moment(c).isValid()) {
+          arr.push(utilities.moment(c).format("YYYY-MM"));
+        }
+      }
+    }
+  }
+  let arr4 = [];
+  var mv;
+  for (let i = 0; i < option.dayNums.length; i++) {
+    mv = option.dayNums[i];
+
+    for (let j = 0; j < arr.length; j++) {
+      let r = arr[j] + "-" + mv;
+      r = utilities.moment(r).format("YYYY-MM-DD");
+      if (utilities.moment(r).isValid()) {
+        arr4.push(r);
+      }
+    }
+  }
+  return arr4;
+};
+
+const getYearlyDate = async (option: any) => {
+  let startYear = utilities.moment(option.startDate).format("YYYY");
+  let startMonth = utilities.moment(option.startDate).format("MM");
+  let endYear = utilities.moment(option.end_date).format("YYYY");
+  let yearsDiff = endYear - startYear;
+  let arr = [];
+  let arr2 = [];
+  let c;
+  let d;
+  for (var i = 0; i <= yearsDiff; i++) {
+    c = parseInt(startYear) + i + "-" + startMonth;
+    arr.push(c);
+    for (let j = 0; j < option.dayNums.length; j++) {
+      d = arr[i] + "-" + option.dayNums[j];
+      if (utilities.moment(d).isValid()) {
+        arr2.push(d);
+      }
+    }
+  }
+
+  return arr2;
+};
+
 // give company admin access to resend team invite mail after 5 minutes
 const updateInvite = async (req: any) => {
   setTimeout(async () => {
@@ -1777,6 +1886,9 @@ module.exports = {
   updateInvite,
   updateShipment,
   logApiTransaction,
+  getDatesOnDaysOfWeek,
+  getMonthlyDate,
+  getYearlyDate,
   checkPromo,
   checkMobile,
   timestamp,

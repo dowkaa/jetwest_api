@@ -229,6 +229,238 @@ module.exports = {
       );
   },
 
+  //   scheduleFlights: async (
+  //     req: any,
+  //     res: Response,
+  //     next: NextFunction
+  //   ): Promise<Response> => {
+  //     const loginSchema = utill.Joi.object()
+  //       .keys({
+  //         departure_station: utill.Joi.string().required(), // e.g name of state
+  //         departure_date: utill.Joi.string().required(),
+  //         destination_station: utill.Joi.string().required(), // e.g name of state
+  //         flight_reg: utill.Joi.string().required(),
+  //         arrival_date: utill.Joi.string().required(),
+  //         scheduled_payload: utill.Joi.string().required(),
+  //         stod_hour: utill.Joi.string().required(),
+  //         stod_minute: utill.Joi.string().required(),
+  //         stoa: utill.Joi.string().required(),
+  //         duration: utill.Joi.string().required(),
+  //       })
+  //       .unknown();
+
+  //     const validate = loginSchema.validate(req.body);
+
+  //     if (validate.error != null) {
+  //       const errorMessage = validate.error.details
+  //         .map((i: any) => i.message)
+  //         .join(".");
+  //       return res.status(400).json(utill.helpers.sendError(errorMessage));
+  //     }
+
+  //     let user = await db.dbs.Users.findOne({ where: { uuid: req.user.uuid } });
+
+  //     if (parseInt(user.is_Admin) != 1) {
+  //       return res
+  //         .status(400)
+  //         .json(
+  //           utill.helpers.sendError(
+  //             "Unauthorised access, Kindly contact system admin"
+  //           )
+  //         );
+  //     }
+
+  //     if (
+  //       !(
+  //         user.admin_type === "Flight Operator" ||
+  //         user.admin_type === "Super Admin"
+  //       )
+  //     ) {
+  //       return res
+  //         .status(400)
+  //         .json(utill.helpers.sendError("Access denied for current admin type"));
+  //     }
+
+  //     let date = new Date();
+  //     let yr = date.getFullYear();
+  //     let month = date.getMonth();
+  //     let mm;
+  //     if (month === 0) {
+  //       mm = "01";
+  //     } else {
+  //       mm = month;
+  //     }
+  //     let day = date.getDate();
+  //     const {
+  //       departure_station,
+  //       flight_reg,
+  //       stod_hour,
+  //       stod_minute,
+  //       stoa,
+  //       duration,
+  //       scheduled_payload,
+  //       arrival_date,
+  //       departure_date,
+  //       destination_station,
+  //     } = req.body;
+
+  //     let aircraftChecker = await db.dbs.Cargo.findOne({
+  //       where: { flight_reg: flight_reg },
+  //     });
+
+  //     if (!aircraftChecker) {
+  //       return res
+  //         .status(400)
+  //         .json(
+  //           utill.helpers.sendError(
+  //             "Aircraft with provided flight registration id not found"
+  //           )
+  //         );
+  //     }
+
+  //     if (parseInt(aircraftChecker.payload) < parseInt(scheduled_payload)) {
+  //       return res
+  //         .status(400)
+  //         .json(
+  //           utill.helpers.sendError(
+  //             "scheduled payload cannot be greater than aircraft capacity"
+  //           )
+  //         );
+  //     }
+
+  //     let data = await db.dbs.Destinations.findOne({
+  //       where: { state: destination_station },
+  //     });
+
+  //     let takeOff = await db.dbs.Destinations.findOne({
+  //       where: { state: departure_station },
+  //     });
+
+  //     if (!data) {
+  //       return res
+  //         .status(400)
+  //         .json(utill.helpers.sendError("Destination does not exist"));
+  //     }
+
+  //     if (!takeOff) {
+  //       return res
+  //         .status(400)
+  //         .json(utill.helpers.sendError("Departure does not exist"));
+  //     }
+
+  //     let total =
+  //       departure_date.split("/").reverse().join("-") +
+  //       " " +
+  //       stod_hour +
+  //       ":" +
+  //       stod_minute +
+  //       ":" +
+  //       "00";
+
+  //     let checker1 = await db.dbs.ScheduleFlights.findOne({
+  //       where: {
+  //         departure_station: departure_station,
+  //         destination_station: destination_station,
+  //         flight_reg,
+  //         arrival_date: arrival_date.split("/").reverse().join("-"),
+  //         departure_date: departure_date.split("/").reverse().join("-"),
+  //         day: utill.moment().format("YYYY-MM-DD"),
+  //         stod: total,
+  //       },
+  //     });
+
+  //     if (checker1) {
+  //       return res
+  //         .status(400)
+  //         .json(
+  //           utill.helpers.sendError(
+  //             "Flight with departure station, destination station and stod already exists, kindly add another stod with atleast more than one hour from the previous flight scheduled"
+  //           )
+  //         );
+  //     }
+
+  //     let checker2 = await db.dbs.ScheduleFlights.findOne({
+  //       where: {
+  //         departure_station: departure_station,
+  //         flight_reg,
+  //         arrival_date: arrival_date.split("/").reverse().join("-"),
+  //         departure_date: departure_date.split("/").reverse().join("-"),
+  //         destination_station: destination_station,
+  //         day: utill.moment().format("YYYY-MM-DD"),
+  //       },
+  //       order: [["createdAt", "DESC"]],
+  //     });
+
+  //     if (checker2) {
+  //       if (new Date(total).getTime() - Date.parse(checker2.stod) <= 719999) {
+  //         return res
+  //           .status(400)
+  //           .json(
+  //             utill.helpers.sendError(
+  //               "Flight with departure station, destination station and stod already exists, kindly add another stod with atleast more than one hour from the previous flight scheduled"
+  //             )
+  //           );
+  //       }
+  //     }
+
+  //     let carrier = await db.dbs.Users.findOne({
+  //       where: { id: aircraftChecker.owner_id },
+  //     });
+
+  //     let dateString = departure_date.split("/").reverse().join("-");
+
+  //     var d = new Date(dateString);
+  //     var days = [
+  //       "Sunday",
+  //       "Monday",
+  //       "Tuesday",
+  //       "Wednesday",
+  //       "Thursday",
+  //       "Friday",
+  //       "Saturday",
+  //     ];
+  //     var dayName = days[d.getDay()];
+
+  //     await db.dbs.ScheduleFlights.create({
+  //       uuid: utill.uuid(),
+  //       user_id: req.user.id,
+  //       departure_station,
+  //       flight_reg,
+  //       takeoff_airport: takeOff.name_of_airport,
+  //       destination_airport: data.name_of_airport,
+  //       stod: total,
+  //       stoa,
+  //       logo_url: carrier.profileDoc,
+  //       status: "pending",
+  //       day: utill.moment().format("YYYY-MM-DD"),
+  //       duration,
+  //       aircraft_owner: aircraftChecker.owner_id,
+  //       scheduled_payload,
+  //       available_capacity: parseFloat(scheduled_payload),
+  //       arrival_date: arrival_date.split("/").reverse().join("-"),
+  //       departure_date: departure_date.split("/").reverse().join("-"),
+  //       departure_day: dayName,
+  //       destination_station,
+  //       groundHandler: data.groundHandler,
+  //       email: data.email,
+  //       phone_number: data.phone_number,
+  //     });
+
+  //     await db.dbs.AuditLogs.create({
+  //       uuid: utill.uuid(),
+  //       user_id: req.user.uuid,
+  //       description: `Admin ${req.user.first_name} ${req.user.last_name} added a flight schedule
+  // `,
+  //       data: JSON.stringify(req.body),
+  //     });
+
+  //     return res
+  //       .status(200)
+  //       .json(
+  //         utill.helpers.sendSuccess("You have successfully scheduled a flight")
+  //       );
+  //   },
+
   scheduleFlights: async (
     req: any,
     res: Response,
@@ -246,6 +478,10 @@ module.exports = {
         stod_minute: utill.Joi.string().required(),
         stoa: utill.Joi.string().required(),
         duration: utill.Joi.string().required(),
+        type: utill.Joi.string().required(),
+        dayNames: utill.Joi.array().required(),
+        dayNums: utill.Joi.array().required(),
+        end_date: utill.Joi.string().required(),
       })
       .unknown();
 
@@ -298,6 +534,10 @@ module.exports = {
       stod_minute,
       stoa,
       duration,
+      type,
+      dayNames,
+      dayNums,
+      end_date,
       scheduled_payload,
       arrival_date,
       departure_date,
@@ -348,14 +588,72 @@ module.exports = {
         .json(utill.helpers.sendError("Departure does not exist"));
     }
 
-    let total =
-      departure_date.split("/").reverse().join("-") +
-      " " +
-      stod_hour +
-      ":" +
-      stod_minute +
-      ":" +
-      "00";
+    // let total =
+    //   departure_date.split("/").reverse().join("-") +
+    //   " " +
+    //   stod_hour +
+    //   ":" +
+    //   stod_minute +
+    //   ":" +
+    //   "00";
+
+    let total = stod_hour + ":" + stod_minute + ":" + "00";
+
+    let carrier = await db.dbs.Users.findOne({
+      where: {
+        [Op.or]: {
+          id: aircraftChecker.owner_id,
+          uuid: aircraftChecker.owner_id,
+        },
+      },
+    });
+
+    if (!carrier) {
+      return res.status(400).json(utill.helpers.sendError("Carrier not found"));
+    }
+
+    let dateString = departure_date.split("/").reverse().join("-");
+
+    var d = new Date(dateString);
+    var days = [
+      "Sunday",
+      "Monday",
+      "Tuesday",
+      "Wednesday",
+      "Thursday",
+      "Friday",
+      "Saturday",
+    ];
+    var dayName = days[d.getDay()];
+
+    let arr = [];
+    if (type === "daily") {
+      let dayName = [
+        "Sunday",
+        "Monday",
+        "Tuesday",
+        "Wednesday",
+        "Thursday",
+        "Friday",
+        "Saturday",
+      ];
+      let options = { startDate: departure_date, end_date, dayName };
+      arr = await utill.helpers.getDatesOnDaysOfWeek(options);
+    } else if (type === "bi-weekly") {
+      let options = { startDate: departure_date, end_date, dayNames };
+      arr = await utill.helpers.getDatesOnDaysOfWeek(options);
+    } else if (type === "weekly") {
+      let options = { startDate: departure_date, end_date, dayNames };
+      arr = await utill.helpers.getDatesOnDaysOfWeek(options);
+    } else if (type === "monthy") {
+      let options = { startDate: departure_date, end_date, dayNums };
+      arr = await utill.helpers.getMonthlyDate(options);
+    } else if (type === "yearly") {
+      let options = { startDate: departure_date, end_date, dayNums };
+      arr = await utill.helpers.getYearlyDate(options);
+    } else if (type === "once") {
+      arr = departure_date;
+    }
 
     let checker1 = await db.dbs.ScheduleFlights.findOne({
       where: {
@@ -363,7 +661,7 @@ module.exports = {
         destination_station: destination_station,
         flight_reg,
         arrival_date: arrival_date.split("/").reverse().join("-"),
-        departure_date: departure_date.split("/").reverse().join("-"),
+        departure_date: JSON.stringify(arr),
         day: utill.moment().format("YYYY-MM-DD"),
         stod: total,
       },
@@ -384,7 +682,7 @@ module.exports = {
         departure_station: departure_station,
         flight_reg,
         arrival_date: arrival_date.split("/").reverse().join("-"),
-        departure_date: departure_date.split("/").reverse().join("-"),
+        departure_date: JSON.stringify(arr),
         destination_station: destination_station,
         day: utill.moment().format("YYYY-MM-DD"),
       },
@@ -403,24 +701,6 @@ module.exports = {
       }
     }
 
-    let carrier = await db.dbs.Users.findOne({
-      where: { id: aircraftChecker.owner_id },
-    });
-
-    let dateString = departure_date.split("/").reverse().join("-");
-
-    var d = new Date(dateString);
-    var days = [
-      "Sunday",
-      "Monday",
-      "Tuesday",
-      "Wednesday",
-      "Thursday",
-      "Friday",
-      "Saturday",
-    ];
-    var dayName = days[d.getDay()];
-
     await db.dbs.ScheduleFlights.create({
       uuid: utill.uuid(),
       user_id: req.user.id,
@@ -438,10 +718,11 @@ module.exports = {
       scheduled_payload,
       available_capacity: parseFloat(scheduled_payload),
       arrival_date: arrival_date.split("/").reverse().join("-"),
-      departure_date: departure_date.split("/").reverse().join("-"),
+      departure_date: JSON.stringify(arr),
       departure_day: dayName,
       destination_station,
       groundHandler: data.groundHandler,
+      schedule_type: type,
       email: data.email,
       phone_number: data.phone_number,
     });
