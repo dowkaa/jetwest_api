@@ -203,16 +203,6 @@ module.exports = {
         );
     }
 
-    if (v.departure_date !== depature_date) {
-      return res
-        .status(400)
-        .json(
-          util.helpers.sendError(
-            `Scheduled flight not available for the departure date entered kindly reschedule for ${v.departure_date}`
-          )
-        );
-    }
-
     if (parseFloat(v.available_capacity) < parseInt(total_weight)) {
       return res
         .status(400)
