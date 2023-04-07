@@ -637,21 +637,69 @@ module.exports = {
         "Friday",
         "Saturday",
       ];
+      if (!(departure_date && end_date)) {
+        return res
+          .status(400)
+          .json(
+            utill.helpers.sendError(`departure date and end date are required`)
+          );
+      }
       let options = { startDate: departure_date, end_date, dayName };
       arr = await utill.helpers.getDatesOnDaysOfWeek(options);
     } else if (type === "bi-weekly") {
+      if (!(departure_date && end_date && dayName)) {
+        return res
+          .status(400)
+          .json(
+            utill.helpers.sendError(
+              `departure date, end date and names of days are required`
+            )
+          );
+      }
       let options = { startDate: departure_date, end_date, dayNames };
       arr = await utill.helpers.getDatesOnDaysOfWeek(options);
     } else if (type === "weekly") {
+      if (!(departure_date && end_date && dayName)) {
+        return res
+          .status(400)
+          .json(
+            utill.helpers.sendError(
+              `departure date, end date and names of days are required`
+            )
+          );
+      }
       let options = { startDate: departure_date, end_date, dayNames };
       arr = await utill.helpers.getDatesOnDaysOfWeek(options);
     } else if (type === "monthy") {
+      if (!(departure_date && end_date && dayNums)) {
+        return res
+          .status(400)
+          .json(
+            utill.helpers.sendError(
+              `departure date, end date and dates of days are required`
+            )
+          );
+      }
       let options = { startDate: departure_date, end_date, dayNums };
       arr = await utill.helpers.getMonthlyDate(options);
     } else if (type === "yearly") {
+      if (!(departure_date && end_date && dayNums)) {
+        return res
+          .status(400)
+          .json(
+            utill.helpers.sendError(
+              `departure date, end date and dates of days are required`
+            )
+          );
+      }
       let options = { startDate: departure_date, end_date, dayNums };
       arr = await utill.helpers.getYearlyDate(options);
     } else if (type === "once") {
+      if (!departure_date) {
+        return res
+          .status(400)
+          .json(utill.helpers.sendError(`departure date is required`));
+      }
       arr = departure_date;
     }
 
