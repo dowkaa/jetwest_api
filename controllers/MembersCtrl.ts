@@ -368,7 +368,7 @@ module.exports = {
           insurance,
           sur_charge: price * (parseFloat(route.sur_charge) / 100),
           taxes: price * (parseFloat(route.tax) / 100),
-          book_type: "Personal",
+          booking_type: "Personal",
           status: "pending",
           shipment_routeId: route.id,
           scan_code,
@@ -572,6 +572,15 @@ module.exports = {
             )
           );
       }
+
+       await db.dbs.ShippingItems.update(
+         { reference: payment_ref },
+         {
+           where: {
+             shipment_num: shipment_num,
+           },
+         }
+       );
 
       let response = await util.helpers.validateTransaction(option, "members");
       util.helpers.checkBaggageConfirmation(option);

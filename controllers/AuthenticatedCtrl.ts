@@ -516,7 +516,6 @@ module.exports = {
     }
 
     let arr = JSON.parse(v.departure_date);
-    
 
     if (!arr.includes(items[0].depature_date)) {
       return res
@@ -675,7 +674,7 @@ module.exports = {
           insurance,
           sur_charge: price * (parseFloat(route.sur_charge) / 100),
           taxes: price * (parseFloat(route.tax) / 100),
-          book_type: "Personal",
+          booking_type: "Personal",
           status: "pending",
           shipment_routeId: route.id,
           scan_code,
@@ -736,7 +735,7 @@ module.exports = {
           insurance,
           sur_charge: price * (parseFloat(route.sur_charge) / 100),
           taxes: price * (parseFloat(route.tax) / 100),
-          book_type: "Personal",
+          booking_type: "Personal",
           status: "pending",
           shipment_routeId: route.id,
           scan_code,
@@ -1888,7 +1887,14 @@ module.exports = {
         "verification"
       );
 
-      console.log({ response });
+      await db.dbs.ShippingItems.update(
+        { reference: reference },
+        {
+          where: {
+            shipment_num: shipment_num,
+          },
+        }
+      );
 
       if (response === "success") {
         await db.dbs.CustomerAuditLog.create({
