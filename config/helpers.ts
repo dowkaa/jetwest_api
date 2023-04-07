@@ -1097,19 +1097,34 @@ const addShipmentAndCreditUser = async (
     // if no available flight then save the data to a table for pending luggage and sent mail to admin that will
   }
 
+  let arr = JSON.parse(v.departure_date);
+
+  if (!arr.includes(items[0].depature_date)) {
+    let resp = {
+      status: 400,
+      message: `Scheduled flight not available for the departure date entered kindly reschedule for another departure date`,
+    };
+
+    return resp;
+  }
+
+  if (
+    Date.parse(items[0].depature_date + " " + stod) - new Date().getTime() <=
+    1079999
+  ) {
+    let resp = {
+      status: 400,
+      message: "Flight not available for booking, already in transit",
+    };
+
+    return resp;
+  }
+
   if (v.available_capacity < parseInt(total_weight)) {
     let resp = {
       status: 400,
       message:
         "Flight not availbale to carry total weight, kindly book another flight or contact customer support",
-    };
-    return resp;
-  }
-
-  if (Date.parse(stod) - new Date().getTime() <= 1079999) {
-    let resp = {
-      status: 400,
-      message: "Flight not available for booking, already in transit",
     };
     return resp;
   }
@@ -1261,6 +1276,7 @@ const addShipmentAndCreditUser = async (
         price: price,
         category,
         ba_code_url,
+        stod: items[0].depature_date + " " + stod,
         promo_code: promo_code ? promo_code : null,
         shipperName: req.user.first_name + " " + req.user.last_name,
         organisation: req.user.organisation,
@@ -1303,6 +1319,7 @@ const addShipmentAndCreditUser = async (
         ratePerKg: route.ratePerKg,
         logo_url: v.logo_url,
         arrival_date: v.arrival_date,
+        stod: items[0].depature_date + " " + stod,
         booking_reference: shipment_ref,
         volumetric_weight,
         company_name: req.user.company_name,
@@ -1447,19 +1464,34 @@ const logPendingShipment = async (req: any, res: Response, item: any) => {
     // if no available flight then save the data to a table for pending luggage and sent mail to admin that will
   }
 
+  let arr = JSON.parse(v.departure_date);
+
+  if (!arr.includes(items[0].depature_date)) {
+    let resp = {
+      status: 400,
+      message: `Scheduled flight not available for the departure date entered kindly reschedule for another departure date`,
+    };
+
+    return resp;
+  }
+
+  if (
+    Date.parse(items[0].depature_date + " " + stod) - new Date().getTime() <=
+    1079999
+  ) {
+    let resp = {
+      status: 400,
+      message: "Flight not available for booking, already in transit",
+    };
+
+    return resp;
+  }
+
   if (v.available_capacity < parseInt(total_weight)) {
     let resp = {
       status: 400,
       message:
         "Flight not availbale to carry total weight, kindly book another flight or contact customer support",
-    };
-    return resp;
-  }
-
-  if (Date.parse(stod) - new Date().getTime() <= 1079999) {
-    let resp = {
-      status: 400,
-      message: "Flight not available for booking, already in transit",
     };
     return resp;
   }
@@ -1605,6 +1637,7 @@ const logPendingShipment = async (req: any, res: Response, item: any) => {
         arrival_date: v.arrival_date,
         booking_reference: shipment_ref,
         volumetric_weight,
+        stod: items[0].depature_date + " " + stod,
         company_name: req.user.company_name,
         payment_status: "pending",
         price: price,
@@ -1634,6 +1667,7 @@ const logPendingShipment = async (req: any, res: Response, item: any) => {
         reference: payment_ref,
         value,
         pickup_location,
+        stod: items[0].depature_date + " " + stod,
         chargeable_weight,
         cargo_id: cargo.id,
         destination,

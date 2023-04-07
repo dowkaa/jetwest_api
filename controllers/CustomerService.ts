@@ -628,7 +628,22 @@ module.exports = {
         );
     }
 
-    if (Date.parse(stod) - new Date().getTime() <= 1079999) {
+    let arr = JSON.parse(v.departure_date);
+
+    if (!arr.includes(items[0].depature_date)) {
+      return res
+        .status(400)
+        .json(
+          util.helpers.sendError(
+            `Scheduled flight not available for the departure date entered kindly reschedule for another departure date`
+          )
+        );
+    }
+
+    if (
+      Date.parse(items[0].depature_date + " " + stod) - new Date().getTime() <=
+      1079999
+    ) {
       return res
         .status(400)
         .json(
@@ -776,6 +791,7 @@ module.exports = {
         volumetric_weight,
         payment_status: "pending",
         price: price,
+        stod: items[0].depature_date + " " + stod,
         category,
         company_name: req.user.company_name,
         ba_code_url,

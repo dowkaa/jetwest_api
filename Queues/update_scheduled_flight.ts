@@ -35,11 +35,30 @@ const addJob = async (data: any) => {
     where: { uuid: data.uuid },
   });
 
-  let date = utils.moment().add(1, "hour").format("YYYY-MM-DD HH:mm:ss");
+  let date = utils.moment().add(1, "hour").format("YYYY-MM-DD");
 
-  if (Date.parse(item.stod) - Date.parse(date) <= 7200000) {
-    item.status = "In progress";
+  let arr = JSON.parse(item.departure_date);
+  let arr2 = [];
+  let value;
+  // let arr2 = [];
+
+  if (arr.length === 1) {
+    if (Date.parse(arr[0]) - Date.parse(date) <= 7200000) {
+      item.status = "In progress";
+      await item.save();
+    }
+
+    return;
+  } else {
+    for (let i = 0; i < arr.length; i++) {
+      if (Date.parse(arr[i]) - Date.parse(date) >= 7200000) {
+        arr2.push(arr[i]);
+      }
+    }
+    item.departure_date = JSON.stringify(arr2);
     await item.save();
+
+    return;
   }
 };
 

@@ -491,7 +491,8 @@ module.exports = {
     res: Response,
     next: NextFunction
   ) => {
-    const { pickup_location, destination, stod, total_weight } = req.query;
+    const { pickup_location, destination, stod, total_weight, date } =
+      req.query;
 
     if (!(pickup_location && destination && stod && total_weight)) {
       return res
@@ -518,6 +519,28 @@ module.exports = {
         .json(
           utilz.helpers.sendError(
             "Flight for destination and time not available"
+          )
+        );
+    }
+
+    let arr = JSON.parse(v.departure_date);
+
+    if (!arr.includes(date)) {
+      return res
+        .status(400)
+        .json(
+          utilz.helpers.sendError(
+            `Scheduled flight not available for the departure date entered kindly reschedule for another departure date`
+          )
+        );
+    }
+
+    if (Date.parse(date + " " + stod) - new Date().getTime() <= 1079999) {
+      return res
+        .status(400)
+        .json(
+          utilz.helpers.sendError(
+            "Flight not available for booking, already in transit"
           )
         );
     }

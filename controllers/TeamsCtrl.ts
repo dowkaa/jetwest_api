@@ -579,6 +579,31 @@ module.exports = {
       // if no available flight then save the data to a table for pending luggage and sent mail to admin that will
     }
 
+    let arr = JSON.parse(v.departure_date);
+
+    if (!arr.includes(items[0].depature_date)) {
+      return res
+        .status(400)
+        .json(
+          utill.helpers.sendError(
+            `Scheduled flight not available for the departure date entered kindly reschedule for another departure date`
+          )
+        );
+    }
+
+    if (
+      Date.parse(items[0].depature_date + " " + stod) - new Date().getTime() <=
+      1079999
+    ) {
+      return res
+        .status(400)
+        .json(
+          utill.helpers.sendError(
+            "Flight not available for booking, already in transit"
+          )
+        );
+    }
+
     if (v.available_capacity < parseInt(total_weight)) {
       return res
         .status(400)
@@ -589,7 +614,10 @@ module.exports = {
         );
     }
 
-    if (Date.parse(stod) - new Date().getTime() <= 1079999) {
+    if (
+      Date.parse(items[0].depature_date + " " + stod) - new Date().getTime() <=
+      1079999
+    ) {
       return res
         .status(400)
         .json(
@@ -741,6 +769,7 @@ module.exports = {
           booking_reference: shipment_ref,
           volumetric_weight,
           company_name: req.user.company_name,
+          stod: items[0].depature_date + " " + stod,
           payment_status: "pending",
           price: price,
           category,
@@ -782,6 +811,7 @@ module.exports = {
           status: "pending",
           shipment_routeId: route.id,
           scan_code,
+          stod: items[0].depature_date + " " + stod,
           weight,
           ratePerKg: route.ratePerKg,
           logo_url: v.logo_url,

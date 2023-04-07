@@ -505,18 +505,33 @@ module.exports = {
         );
     }
 
-    if (util.moment(v))
-      if (parseFloat(v.available_capacity) <= 0) {
-        return res
-          .status(400)
-          .json(
-            util.helpers.sendError(
-              "Flight not availbale to carry total weight, kindly book another flight or contact customer support"
-            )
-          );
-      }
+    if (parseFloat(v.available_capacity) <= 0) {
+      return res
+        .status(400)
+        .json(
+          util.helpers.sendError(
+            "Flight not availbale to carry total weight, kindly book another flight or contact customer support"
+          )
+        );
+    }
 
-    if (Date.parse(stod) - new Date().getTime() <= 1079999) {
+    let arr = JSON.parse(v.departure_date);
+    
+
+    if (!arr.includes(items[0].depature_date)) {
+      return res
+        .status(400)
+        .json(
+          util.helpers.sendError(
+            `Scheduled flight not available for the departure date entered kindly reschedule for another departure date`
+          )
+        );
+    }
+
+    if (
+      Date.parse(items[0].depature_date + " " + stod) - new Date().getTime() <=
+      1079999
+    ) {
       return res
         .status(400)
         .json(
@@ -648,6 +663,7 @@ module.exports = {
           shipment_num,
           reference: payment_ref,
           value,
+          stod: items[0].depature_date + " " + stod,
           pickup_location,
           chargeable_weight,
           cargo_id: cargo.id,
@@ -709,6 +725,7 @@ module.exports = {
           reference: payment_ref,
           value,
           pickup_location,
+          stod: items[0].depature_date + " " + stod,
           chargeable_weight,
           cargo_id: cargo.id,
           destination,

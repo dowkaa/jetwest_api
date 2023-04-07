@@ -179,6 +179,31 @@ module.exports = {
       // if no available flight then save the data to a table for pending luggage and sent mail to admin that will
     }
 
+    let arr = JSON.parse(v.departure_date);
+
+    if (!arr.includes(items[0].depature_date)) {
+      return res
+        .status(400)
+        .json(
+          util.helpers.sendError(
+            `Scheduled flight not available for the departure date entered kindly reschedule for another departure date`
+          )
+        );
+    }
+
+    if (
+      Date.parse(items[0].depature_date + " " + stod) - new Date().getTime() <=
+      1079999
+    ) {
+      return res
+        .status(400)
+        .json(
+          util.helpers.sendError(
+            "Flight not available for booking, already in transit"
+          )
+        );
+    }
+
     if (parseFloat(v.available_capacity) - parseInt(total_weight) < 0) {
       return res
         .status(400)
@@ -199,7 +224,10 @@ module.exports = {
         );
     }
 
-    if (Date.parse(stod) - new Date().getTime() <= 1079999) {
+    if (
+      Date.parse(items[0].depature_date + " " + stod) - new Date().getTime() <=
+      1079999
+    ) {
       return res
         .status(400)
         .json(
@@ -357,6 +385,7 @@ module.exports = {
           price: price,
           category,
           ba_code_url,
+          stod: items[0].depature_date + " " + stod,
           promo_code: promo_code ? promo_code : null,
           shipperName: req.user.first_name + " " + req.user.last_name,
           organisation: req.user.organisation,
@@ -382,6 +411,7 @@ module.exports = {
           pickup_location,
           chargeable_weight,
           cargo_id: cargo.id,
+          stod: items[0].depature_date + " " + stod,
           destination,
           depature_date: depature_date.split("/").reverse().join("-"),
           width,
