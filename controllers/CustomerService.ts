@@ -661,6 +661,7 @@ module.exports = {
 
     for (const item of items) {
       let price;
+      let insurance;
       const {
         type,
         width,
@@ -713,6 +714,7 @@ module.exports = {
         let price2 = price * (parseFloat(route.tax) / 100);
         let price3 = value * (parseFloat(route.insurance) / 100);
         let totalPrice = price + price1 + price2 + price3;
+        insurance = price3;
         price = totalPrice;
       } else {
         price = chargeable_weight * parseFloat(route.ratePerKg);
@@ -777,8 +779,9 @@ module.exports = {
         width,
         length: length,
         height,
-        sur_charge: route.sur_charge,
-        taxes: route.tax,
+        insurance,
+        sur_charge: price * (parseFloat(route.sur_charge) / 100),
+        taxes: price * (parseFloat(route.tax) / 100),
         status: "pending",
         shipment_routeId: route.id,
         scan_code,

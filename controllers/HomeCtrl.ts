@@ -421,6 +421,7 @@ module.exports = {
         .status(400)
         .json(utilz.helpers.sendError("Enter a valid search parameter"));
     }
+
     let checker = await db.dbs.Promotions.findOne({ where: { code: code } });
 
     if (!checker) {

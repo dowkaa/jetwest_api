@@ -62,7 +62,7 @@ module.exports = {
             return res.sendStatus(200);
           }
 
-          var user = await db.User.findOne({
+          var user = await db.Users.findOne({
             where: { email: event.data.customer.email },
           });
 
