@@ -479,8 +479,8 @@ module.exports = {
         stoa: utill.Joi.string().required(),
         duration: utill.Joi.string().required(),
         type: utill.Joi.string().required(),
-        dayNames: utill.Joi.array().required(),
-        dayNums: utill.Joi.array().required(),
+        dayNames: utill.Joi.array().allow(""),
+        dayNums: utill.Joi.array().allow(""),
         end_date: utill.Joi.string().required(),
       })
       .unknown();
@@ -700,7 +700,7 @@ module.exports = {
           .status(400)
           .json(utill.helpers.sendError(`departure date is required`));
       }
-      arr = departure_date;
+      arr = [departure_date];
     }
 
     let checker1 = await db.dbs.ScheduleFlights.findOne({
