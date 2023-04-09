@@ -671,7 +671,7 @@ module.exports = {
       let options = { startDate: departure_date, end_date, dayNames };
       arr = await utill.helpers.getDatesOnDaysOfWeek(options);
     } else if (type === "monthy") {
-      if (!(departure_date && end_date && dayNums)) {
+      if (!(departure_date && end_date && dayNums.length > 0)) {
         return res
           .status(400)
           .json(
@@ -683,7 +683,7 @@ module.exports = {
       let options = { startDate: departure_date, end_date, dayNums };
       arr = await utill.helpers.getMonthlyDate(options);
     } else if (type === "yearly") {
-      if (!(departure_date && end_date && dayNums)) {
+      if (!(departure_date && end_date && dayNums.length > 0)) {
         return res
           .status(400)
           .json(
