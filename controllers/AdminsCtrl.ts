@@ -628,7 +628,7 @@ module.exports = {
 
     let arr = [];
     if (type === "daily") {
-      let dayNames = [
+      let dayNamez = [
         "Sunday",
         "Monday",
         "Tuesday",
@@ -644,10 +644,10 @@ module.exports = {
             utill.helpers.sendError(`departure date and end date are required`)
           );
       }
-      let options = { startDate: departure_date, end_date, dayNames };
+      let options = { startDate: departure_date, end_date, dayNamez };
       arr = await utill.helpers.getDatesOnDaysOfWeek(options);
     } else if (type === "bi-weekly") {
-      if (!(departure_date && end_date && dayName)) {
+      if (!(departure_date && end_date && dayNames)) {
         return res
           .status(400)
           .json(
@@ -659,7 +659,7 @@ module.exports = {
       let options = { startDate: departure_date, end_date, dayNames };
       arr = await utill.helpers.getDatesOnDaysOfWeek(options);
     } else if (type === "weekly") {
-      if (!(departure_date && end_date && dayName)) {
+      if (!(departure_date && end_date && dayNames)) {
         return res
           .status(400)
           .json(
