@@ -628,6 +628,7 @@ module.exports = {
 
     let arr = [];
     if (type === "daily") {
+      console.log("11111111111111111111111111111111");
       let dayNamez = [
         "Sunday",
         "Monday",
@@ -647,6 +648,7 @@ module.exports = {
       let options = { startDate: departure_date, end_date, dayNamez };
       arr = await utill.helpers.getDatesOnDaysOfWeek(options);
     } else if (type === "bi-weekly") {
+      console.log("22222222222222222222222222222222");
       if (!(departure_date && end_date && dayNames.length > 0)) {
         return res
           .status(400)
@@ -659,6 +661,7 @@ module.exports = {
       let options = { startDate: departure_date, end_date, dayNames };
       arr = await utill.helpers.getDatesOnDaysOfWeek(options);
     } else if (type === "weekly") {
+      console.log("3333333333333333333333333333333");
       if (!(departure_date && end_date && dayNames.length > 0)) {
         return res
           .status(400)
@@ -670,7 +673,11 @@ module.exports = {
       }
       let options = { startDate: departure_date, end_date, dayNames };
       arr = await utill.helpers.getDatesOnDaysOfWeek(options);
-    } else if (type === "monthy") {
+    } else if (type === "monthly") {
+      console.log({
+        h: "4444444444444444444444444444444444444",
+        day: dayNums.length,
+      });
       if (!(departure_date && end_date && dayNums.length > 0)) {
         return res
           .status(400)
@@ -683,6 +690,7 @@ module.exports = {
       let options = { startDate: departure_date, end_date, dayNums };
       arr = await utill.helpers.getMonthlyDate(options);
     } else if (type === "yearly") {
+      console.log("555555555555555555555555555555555555555555");
       if (!(departure_date && end_date && dayNums.length > 0)) {
         return res
           .status(400)
@@ -695,6 +703,7 @@ module.exports = {
       let options = { startDate: departure_date, end_date, dayNums };
       arr = await utill.helpers.getYearlyDate(options);
     } else if (type === "once") {
+      console.log("66666666666666666666666666666666666666666");
       if (!departure_date) {
         return res
           .status(400)
@@ -702,6 +711,7 @@ module.exports = {
       }
       arr = [departure_date];
     }
+    console.log({ type, dayNums });
 
     let checker1 = await db.dbs.ScheduleFlights.findOne({
       where: {
