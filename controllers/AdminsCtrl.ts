@@ -597,6 +597,16 @@ module.exports = {
     //   ":" +
     //   "00";
 
+    let starter = utill.moment(departure_date).format("YYYY-MM-DD");
+    let later = utill.moment(end_date).format("YYYY-MM-DD");
+    let now = utill.moment().format("YYYY-MM-DD");
+
+    if (starter < now || later < now) {
+      return res
+        .status(400)
+        .json(utill.helpers.sendError("Dates cannot be in the past"));
+    }
+
     let total = stod_hour + ":" + stod_minute + ":" + "00";
 
     let carrier = await db.dbs.Users.findOne({
@@ -628,7 +638,6 @@ module.exports = {
 
     let arr = [];
     if (type === "daily") {
-      console.log("11111111111111111111111111111111");
       let dayNamez = [
         "Sunday",
         "Monday",
@@ -645,10 +654,13 @@ module.exports = {
             utill.helpers.sendError(`departure date and end date are required`)
           );
       }
-      let options = { startDate: departure_date, end_date, dayNamez };
+      let options = {
+        startDate: utill.moment(departure_date).format("YYYY-MM-DD"),
+        end_date: utill.moment(end_date).format("YYYY-MM-DD"),
+        dayNames: dayNamez,
+      };
       arr = await utill.helpers.getDatesOnDaysOfWeek(options);
     } else if (type === "bi-weekly") {
-      console.log("22222222222222222222222222222222");
       if (!(departure_date && end_date && dayNames.length > 0)) {
         return res
           .status(400)
@@ -658,10 +670,14 @@ module.exports = {
             )
           );
       }
-      let options = { startDate: departure_date, end_date, dayNames };
+
+      let options = {
+        startDate: utill.moment(departure_date).format("YYYY-MM-DD"),
+        end_date: utill.moment(end_date).format("YYYY-MM-DD"),
+        dayNames,
+      };
       arr = await utill.helpers.getDatesOnDaysOfWeek(options);
     } else if (type === "weekly") {
-      console.log("3333333333333333333333333333333");
       if (!(departure_date && end_date && dayNames.length > 0)) {
         return res
           .status(400)
@@ -671,13 +687,13 @@ module.exports = {
             )
           );
       }
-      let options = { startDate: departure_date, end_date, dayNames };
+      let options = {
+        startDate: utill.moment(departure_date).format("YYYY-MM-DD"),
+        end_date: utill.moment(end_date).format("YYYY-MM-DD"),
+        dayNames,
+      };
       arr = await utill.helpers.getDatesOnDaysOfWeek(options);
     } else if (type === "monthly") {
-      console.log({
-        h: "4444444444444444444444444444444444444",
-        day: dayNums.length,
-      });
       if (!(departure_date && end_date && dayNums.length > 0)) {
         return res
           .status(400)
@@ -687,10 +703,13 @@ module.exports = {
             )
           );
       }
-      let options = { startDate: departure_date, end_date, dayNums };
+      let options = {
+        startDate: utill.moment(departure_date).format("YYYY-MM-DD"),
+        end_date: utill.moment(end_date).format("YYYY-MM-DD"),
+        dayNums,
+      };
       arr = await utill.helpers.getMonthlyDate(options);
     } else if (type === "yearly") {
-      console.log("555555555555555555555555555555555555555555");
       if (!(departure_date && end_date && dayNums.length > 0)) {
         return res
           .status(400)
@@ -700,18 +719,20 @@ module.exports = {
             )
           );
       }
-      let options = { startDate: departure_date, end_date, dayNums };
+      let options = {
+        startDate: utill.moment(departure_date).format("YYYY-MM-DD"),
+        end_date: utill.moment(end_date).format("YYYY-MM-DD"),
+        dayNums,
+      };
       arr = await utill.helpers.getYearlyDate(options);
     } else if (type === "once") {
-      console.log("66666666666666666666666666666666666666666");
       if (!departure_date) {
         return res
           .status(400)
           .json(utill.helpers.sendError(`departure date is required`));
       }
-      arr = [departure_date];
+      arr = [utill.moment(departure_date).format("YYYY-MM-DD")];
     }
-    console.log({ type, dayNums });
 
     let checker1 = await db.dbs.ScheduleFlights.findOne({
       where: {
