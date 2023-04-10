@@ -637,6 +637,18 @@ module.exports = {
     var dayName = days[d.getDay()];
 
     let arr = [];
+    if (
+      !utill.moment(departure_date).isValid() ||
+      !utill.moment(end_date).isValid()
+    ) {
+      return res
+        .status(400)
+        .json(
+          utill.helpers.sendError(
+            `Kindly parse a valid date in the format YYYY-MM-DD`
+          )
+        );
+    }
     if (type === "daily") {
       let dayNamez = [
         "Sunday",
