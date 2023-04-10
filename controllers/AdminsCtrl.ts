@@ -732,6 +732,14 @@ module.exports = {
           .json(utill.helpers.sendError(`departure date is required`));
       }
       arr = [utill.moment(departure_date).format("YYYY-MM-DD")];
+    } else {
+      return res
+        .status(400)
+        .json(
+          utill.helpers.sendError(
+            `Kindly add a valid schedule type: either once daily, weekly, bi-weekly, monthly or yearly. Thanks`
+          )
+        );
     }
 
     let checker1 = await db.dbs.ScheduleFlights.findOne({
