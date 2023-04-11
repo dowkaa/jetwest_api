@@ -42,6 +42,7 @@ router.get("/api-docs", HomeCtrl.getApiDocs);
 
 // shipment routes
 router.get("/routes", HomeCtrl.shipmentRoutes);
+router.get("/get-stod", HomeCtrl.getStod);
 
 // get in touch
 router.post("/get-in-touch", HomeCtrl.getInTouch);

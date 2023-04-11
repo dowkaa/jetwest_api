@@ -1,6 +1,7 @@
 const utilz = require("../utils/packages");
 import { Request, Response, NextFunction } from "express";
 const db = require("../database/mysql");
+const { Op, QueryTypes } = require("sequelize");
 
 module.exports = {
   getFags: async (req: Request, res: Response, next: NextFunction) => {
@@ -557,6 +558,42 @@ module.exports = {
     }
 
     return res.status(200).json(utilz.helpers.sendSuccess("Flight available"));
+  },
+
+  getStod: async (
+    req: any,
+    res: Response,
+    next: NextFunction
+  ): Promise<Response> => {
+    const { pickup_location, destination, date } = req.query;
+
+    if (!(pickup_location && destination && date)) {
+      return res
+        .status(400)
+        .json(
+          utilz.helpers.sendError(
+            "Kindly add valid pick up location, destintion stod and total weight"
+          )
+        );
+    }
+
+    let v = await db.dbs.ScheduleFlights.findAll({
+      where: {
+        departure_station: pickup_location,
+        destination_station: destination,
+      },
+    });
+    let arr = [];
+
+    if (v.length > 0) {
+      for (const item of v) {
+        if (JSON.parse(item.departure_date).includes(date)) {
+          arr.push(item);
+        }
+      }
+    }
+
+    return res.status(200).json({ arr });
   },
 
   test: async (
