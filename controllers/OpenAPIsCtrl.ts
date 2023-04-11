@@ -138,7 +138,7 @@ module.exports = {
       // if no available flight then save the data to a table for pending luggage and sent mail to admin that will
     }
 
-    if (v.available_capacity < parseInt(total_weight)) {
+    if (parseFloat(v.available_capacity) <= 0) {
       return res
         .status(400)
         .json(
@@ -148,7 +148,32 @@ module.exports = {
         );
     }
 
-    if (Date.parse(stod) - new Date().getTime() <= 1079999) {
+    if (v.available_capacity - parseInt(total_weight) < 0) {
+      return res
+        .status(400)
+        .json(
+          util.helpers.sendError(
+            "Flight not availbale to carry total weight, kindly book another flight or contact customer support"
+          )
+        );
+    }
+
+    let arr = JSON.parse(v.departure_date);
+
+    if (!arr.includes(items[0].depature_date)) {
+      return res
+        .status(400)
+        .json(
+          util.helpers.sendError(
+            `Scheduled flight not available for the departure date entered kindly reschedule for another departure date`
+          )
+        );
+    }
+
+    if (
+      Date.parse(items[0].depature_date + " " + stod) - new Date().getTime() <=
+      1079999
+    ) {
       return res
         .status(400)
         .json(

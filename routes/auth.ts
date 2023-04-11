@@ -66,7 +66,6 @@ routerr.get(
 
 routerr.get(
   "/trackShipment",
-  [jwtMiddleWare, signatureSignerMiddleware],
   AuthenticatedCtrl.trackShipment
 );
 

@@ -495,7 +495,7 @@ module.exports = {
       // if no available flight then save the data to a table for pending luggage and sent mail to admin that will
     }
 
-    if (parseFloat(v.available_capacity) < parseInt(total_weight)) {
+    if (parseFloat(v.available_capacity) - parseInt(total_weight) < 0) {
       return res
         .status(400)
         .json(
