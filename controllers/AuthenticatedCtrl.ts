@@ -995,7 +995,7 @@ module.exports = {
       limit: limit,
       where: {
         user_id: { [Op.or]: [req.user.uuid, req.user.id] },
-        status: "pending",
+        status: "upcoming",
         payment_status: "SUCCESS",
       },
       order: [["id", "DESC"]],
@@ -1249,7 +1249,7 @@ module.exports = {
       limit: limit,
       where: {
         agent_id: { [Op.or]: [req.user.uuid, req.user.id] },
-        status: "pending",
+        status: "upcoming",
         payment_status: "SUCCESS",
       },
       order: [["id", "DESC"]],
@@ -1875,6 +1875,7 @@ module.exports = {
           .status(400)
           .json(util.helpers.sendError("payment reference is required."));
       }
+      
       const option = {
         reference: reference,
         shipment_num,
@@ -1882,6 +1883,7 @@ module.exports = {
         company_name: req.user.company_name,
         customer_id: req.user.customer_id,
       };
+
       let response = await util.helpers.validateTransaction(
         option,
         "verification"

@@ -1002,6 +1002,15 @@ module.exports = {
         { where: { shipment_num: shipment_num } }
       );
 
+      await db.dbs.ShippingItems.update(
+        { status: "upcoming" },
+        {
+          where: {
+            shipment_num: shipment_num,
+          },
+        }
+      );
+
       await db.dbs.Transactions.update(
         { status: "success" },
         { where: { shipment_no: shipment_num } }

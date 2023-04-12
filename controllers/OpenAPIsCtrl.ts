@@ -22,6 +22,7 @@ module.exports = {
         total_weight: util.Joi.number().required(),
         stod: util.Joi.string().required(),
         total_amount: util.Joi.number().required(),
+        agreement: util.Joi.boolean().required(),
         agent_id: util.Joi.string().allow(""),
         reciever_firstname: util.Joi.string().required(),
         reciever_lastname: util.Joi.string().required(),
@@ -74,6 +75,7 @@ module.exports = {
       stod,
       total_weight,
       agent_id,
+      agreement,
       payment_ref,
       total_amount,
       reciever_email,
@@ -84,9 +86,19 @@ module.exports = {
       reciever_secMobile,
     } = req.body;
 
-    let userChecker = await db.dbs.Users.findOne({
-      where: { uuid: req.user.uuid },
-    });
+    if (!agreement) {
+      return res
+        .status(400)
+        .json(
+          util.helpers.sendError(
+            "Terms and Conditions of shipping agreements must be accepted"
+          )
+        );
+      
+    }
+      let userChecker = await db.dbs.Users.findOne({
+        where: { uuid: req.user.uuid },
+      });
 
     if (userChecker.type !== "Shipper") {
       return res

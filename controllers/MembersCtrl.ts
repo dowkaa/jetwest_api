@@ -19,6 +19,7 @@ module.exports = {
         first_name: util.Joi.string().required(),
         last_name: util.Joi.string().required(),
         depature_date: util.Joi.string().required(),
+        agreement: util.Joi.boolean().required(),
         mobile: util.Joi.string().required(),
         address: util.Joi.string().required(),
         country: util.Joi.string().required(),
@@ -73,6 +74,7 @@ module.exports = {
       total_weight,
       agent_id,
       payment_ref,
+      agreement,
       reciever_email,
       reciever_firstname,
       reciever_lastname,
@@ -98,6 +100,9 @@ module.exports = {
       },
     });
 
+    if (!agreement) {
+      return res.status(400).json(util.helpers.sendError("Terms and Conditions of shipping agreements must be accepted"));
+    }
     let user;
 
     if (!checker) {
@@ -573,14 +578,14 @@ module.exports = {
           );
       }
 
-       await db.dbs.ShippingItems.update(
-         { reference: payment_ref },
-         {
-           where: {
-             shipment_num: shipment_num,
-           },
-         }
-       );
+      await db.dbs.ShippingItems.update(
+        { reference: payment_ref },
+        {
+          where: {
+            shipment_num: shipment_num,
+          },
+        }
+      );
 
       let response = await util.helpers.validateTransaction(option, "members");
       util.helpers.checkBaggageConfirmation(option);

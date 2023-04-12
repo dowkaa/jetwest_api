@@ -457,6 +457,15 @@ const validateTransaction = async (data: any, type: string) => {
                 },
               }
             );
+
+            await db.dbs.ShippingItems.update(
+              { status: "upcoming" },
+              {
+                where: {
+                  reference: data.reference,
+                },
+              }
+            );
           }
 
           if (shipment.agent_id) {
@@ -702,6 +711,15 @@ const validateTransaction = async (data: any, type: string) => {
 
             await db.dbs.ShippingItems.update(
               { payment_status: "SUCCESS" },
+              {
+                where: {
+                  reference: data.reference,
+                },
+              }
+            );
+
+            await db.dbs.ShippingItems.update(
+              { status: "upcoming" },
               {
                 where: {
                   reference: data.reference,
