@@ -483,6 +483,12 @@ module.exports = {
         destination_station: destination,
         status: "pending",
       },
+      include: [
+        {
+          model: db.dbs.Cargo,
+          as: "scheduled",
+        },
+      ],
     });
 
     return res.status(200).json({ data: checker });
@@ -513,12 +519,6 @@ module.exports = {
         stod: stod,
         status: "pending",
       },
-      include: [
-        {
-          model: db.dbs.Cargo,
-          as: "scheduled",
-        },
-      ],
     });
 
     if (!v) {
@@ -563,10 +563,7 @@ module.exports = {
         );
     }
 
-    return res.status(200).json({
-      message: "Flight available",
-      cargo_types: JSON.parse(v.scheduled.cargo_types),
-    });
+    return res.status(200).json(utilz.helpers.sendSuccess("Flight available"));
   },
 
   getStod: async (
