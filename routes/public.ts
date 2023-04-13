@@ -46,6 +46,7 @@ router.get("/get-stod", HomeCtrl.getStod);
 
 // get in touch
 router.post("/get-in-touch", HomeCtrl.getInTouch);
+router.get("/all-cargo-types", HomeCtrl.getAllCargoTypes);
 
 router.get("/all-pending-flights", HomeCtrl.allPendingShipments);
 

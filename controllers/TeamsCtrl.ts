@@ -476,6 +476,7 @@ module.exports = {
       .keys({
         items: utill.Joi.array().required(),
         pickup_location: utill.Joi.string().required(),
+        cargo_type: utill.Joi.string().required(),
         payment_ref: utill.Joi.string().required(),
         destination: utill.Joi.string().required(),
         total_weight: utill.Joi.number().required(),
@@ -529,6 +530,7 @@ module.exports = {
       items,
       pickup_location,
       destination,
+      cargo_type,
       stod,
       total_weight,
       agent_id,
@@ -633,6 +635,38 @@ module.exports = {
         .json(utill.helpers.sendError("Flight not available"));
     }
 
+    let cargo = await db.dbs.Cargo.findOne({
+      where: { flight_reg: v.flight_reg },
+    });
+
+    if (!cargo) {
+      return res
+        .status(400)
+        .json(
+          utill.helpers.sendError(
+            `Aircraft with flight registration number ${v.flight_reg} not found.`
+          )
+        );
+    }
+
+    for (const item of cargo_type) {
+      if (cargo.cargo_types) {
+        if (!JSON.parse(cargo.cargo_types).includes(item)) {
+          return res
+            .status(400)
+            .json(
+              utill.helpers.sendError(
+                `Aircraft not allowed to carry ${item}, kindly use select or contact support.`
+              )
+            );
+        }
+      } else {
+        return res
+          .status(400)
+          .json(utill.helpers.sendError(`Aircraft does not have cargo types.`));
+      }
+    }
+
     for (const item of items) {
       let price;
       let insurance;
@@ -657,20 +691,6 @@ module.exports = {
 
       if (!route) {
         return res.status(400).json(utill.helpers.sendError("Route not found"));
-      }
-
-      let cargo = await db.dbs.Cargo.findOne({
-        where: { flight_reg: v.flight_reg },
-      });
-
-      if (!cargo) {
-        return res
-          .status(400)
-          .json(
-            utill.helpers.sendError(
-              `Aircraft with flight registration number ${v.flight_reg} not found`
-            )
-          );
       }
 
       let chargeable_weight;

@@ -1,0 +1,123 @@
+<html lang="en">
+
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Document</title>
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.2.1/css/all.min.css"
+      integrity="sha512-MV7K8+y+gLIBoVD59lQIYicR65iaqukzvf/nwasF0nqhPay5w/9lJmVM2hMDcnK1OnMGCdVK+iQrJ7lzPJQd1w=="
+      crossorigin="anonymous"
+      referrerpolicy="no-referrer"
+    />
+    <style>
+      @import
+      url("https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap");
+      * { margin: 0; padding: 0; box-sizing: border-box; } body { font-family:
+      "Poppins", sans-serif; background: #f3f3f3; } header { padding: 20px; }
+      .hero { text-align: center; } .hero .logo { width: 45%; padding-top: 40px;
+      } .main { position: relative; } .main-content { padding: 20px;
+      padding-top: 20px; text-align: center; /* height: 100vh; */ }
+      .main-content .title { font-size: 18px; text-align: center; line-height:
+      28px; } .main-content .hero-p { font-size: 14px; padding-top: 10px; }
+      .main-content .hero-p .welcome-message { padding-top: 20px; /* text-align:
+      justify; */ } .main-content .link { display: inline-block; color: #85025a;
+      font-size: 14px; padding-top: 30px; } .main-content .sub-info { display:
+      block; font-size: 13px; padding-top: 80px; padding-bottom: 5rem; /*
+      text-align: justify; */ } .footer { margin-top: 20px; padding: 20px;
+      background: linear-gradient(92.03deg, #c91c6f 28.72%, #a12278 88.13%);
+      color: rgba(255, 255, 255, 0.8); text-align: center; font-size: 14px; }
+      .footer .unsubscribe a { display: inline-block; color: rgba(255, 255, 255,
+      0.8); padding-bottom: 10px; /* line-height: 5; */ } .social-links {
+      margin: 5px 0; } .social-links .social-icon { color: rgba(255, 255, 255,
+      0.48); font-size: 30px; margin-left: 20px; /* float: left; width: 25%; */
+      } .social-image { width: 30px; } .copyright { font-size: 12px; clear:
+      both; } .address { line-height: 3; } @media screen and (min-width: 768px)
+      { .hero .logo { width: 12%; padding-top: 20px; } .main-content .title {
+      font-size: 24px; width: 40%; margin: 0 auto; padding-top: 20px; }
+      .main-content .hero-p { font-size: 16px; width: 40%; margin: 0 auto;
+      padding-top: 30px; } .main-content .link { font-size: 16px; }
+      .main-content .sub-info { width: 45%; margin: 0 auto; font-size: 15px;
+      padding-bottom: 1rem; } .footer { padding-top: 30px; } }
+    </style>
+  </head>
+
+  <body>
+    <main class="main">
+      <header>
+        <div class="hero">
+          <img
+            src="https://www.dowkaa.com/static/media/logo.fe64a8cf18f812d56273.png"
+            alt=""
+            class="logo"
+          />
+        </div>
+      </header>
+      <section class="main-content">
+        <h3 style="color: #010912" class="title">Hey {{name}}</h3>
+        <div class="hero-p">
+          <p class="welcome-message">
+            We'd like to confirm that your account was created successfully, and
+            you can now start shipping with Dowkaa.
+          </p>
+
+          <p class="welcome-message" style="padding-top: 40px;">
+            If you have any issues with logging into your account, reach out to
+            us at help at
+            <a
+              style="text-decoration: underline; color: #c91c6f;"
+              target="_blank"
+              href="hi@dowkaa.com"
+            >hi@dowkaa.com</a>
+          </p>
+
+          <div style="margin-top: 80px">
+            <span>Best,</span>
+            <h4>The Dowkaa Team</h4>
+          </div>
+        </div>
+      </section>
+    </main>
+    <footer class="footer">
+      <p class="unsubscribe">
+        Want out of the loop?
+        <a href="#" class="link">Unsubscribe</a>
+      </p>
+      <p>Dowkaa.</p>
+      <p class="address">42, Airport Road, Ikeja, Lagos, Nigeria</p>
+      <div class="social-links">
+        <a href="https://www.dowkaa.com" target="_blank" class="social-icon">
+          <img
+            class="social-image"
+            src="https://res.cloudinary.com/diuayewns/image/upload/v1679475599/dowkaa_bbaiwa.png"
+            alt="dowkaa image"
+          /></a>
+        <a href="https:/www.instagram.com/dowkaa.app" class="social-icon">
+          <img
+            class="social-image"
+            src="https://res.cloudinary.com/diuayewns/image/upload/v1679475729/instagram_imvnkw.png"
+            alt="Instagram image"
+          />
+        </a>
+        <a href="https://www.linkedIn.com/company/dowkaa" class="social-icon">
+          <img
+            class="social-image"
+            src="https://res.cloudinary.com/diuayewns/image/upload/v1679475832/linkedIn_ysha2y.png"
+            alt="linkedIn image"
+          />
+        </a>
+        <a href="https://www.twitter.com/dowkaa" class="social-icon">
+          <img
+            class="social-image"
+            src="https://res.cloudinary.com/diuayewns/image/upload/v1679476591/twitter_ykwrze.png"
+            alt="Twitter image"
+          />
+        </a>
+      </div>
+      <p class="copyright">Copyright © 2023 Dowkaa. All rights reserved</p>
+    </footer>
+  </body>
+
+</html>

@@ -6,6 +6,7 @@
   "scripts": {
     "start": "ts-node-dev --respawn index.ts",
     "migrate": "npx sequelize-cli db:migrate",
+    "seed": "npx sequelize db:seed:all",
     "dev": "nodemon --exec ts-node index.ts",
     "build": "tsc",
     "test": "jest",

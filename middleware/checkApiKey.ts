@@ -8,10 +8,6 @@ const checkKey = async (req: any, res: Response, next: NextFunction) => {
   const hasValue = req.headers.hasOwnProperty("apikey");
   let client_key = req.headers.apikey;
 
-  console.log({ req: req.headers, api: req.headers.apikey });
-
-  console.log({ hasValue, client_key });
-
   if (!hasValue) {
     return res
       .status(401)

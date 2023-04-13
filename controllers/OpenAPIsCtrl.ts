@@ -17,7 +17,8 @@ module.exports = {
       .keys({
         items: util.Joi.array().required(),
         pickup_location: util.Joi.string().required(),
-        payment_ref: util.Joi.string().required(),
+        cargo_type: util.Joi.array().required(),
+        payment_ref: util.Joi.string().allow(""),
         destination: util.Joi.string().required(),
         total_weight: util.Joi.number().required(),
         stod: util.Joi.string().required(),
@@ -27,7 +28,7 @@ module.exports = {
         reciever_firstname: util.Joi.string().required(),
         reciever_lastname: util.Joi.string().required(),
         reciever_email: util.Joi.string().required(),
-        reciever_organisation: util.Joi.string().required(),
+        reciever_organisation: util.Joi.string().allow(""),
         reciever_primaryMobile: util.Joi.string().required(),
         reciever_secMobile: util.Joi.string().allow(""),
       })
@@ -71,6 +72,7 @@ module.exports = {
     const {
       items,
       pickup_location,
+      cargo_type,
       destination,
       stod,
       total_weight,
@@ -94,11 +96,10 @@ module.exports = {
             "Terms and Conditions of shipping agreements must be accepted"
           )
         );
-      
     }
-      let userChecker = await db.dbs.Users.findOne({
-        where: { uuid: req.user.uuid },
-      });
+    let userChecker = await db.dbs.Users.findOne({
+      where: { uuid: req.user.uuid },
+    });
 
     if (userChecker.type !== "Shipper") {
       return res
@@ -201,6 +202,38 @@ module.exports = {
         .json(util.helpers.sendError("Flight not available"));
     }
 
+    let cargo = await db.dbs.Cargo.findOne({
+      where: { flight_reg: v.flight_reg },
+    });
+
+    if (!cargo) {
+      return res
+        .status(400)
+        .json(
+          util.helpers.sendError(
+            `Aircraft with flight registration number ${v.flight_reg} not found.`
+          )
+        );
+    }
+
+    for (const item of cargo_type) {
+      if (cargo.cargo_types) {
+        if (!JSON.parse(cargo.cargo_types).includes(item)) {
+          return res
+            .status(400)
+            .json(
+              util.helpers.sendError(
+                `Aircraft not allowed to carry ${item}, kindly use select or contact support.`
+              )
+            );
+        }
+      } else {
+        return res
+          .status(400)
+          .json(util.helpers.sendError(`Aircraft does not have cargo types.`));
+      }
+    }
+
     for (const item of items) {
       let price;
       let insurance;
@@ -225,20 +258,6 @@ module.exports = {
 
       if (!route) {
         return res.status(400).json(util.helpers.sendError("Route not found"));
-      }
-
-      let cargo = await db.dbs.Cargo.findOne({
-        where: { flight_reg: v.flight_reg },
-      });
-
-      if (!cargo) {
-        return res
-          .status(400)
-          .json(
-            util.helpers.sendError(
-              `Aircraft with flight registration number ${v.flight_reg} not found`
-            )
-          );
       }
 
       let chargeable_weight;
@@ -303,6 +322,8 @@ module.exports = {
       let checkBalance = await db.dbs.Wallets.findOne({
         where: { user_id: userChecker.id },
       });
+
+      console.log({ checkBalance: checkBalance.amount, price });
 
       if (parseFloat(checkBalance?.amount) - price < 0) {
         let checkTransactionTotal = await db.dbs.Transactions.sum("amount", {
@@ -488,10 +509,13 @@ module.exports = {
     };
 
     util.shipperAPI.sendMail(option);
+    let amount = parseFloat(total_amount);
+
+    console.log({ customer: req.user.customer_id });
 
     util.helpers.logApiTransaction(
       req.user.customer_id,
-      total_amount,
+      amount,
       shipment_num,
       `Payment for shipment with no ${shipment_num}`,
       items

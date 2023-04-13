@@ -105,6 +105,7 @@ module.exports = {
         maintenance_program_url: util.Joi.string().required(),
         mmel: util.Joi.string().required(),
         ops_manual: util.Joi.string().required(),
+        cargo_types: util.Joi.array().required(),
 
         // capacity: util.Joi.number().required(),
         // available_capacity: util.Joi.number().required(),
@@ -165,6 +166,7 @@ module.exports = {
       noise_cert_url,
       noise_cert_exp_date,
       insurance_cert_url,
+      cargo_types,
       insurance_cert_exp_date,
       registration_cert_url,
       registration_cert_exp_date,
@@ -184,6 +186,7 @@ module.exports = {
       flight_reg: aircraft_registration,
       daily_flight_time,
       aircraft_registration,
+      cargo_types: JSON.stringify(cargo_types),
       airworthiness_cert_url,
       airworthiness_cert_exp_date,
       noise_cert_url,
@@ -370,6 +373,7 @@ module.exports = {
         reciever_email: util.Joi.string().required(),
         reciever_organisation: util.Joi.string().required(),
         reciever_primaryMobile: util.Joi.string().required(),
+        cargo_type: util.Joi.array().required(),
         reciever_secMobile: util.Joi.string().allow(""),
         payment_ref: util.Joi.string().allow(""),
         payment_type: util.Joi.string().required(),
@@ -425,6 +429,7 @@ module.exports = {
       reciever_email,
       reciever_firstname,
       reciever_lastname,
+      cargo_type,
       reciever_organisation,
       reciever_primaryMobile,
       reciever_secMobile,
@@ -500,7 +505,7 @@ module.exports = {
         .status(400)
         .json(
           util.helpers.sendError(
-            "Flight not availbale to carry total weight, kindly book another flight or contact customer support"
+            "Flight not availbale to carry total weight, kindly book another flight or contact customer support."
           )
         );
     }
@@ -510,7 +515,7 @@ module.exports = {
         .status(400)
         .json(
           util.helpers.sendError(
-            "Flight not availbale to carry total weight, kindly book another flight or contact customer support"
+            "Flight not availbale to carry total weight, kindly book another flight or contact customer support."
           )
         );
     }
@@ -522,7 +527,7 @@ module.exports = {
         .status(400)
         .json(
           util.helpers.sendError(
-            `Scheduled flight not available for the departure date entered kindly reschedule for another departure date`
+            `Scheduled flight not available for the departure date entered kindly reschedule for another departure date.`
           )
         );
     }
@@ -535,7 +540,7 @@ module.exports = {
         .status(400)
         .json(
           util.helpers.sendError(
-            "Flight not available for booking, already in transit"
+            "Flight not available for booking, already in transit."
           )
         );
     }
@@ -544,6 +549,38 @@ module.exports = {
       return res
         .status(400)
         .json(util.helpers.sendError("Flight not available"));
+    }
+
+    let cargo = await db.dbs.Cargo.findOne({
+      where: { flight_reg: v.flight_reg },
+    });
+
+    if (!cargo) {
+      return res
+        .status(400)
+        .json(
+          util.helpers.sendError(
+            `Aircraft with flight registration number ${v.flight_reg} not found.`
+          )
+        );
+    }
+
+    for (const item of cargo_type) {
+      if (cargo.cargo_types) {
+        if (!JSON.parse(cargo.cargo_types).includes(item)) {
+          return res
+            .status(400)
+            .json(
+              util.helpers.sendError(
+                `Aircraft not allowed to carry ${item}, kindly use select or contact support.`
+              )
+            );
+        }
+      } else {
+        return res
+          .status(400)
+          .json(util.helpers.sendError(`Aircraft does not have cargo types.`));
+      }
     }
 
     for (const item of items) {
@@ -571,20 +608,6 @@ module.exports = {
 
       if (!route) {
         return res.status(400).json(util.helpers.sendError("Route not found"));
-      }
-
-      let cargo = await db.dbs.Cargo.findOne({
-        where: { flight_reg: v.flight_reg },
-      });
-
-      if (!cargo) {
-        return res
-          .status(400)
-          .json(
-            util.helpers.sendError(
-              `Aircraft with flight registration number ${v.flight_reg} not found`
-            )
-          );
       }
 
       let chargeable_weight;
@@ -1875,7 +1898,7 @@ module.exports = {
           .status(400)
           .json(util.helpers.sendError("payment reference is required."));
       }
-      
+
       const option = {
         reference: reference,
         shipment_num,

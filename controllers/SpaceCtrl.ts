@@ -47,6 +47,7 @@ module.exports = {
         items: util.Joi.array().required(),
         pickup_location: util.Joi.string().required(),
         destination: util.Joi.string().required(),
+        cargo_type: util.Joi.array().required(),
         total_weight: util.Joi.number().required(),
         stod: util.Joi.string().required(),
         agent_id: util.Joi.string().allow(""),
@@ -103,6 +104,7 @@ module.exports = {
       pickup_location,
       destination,
       stod,
+      cargo_type,
       total_weight,
       agent_id,
       payment_ref,
@@ -243,6 +245,38 @@ module.exports = {
         .json(util.helpers.sendError("Flight not available"));
     }
 
+    let cargo = await db.dbs.Cargo.findOne({
+      where: { flight_reg: v.flight_reg },
+    });
+
+    if (!cargo) {
+      return res
+        .status(400)
+        .json(
+          util.helpers.sendError(
+            `Aircraft with flight registration number ${v.flight_reg} not found.`
+          )
+        );
+    }
+
+    for (const item of cargo_type) {
+      if (cargo.cargo_types) {
+        if (!JSON.parse(cargo.cargo_types).includes(item)) {
+          return res
+            .status(400)
+            .json(
+              util.helpers.sendError(
+                `Aircraft not allowed to carry ${item}, kindly use select or contact support.`
+              )
+            );
+        }
+      } else {
+        return res
+          .status(400)
+          .json(util.helpers.sendError(`Aircraft does not have cargo types.`));
+      }
+    }
+
     for (const item of items) {
       let price;
       let insurance;
@@ -267,20 +301,6 @@ module.exports = {
 
       if (!route) {
         return res.status(400).json(util.helpers.sendError("Route not found"));
-      }
-
-      let cargo = await db.dbs.Cargo.findOne({
-        where: { flight_reg: v.flight_reg },
-      });
-
-      if (!cargo) {
-        return res
-          .status(400)
-          .json(
-            util.helpers.sendError(
-              `Aircraft with flight registration number ${v.flight_reg} not found`
-            )
-          );
       }
 
       let chargeable_weight;

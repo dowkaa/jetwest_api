@@ -60,6 +60,8 @@ dbs.PaystackStarter = require("../models/paystck_starter")(
   sequelize,
   Sequelizes
 );
+dbs.CargoTypes = require("../models/cargo_types")(sequelize, Sequelizes);
+dbs.AirWayBill = require("../models/airway_bill")(sequelize, Sequelizes);
 dbs.ShipmentTracker = require("../models/shipment_tracker")(
   sequelize,
   Sequelizes
@@ -132,6 +134,16 @@ dbs.ShippingItems.belongsTo(dbs.ScheduleFlights, {
 dbs.ScheduleFlights.hasMany(dbs.ShippingItems, {
   foreignKey: "flight_id",
   as: "shipping_items",
+});
+
+dbs.ScheduleFlights.belongsTo(dbs.Cargo, {
+  foreignKey: "aircraft_id",
+  as: "scheduled",
+});
+
+dbs.Cargo.hasMany(dbs.ScheduleFlights, {
+  foreignKey: "aircraft_id",
+  as: "scheduled",
 });
 
 dbs.ShipmentInvoives.belongsTo(dbs.Users, {

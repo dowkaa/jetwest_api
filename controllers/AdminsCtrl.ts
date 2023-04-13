@@ -805,6 +805,7 @@ module.exports = {
       user_id: req.user.id,
       departure_station,
       flight_reg,
+      aircraft_id: aircraftChecker.id,
       takeoff_airport: takeOff.name_of_airport,
       destination_airport: data.name_of_airport,
       stod: total,

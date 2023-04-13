@@ -1060,6 +1060,7 @@ const addShipmentAndCreditUser = async (
   const {
     items,
     pickup_location,
+    cargo_type,
     destination,
     stod,
     total_weight,
@@ -1155,6 +1156,36 @@ const addShipmentAndCreditUser = async (
     return resp;
   }
 
+  let cargo = await db.dbs.Cargo.findOne({
+    where: { flight_reg: v.flight_reg },
+  });
+
+  if (!cargo) {
+    let resp = {
+      status: 400,
+      message: `Aircraft with flight registration number ${v.flight_reg} not found.`,
+    };
+    return resp;
+  }
+
+  for (const item of cargo_type) {
+    if (cargo.cargo_types) {
+      if (!JSON.parse(cargo.cargo_types).includes(item)) {
+        let resp = {
+          status: 400,
+          message: `Aircraft not allowed to carry ${item}, kindly use select or contact support.`,
+        };
+        return resp;
+      }
+    } else {
+      let resp = {
+        status: 400,
+        message: `Aircraft does not have cargo types.`,
+      };
+      return resp;
+    }
+  }
+
   for (const index of item) {
     let price;
     let insurance;
@@ -1181,19 +1212,6 @@ const addShipmentAndCreditUser = async (
       let resp = {
         status: 400,
         message: "Route not found",
-      };
-      return resp;
-    }
-
-    let cargo = await db.dbs.Cargo.findOne({
-      where: { flight_reg: v.flight_reg },
-    });
-
-    if (!cargo) {
-      let resp = {
-        status: 400,
-        message:
-          "Aircraft with flight registration number ${v.flight_reg} not found",
       };
       return resp;
     }
@@ -1392,10 +1410,12 @@ const addShipmentAndCreditUser = async (
     //   status: "success",
     // });
   }
+  let amount = total_amount;
+  console.log({ customer111: req.user.customer_id });
 
   utilities.helpers.logApiTransaction(
     req.user.customer_id,
-    total_amount,
+    amount,
     shipment_num,
     `On credit Payment for shipment with no ${shipment_num} of the sum of ${total_amount} to be deducted upon next wallet deposit`,
     items
@@ -1431,6 +1451,7 @@ const logPendingShipment = async (req: any, res: Response, item: any) => {
     total_weight,
     agent_id,
     payment_ref,
+    cargo_type,
     reciever_email,
     total_amount,
     reciever_firstname,
@@ -1522,6 +1543,36 @@ const logPendingShipment = async (req: any, res: Response, item: any) => {
     return resp;
   }
 
+  let cargo = await db.dbs.Cargo.findOne({
+    where: { flight_reg: v.flight_reg },
+  });
+
+  if (!cargo) {
+    let resp = {
+      status: 400,
+      message: `Aircraft with flight registration number ${v.flight_reg} not found.`,
+    };
+    return resp;
+  }
+
+  for (const item of cargo_type) {
+    if (cargo.cargo_types) {
+      if (!JSON.parse(cargo.cargo_types).includes(item)) {
+        let resp = {
+          status: 400,
+          message: `Aircraft not allowed to carry ${item}, kindly use select or contact support.`,
+        };
+        return resp;
+      }
+    } else {
+      let resp = {
+        status: 400,
+        message: `Aircraft does not have cargo types.`,
+      };
+      return resp;
+    }
+  }
+
   for (const index of item) {
     let price;
     let insurance;
@@ -1548,18 +1599,6 @@ const logPendingShipment = async (req: any, res: Response, item: any) => {
       let resp = {
         status: 400,
         message: "Route not found",
-      };
-      return resp;
-    }
-
-    let cargo = await db.dbs.Cargo.findOne({
-      where: { flight_reg: v.flight_reg },
-    });
-
-    if (!cargo) {
-      let resp = {
-        status: 400,
-        message: `Aircraft with flight registration number ${v.flight_reg} not found`,
       };
       return resp;
     }

@@ -11,6 +11,7 @@ var Cargos = (sequelize: any, type: any) => {
     uuid: Sequelize.STRING,
     owner_id: Sequelize.STRING,
     model: Sequelize.STRING,
+    cargo_types: Sequelize.TEXT,
     payload: Sequelize.STRING,
     areasOfCoverage: Sequelize.STRING,
     monthly_flight_time: Sequelize.STRING,

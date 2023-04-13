@@ -496,7 +496,7 @@ module.exports = {
     const { pickup_location, destination, stod, total_weight, date } =
       req.query;
 
-    if (!(pickup_location && destination && stod && total_weight)) {
+    if (!(pickup_location && destination && stod && total_weight && date)) {
       return res
         .status(400)
         .json(
@@ -513,6 +513,12 @@ module.exports = {
         stod: stod,
         status: "pending",
       },
+      include: [
+        {
+          model: db.dbs.Cargo,
+          as: "scheduled",
+        },
+      ],
     });
 
     if (!v) {
@@ -557,7 +563,10 @@ module.exports = {
         );
     }
 
-    return res.status(200).json(utilz.helpers.sendSuccess("Flight available"));
+    return res.status(200).json({
+      message: "Flight available",
+      cargo_types: JSON.parse(v.scheduled.cargo_types),
+    });
   },
 
   getStod: async (
@@ -594,6 +603,16 @@ module.exports = {
     }
 
     return res.status(200).json({ arr });
+  },
+
+  getAllCargoTypes: async (
+    req: any,
+    res: Response,
+    next: NextFunction
+  ): Promise<Response> => {
+    let cargoTypes = await db.dbs.CargoTypes.findAll();
+
+    return res.status(200).json({ cargoTypes });
   },
 
   test: async (
