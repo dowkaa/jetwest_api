@@ -39,6 +39,8 @@ module.exports = {
         where: { reference: reference },
       });
 
+      console.log({ Destinations: shipment.destination });
+
       let route = await db.dbs.ShipmentRoutes.findOne({
         where: { destination_name: shipment.destination },
       });
