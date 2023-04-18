@@ -598,7 +598,7 @@ const validateTransaction = async (data: any, type: string) => {
 
           const opts3 = {
             email: user.email,
-            name: user.shipperName,
+            name: user.first_name + " " + user.last_name,
             amount: amount,
             shipment_ref: shipment.booking_reference,
           };
@@ -864,7 +864,7 @@ const validateTransaction = async (data: any, type: string) => {
 
           const opts3 = {
             email: user.email,
-            name: user.shipperName,
+            name: user.first_name + " " + user.last_name,
             amount: amount,
             shipment_ref: shipment.booking_reference,
           };
@@ -1133,7 +1133,7 @@ const validateTransaction = async (data: any, type: string) => {
 
         const opts3 = {
           email: user.email,
-          name: user.shipperName,
+          name: user.first_name + " " + user.last_name,
           amount: amount,
           shipment_ref: shipment.booking_reference,
         };
