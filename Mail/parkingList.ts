@@ -3,13 +3,6 @@ const nodemailer = require("nodemailer");
 const hbs = require("nodemailer-express-handlebars");
 require("dotenv").config();
 
-// console.log({
-//   pass: process.env.MAIL_PASSWORD,
-//   host: process.env.MAIL_HOST,
-//   port: process.env.MAIL_PORT,
-//   user: process.env.MAIL_USERNAME,
-// });
-
 var transporter = nodemailer.createTransport({
   host: process.env.MAIL_HOST,
   port: process.env.MAIL_PORT,
@@ -38,10 +31,18 @@ const sendMail = async (option: any) => {
   const message = {
     from: `${process.env.FROM_NAME} <${process.env.FROM_EMAIL}>`,
     to: option.email, //"hi@dowkaa.com",
-    subject: "Packing List",
+    subject: "Packing List Details",
     template: "parkingList",
     context: {
       name: option.name,
+      data: option.ar,
+      organisation: option.organisation,
+      content: option.content,
+      total_weight: option.total_weight,
+      bag_no: option.bag_no,
+      Shipment_num: option.shipment_num,
+      departure: option.departure,
+      destination: option.destination,
     },
   };
 

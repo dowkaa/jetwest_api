@@ -6,29 +6,6 @@ const { paginate } = require("paginate-info");
 
 module.exports = {
   getProfile: async (req: any, res: Response, next: NextFunction) => {
-    // let res = validateHarsh();
-    // console.log({ req: req.headers });
-    // let rr = await util.helpers.validateHarsh(
-    //   req.headers.api_key,
-    //   req.user.uuid
-    // );
-
-    // let users = await db.dbs.Users.findOne({
-    //   attributes: { exclude: ["id", "password", "otp", "locked", "activated"] },
-    //   where: { uuid: req.user.uuid },
-    //   include: [
-    //     {
-    //       model: db.dbs.BusinessCompliance,
-    //       as: "business_compliance",
-    //     },
-    //     {
-    //       model: db.dbs.Directors,
-    //       as: "directors",
-    //     },
-    //   ],
-    // });
-
-    // console.log({ rr });
     const Directors = await db.dbs.Directors.findAll({
       where: { user_id: { [Op.or]: [req.user.uuid, req.user.id] } },
     });
@@ -397,6 +374,7 @@ module.exports = {
         depature_date: util.Joi.string().required(),
         shipment_ref: util.Joi.string().required(),
         width: util.Joi.number().required(),
+        cargo_type: util.Joi.string().required(),
         length: util.Joi.number().required(),
         weight: util.Joi.number().required(),
         height: util.Joi.number().required(),
@@ -429,7 +407,6 @@ module.exports = {
       reciever_email,
       reciever_firstname,
       reciever_lastname,
-      cargo_type,
       reciever_organisation,
       reciever_primaryMobile,
       reciever_secMobile,
@@ -565,7 +542,7 @@ module.exports = {
         );
     }
 
-    for (const item of cargo_type) {
+    for (const item of req.body.cargo_type) {
       if (cargo.cargo_types) {
         if (!JSON.parse(cargo.cargo_types).includes(item)) {
           return res
@@ -591,6 +568,7 @@ module.exports = {
         width,
         height,
         weight,
+        cargo_type,
         length,
         shipment_ref,
         category,
@@ -687,6 +665,7 @@ module.exports = {
           value,
           stod: items[0].depature_date + " " + stod,
           pickup_location,
+          cargo_index: cargo_type,
           chargeable_weight,
           cargo_id: cargo.id,
           destination,
@@ -753,6 +732,7 @@ module.exports = {
           destination,
           depature_date: depature_date.split("/").reverse().join("-"),
           width,
+          cargo_index: cargo_type,
           length: length,
           height,
           insurance,
@@ -816,6 +796,7 @@ module.exports = {
       customer_id: req.user.customer_id,
     };
 
+    // util.helpers.parkingListMail(shipment_num);
     if (payment_type === "paystack") {
       if (!payment_ref) {
         return res
@@ -826,10 +807,16 @@ module.exports = {
             )
           );
       }
-      let response = await util.helpers.validateTransaction(option, "payment");
+      util.helpers.validateTransaction(option, "payment");
       util.helpers.checkBaggageConfirmation(option);
 
-      return res.status(200).json(util.helpers.sendSuccess(response));
+      return res
+        .status(200)
+        .json(
+          util.helpers.sendSuccess(
+            "Shipment booked successfully, the Dowkaa team would reach out to you soon."
+          )
+        );
     } else if (payment_type === "receipt") {
       if (!(payment_doc_url && amount)) {
         return res
@@ -1647,7 +1634,6 @@ module.exports = {
     });
   },
   resetPassword: async (req: any, res: Response, next: NextFunction) => {
-    // console.log("11111111111111111111111111");
     const loginSchema = util.Joi.object()
       .keys({
         old_password: util.Joi.string().required(),

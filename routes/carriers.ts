@@ -44,4 +44,10 @@ routerrs.get(
   CarriersCtrl.getData
 );
 
+routerrs.post(
+  "/add-airway-bill",
+  [jwtMiddleWars, signatureSigners],
+  CarriersCtrl.addShipmentWayBill
+);
+
 module.exports = routerrs;

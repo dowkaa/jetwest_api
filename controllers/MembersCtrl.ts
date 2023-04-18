@@ -28,6 +28,8 @@ module.exports = {
         reciever_lastname: util.Joi.string().required(),
         reciever_email: util.Joi.string().required(),
         reciever_primaryMobile: util.Joi.string().required(),
+        reciever_organisation: util.Joi.string().required(),
+        sender_organisation: util.Joi.string().required(),
       })
       .unknown();
 
@@ -48,6 +50,7 @@ module.exports = {
         weight: util.Joi.number().required(),
         height: util.Joi.number().required(),
         depature_date: util.Joi.string().required(),
+        cargo_type: util.Joi.string().required(),
         category: util.Joi.string().allow(""),
         promo_code: util.Joi.string().allow(""),
         value: util.Joi.number().required(),
@@ -75,8 +78,9 @@ module.exports = {
       total_weight,
       agent_id,
       payment_ref,
-      cargo_type,
       agreement,
+      reciever_organisation: reciever_organisation,
+      sender_organisation: sender_organisation,
       reciever_email,
       reciever_firstname,
       reciever_lastname,
@@ -269,7 +273,7 @@ module.exports = {
         );
     }
 
-    for (const item of cargo_type) {
+    for (const item of req.body.cargo_type) {
       if (cargo.cargo_types) {
         if (!JSON.parse(cargo.cargo_types).includes(item)) {
           return res
@@ -299,6 +303,7 @@ module.exports = {
         category,
         ba_code_url,
         promo_code,
+        cargo_type,
         depature_date,
         value,
         content,
@@ -414,7 +419,10 @@ module.exports = {
           payment_status: "pending",
           shipment_model: "select",
           price: price,
+          reciever_organisation: reciever_organisation,
+          sender_organisation: sender_organisation,
           category,
+          cargo_index: cargo_type,
           ba_code_url,
           promo_code: promo_code ? promo_code : null,
           shipperName: user.first_name + " " + user.last_name,
@@ -446,12 +454,15 @@ module.exports = {
           user_id: user.id,
           shipment_num,
           reference: payment_ref,
+          cargo_index: cargo_type,
           value,
           pickup_location,
           chargeable_weight,
           stod: items[0].depature_date + " " + stod,
           cargo_id: cargo.id,
           destination,
+          reciever_organisation: reciever_organisation,
+          sender_organisation: sender_organisation,
           depature_date: depature_date.split("/").reverse().join("-"),
           width,
           length: length,
@@ -614,7 +625,7 @@ module.exports = {
         }
       );
 
-      let response = await util.helpers.validateTransaction(option, "members");
+      util.helpers.validateTransaction(option, "members");
       util.helpers.checkBaggageConfirmation(option);
 
       let tracker = util.helpers.generateReftId(5);
@@ -640,7 +651,13 @@ module.exports = {
       util.tag.sendMail(opt);
       sms.send(shipment.reciever_primaryMobile, opt.message);
 
-      return res.status(200).json(util.helpers.sendSuccess(response));
+      return res
+        .status(200)
+        .json(
+          util.helpers.sendSuccess(
+            "Shipment booked successfully, the Dowkaa team would reach out to you soon."
+          )
+        );
     } else if (payment_type === "receipt") {
       if (!(payment_doc_url && amount)) {
         return res

@@ -28,13 +28,8 @@ module.exports = {
       .update(JSON.stringify(req.body))
       .digest("hex");
 
-    console.log({ secret, paystack_key, hash });
-
     if (hash == req.headers["x-paystack-signature"]) {
-      // Retrieve the request's body
       var event = req.body;
-      // Do something with event
-      // console.log(event)
       var reference = event.data.reference;
       var validateTransaction = await util.helpers.checkUserTransaction(
         reference
@@ -49,7 +44,6 @@ module.exports = {
       });
 
       if (validateTransaction) {
-        console.log("got here");
         return res.sendStatus(200);
       } else {
         if (event.data.status == "success") {
@@ -116,7 +110,6 @@ module.exports = {
       }
       return res.sendStatus(200);
     }
-    console.log("hereere");
     return res.sendStatus(400);
   },
 };

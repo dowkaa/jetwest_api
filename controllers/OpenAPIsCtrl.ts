@@ -54,6 +54,7 @@ module.exports = {
         height: util.Joi.number().required(),
         category: util.Joi.string().allow(""),
         promo_code: util.Joi.string().allow(""),
+        cargo_type: util.Joi.string().required(),
         value: util.Joi.number().required(),
         content: util.Joi.string().required(),
         ba_code_url: util.Joi.string().allow(""),
@@ -72,7 +73,6 @@ module.exports = {
     const {
       items,
       pickup_location,
-      cargo_type,
       destination,
       stod,
       total_weight,
@@ -216,7 +216,7 @@ module.exports = {
         );
     }
 
-    for (const item of cargo_type) {
+    for (const item of req.body.cargo_type) {
       if (cargo.cargo_types) {
         if (!JSON.parse(cargo.cargo_types).includes(item)) {
           return res
@@ -243,6 +243,7 @@ module.exports = {
         height,
         weight,
         length,
+        cargo_type,
         shipment_ref,
         category,
         ba_code_url,
@@ -322,8 +323,6 @@ module.exports = {
       let checkBalance = await db.dbs.Wallets.findOne({
         where: { user_id: userChecker.id },
       });
-
-      console.log({ checkBalance: checkBalance.amount, price });
 
       if (parseFloat(checkBalance?.amount) - price < 0) {
         let checkTransactionTotal = await db.dbs.Transactions.sum("amount", {
@@ -423,6 +422,7 @@ module.exports = {
           status: "pending",
           shipment_routeId: route.id,
           scan_code,
+          cargo_index: cargo_type,
           weight,
           ratePerKg: route.ratePerKg,
           logo_url: v.logo_url,
@@ -465,6 +465,7 @@ module.exports = {
           length: length,
           height,
           insurance,
+          cargo_index: cargo_type,
           sur_charge: price * (parseFloat(route.sur_charge) / 100),
           taxes: price * (parseFloat(route.tax) / 100),
           book_type: "Personal",
@@ -511,7 +512,7 @@ module.exports = {
     util.shipperAPI.sendMail(option);
     let amount = parseFloat(total_amount);
 
-    console.log({ customer: req.user.customer_id });
+    util.helpers.parkingListMail(shipment_num);
 
     util.helpers.logApiTransaction(
       req.user.customer_id,

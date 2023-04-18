@@ -83,6 +83,7 @@ module.exports = {
         weight: util.Joi.number().required(),
         height: util.Joi.number().required(),
         category: util.Joi.string().allow(""),
+        cargo_type: util.Joi.string().required(),
         promo_code: util.Joi.string().allow(""),
         value: util.Joi.number().required(),
         content: util.Joi.string().required(),
@@ -104,7 +105,6 @@ module.exports = {
       pickup_location,
       destination,
       stod,
-      cargo_type,
       total_weight,
       agent_id,
       payment_ref,
@@ -259,7 +259,7 @@ module.exports = {
         );
     }
 
-    for (const item of cargo_type) {
+    for (const item of req.body.cargo_type) {
       if (cargo.cargo_types) {
         if (!JSON.parse(cargo.cargo_types).includes(item)) {
           return res
@@ -287,6 +287,7 @@ module.exports = {
         weight,
         length,
         shipment_ref,
+        cargo_type,
         category,
         ba_code_url,
         promo_code,
@@ -392,6 +393,7 @@ module.exports = {
           booking_type: "Personal",
           status: "pending",
           shipment_routeId: route.id,
+          cargo_index: cargo_type,
           scan_code,
           weight,
           ratePerKg: route.ratePerKg,
@@ -430,6 +432,7 @@ module.exports = {
           value,
           pickup_location,
           chargeable_weight,
+          cargo_index: cargo_type,
           cargo_id: cargo.id,
           stod: items[0].depature_date + " " + stod,
           destination,
@@ -495,8 +498,16 @@ module.exports = {
             )
           );
       }
-      let response = await util.helpers.validateTransaction(option, "payment");
+      util.helpers.validateTransaction(option, "payment");
       util.helpers.checkBaggageConfirmation(option);
+
+      return res
+        .status(200)
+        .json(
+          util.helpers.sendSuccess(
+            "Shipment booked successfully, the Dowkaa team would reach out to you soon."
+          )
+        );
     } else if (payment_type === "receipt") {
       if (!(payment_doc_url && amount)) {
         return res
@@ -508,6 +519,10 @@ module.exports = {
           );
       }
       util.helpers.paymentForShipmentBookingByReceipt(option);
+
+      return res
+        .status(200)
+        .json(util.helpers.sendSuccess("Document uploaded successfully"));
     } else {
       return res
         .status(400)
@@ -522,12 +537,6 @@ module.exports = {
     // util.helpers.checkBaggageConfirmation(option);
 
     // if (status) {
-    return res
-      .status(200)
-      .json(
-        util.helpers.sendSuccess(
-          "Shipment booked successfully, the Dowkaa team would reach out to you soon."
-        )
-      );
+    return res.status(200).json(util.helpers.sendSuccess());
   },
 };

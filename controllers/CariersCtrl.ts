@@ -55,6 +55,16 @@ module.exports = {
         .json(util.helpers.sendError("Account does not exist"));
     }
 
+    if (user.verification_status !== "completed") {
+      return res
+        .status(400)
+        .json(
+          util.helpers.sendError(
+            "Account not verified, kindly contact system admin."
+          )
+        );
+    }
+
     // if (user.reg_status !== "completed") {
     //   return res.status(400).json({
     //     status: "ERROR",
@@ -133,7 +143,6 @@ module.exports = {
       };
 
       if (parseInt(user.login_count) === 0) {
-        console.log("Hello world");
         util.introduction.sendMail(opt);
       }
       user.login_count = parseInt(user.login_count) + 1;
@@ -244,11 +253,20 @@ module.exports = {
     let checker = await db.dbs.Users.findOne({
       where: { uuid: req.user.uuid, type: "Carrier" },
     });
-
     if (!checker) {
       return res
         .status(400)
         .json(util.helpers.sendError("Non carriers are not allowed here"));
+    }
+
+    if (checker.verification_status !== "completed") {
+      return res
+        .status(400)
+        .json(
+          util.helpers.sendError(
+            "Account not verified, kindly contact system admin."
+          )
+        );
     }
 
     let cargo = await db.dbs.Cargo.findOne({
@@ -332,6 +350,16 @@ module.exports = {
         .json(util.helpers.sendError("Non carriers are not allowed here"));
     }
 
+    if (checker.verification_status !== "completed") {
+      return res
+        .status(400)
+        .json(
+          util.helpers.sendError(
+            "Account not verified, kindly contact system admin."
+          )
+        );
+    }
+
     const { pageNum } = req.query;
 
     if (!pageNum || isNaN(pageNum)) {
@@ -388,10 +416,21 @@ module.exports = {
     let checker = await db.dbs.Users.findOne({
       where: { uuid: req.user.uuid, type: "Carrier" },
     });
+
     if (!checker) {
       return res
         .status(400)
         .json(util.helpers.sendError("Non carriers are not allowed here"));
+    }
+
+    if (checker.verification_status !== "completed") {
+      return res
+        .status(400)
+        .json(
+          util.helpers.sendError(
+            "Account not verified, kindly contact system admin."
+          )
+        );
     }
 
     const { pageNum } = req.query;
@@ -461,6 +500,16 @@ module.exports = {
         .json(util.helpers.sendError("Non carriers are not allowed here"));
     }
 
+    if (checker.verification_status !== "completed") {
+      return res
+        .status(400)
+        .json(
+          util.helpers.sendError(
+            "Account not verified, kindly contact system admin."
+          )
+        );
+    }
+
     const { pageNum } = req.query;
 
     if (!pageNum || isNaN(pageNum)) {
@@ -524,17 +573,70 @@ module.exports = {
   ): Promise<Response> => {
     let uuid = req.query.uuid;
 
+    let user = await db.dbs.Users.findOne({
+      where: { uuid: req.user.uuid, verification_status: "completed" },
+    });
+
+    if (user.type !== "Carrier") {
+      return res
+        .status(400)
+        .json(
+          util.helpers.sendError(
+            "Unauthorized API call, Kindly login with a carrier account"
+          )
+        );
+    }
+
+    if (user.verification_status !== "completed") {
+      return res
+        .status(400)
+        .json(
+          util.helpers.sendError(
+            "Account not verified, kindly contact system admin."
+          )
+        );
+    }
+
     if (!uuid) {
       return res
         .status(400)
         .json(util.helpers.sendError("Kindly add a valid scheduled flight id"));
     }
 
-    let shippingItems = await db.dbs.ShippingItems.findAll({
-      where: { flight_id: uuid },
+    let item = await db.dbs.ScheduleFlights.findOne({ where: { uuid: uuid } });
+
+    if (!item) {
+      return res
+        .status(400)
+        .json(util.helpers.sendError("Scheduled flight with uuid not found"));
+    }
+
+    let users = await db.dbs.Users.findAll({
+      attributes: {
+        exclude: ["id", "password", "otp", "locked", "activated"],
+      },
+      include: [
+        {
+          model: db.dbs.ShippingItems,
+          where: { flight_id: item.id },
+          as: "shipments_booked_on_flight",
+          required: true,
+          include: [
+            {
+              model: db.dbs.Users,
+              as: "agents",
+              distinct: true,
+              attributes: {
+                exclude: ["id", "password", "otp", "locked", "activated"],
+              },
+            },
+          ],
+        },
+      ],
+      order: [["createdAt", "DESC"]],
     });
 
-    return res.status(200).json({ shippingItems });
+    return res.status(200).json({ users });
   },
 
   getData: async (
@@ -575,5 +677,123 @@ module.exports = {
       });
 
     return res.status(200).json({ allLogistics });
+  },
+
+  addShipmentWayBill: async (
+    req: any,
+    res: Response,
+    next: NextFunction
+  ): Promise<Response> => {
+    const waybillSchema = util.Joi.object()
+      .keys({
+        doc_url: util.Joi.string().required(),
+        doc_id: util.Joi.string().required(),
+        shipment_num: util.Joi.string().required(),
+      })
+      .unknown();
+
+    const validate = waybillSchema.validate(req.body);
+
+    if (validate.error != null) {
+      const errorMessage = validate.error.details
+        .map((i: any) => i.message)
+        .join(".");
+      return res.status(400).json(util.helpers.sendError(errorMessage));
+    }
+
+    let user = await db.dbs.Users.findOne({
+      where: { uuid: req.user.uuid, verification_status: "completed" },
+    });
+
+    if (user.type !== "Carrier") {
+      return res
+        .status(400)
+        .json(util.helpers.sendError("Unauthorized API call"));
+    }
+
+    if (user.verification_status !== "completed") {
+      return res
+        .status(400)
+        .json(
+          util.helpers.sendError(
+            "Account not verified, kindly contact system admin."
+          )
+        );
+    }
+
+    const { doc_url, doc_id, shipment_num } = req.body;
+
+    let checker = await db.dbs.AirWayBill.findOne({
+      where: {
+        doc_url: doc_url,
+        doc_id: doc_id,
+        shipment_num: shipment_num,
+      },
+    });
+
+    if (checker) {
+      return res
+        .status(400)
+        .json(util.helpers.sendError("Airway-bill already added"));
+    }
+
+    let shipment = await db.dbs.ShippingItems.findOne({
+      where: { shipment_num: shipment_num },
+    });
+
+    if (!shipment) {
+      return res
+        .status(400)
+        .json(util.helpers.sendError("Shipment with unique id not found"));
+    }
+
+    let v = await db.dbs.ScheduleFlights.findOne({
+      where: {
+        id: shipment.flight_id,
+      },
+    });
+
+    if (!v) {
+      return res
+        .status(400)
+        .json(util.helpers.sendError("Scheduled flight not found"));
+    }
+
+    let cargo = await db.dbs.Cargo.findOne({
+      where: { flight_reg: v.flight_reg },
+    });
+
+    if (!cargo) {
+      return res.status(400).json(util.helpers.sendError("Cargo not found"));
+    }
+
+    let AirWayBillChecker = await db.dbs.AirWayBill.findOne({
+      where: { shipment_num: shipment_num },
+    });
+
+    if (!AirWayBillChecker) {
+      await db.dbs.AirWayBill.create({
+        uuid: util.uuid(),
+        user_id: req.user.id,
+        carrier_id: req.user.id,
+        doc_id: doc_id,
+        doc_url: doc_url,
+        shipper_id: shipment.user_id,
+        flight_reg: cargo.flight_reg,
+        shipment_num: shipment_num,
+        agent_id: shipment.agent_id,
+      });
+
+      return res
+        .status(200)
+        .json(util.helpers.sendSuccess("Airway-bill uploaded successfully"));
+    } else {
+      AirWayBillChecker.doc_id = doc_id;
+      AirWayBillChecker.doc_url = doc_url;
+      await AirWayBillChecker.save();
+      return res
+        .status(200)
+        .json(util.helpers.sendSuccess("Airway-bill updated successfully"));
+    }
   },
 };

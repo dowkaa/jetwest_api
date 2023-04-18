@@ -20,6 +20,114 @@ if (process.env.ENV === "test") {
   paystack_key = process.env.PAYSTACK_LIVE_SECRET_KEY;
 }
 
+const parkingListMail = async (shipment_num: string) => {
+  let shipments = await db.dbs.ShippingItems.findAll({
+    where: { shipment_num: shipment_num },
+  });
+  let ar = [];
+  let count = 0;
+  let total_weights = 0;
+  for (const item of shipments) {
+    count++;
+    const { width, height, weight, cargo_index, length, content } = item;
+    total_weights += parseInt(weight);
+    ar.push({
+      count: count,
+      width,
+      weight,
+      height,
+      length,
+      cargo_type: cargo_index,
+      content,
+    });
+  }
+  let cargo = await db.dbs.Cargo.findOne({
+    where: { id: shipments[0].cargo_id },
+  });
+
+  let cargoOwner = await db.dbs.Users.findOne({
+    where: { id: cargo.owner_id },
+  });
+
+  let departure = await db.dbs.Destinations.findOne({
+    where: { state: shipments[0].pickup_location },
+  });
+
+  let destination = await db.dbs.Destinations.findOne({
+    where: { state: shipments[0].destination },
+  });
+  let opts = {
+    name: cargoOwner.first_name + " " + cargoOwner.last_name,
+    organisation: cargoOwner.organisation,
+    content: shipments[0].content,
+    total_weight: total_weights,
+    shipment_num: shipment_num,
+    bag_no: shipments.length,
+    email: cargoOwner.email,
+    departure:
+      departure.code +
+      " " +
+      "-" +
+      " " +
+      departure.state +
+      " " +
+      "-" +
+      " " +
+      departure.country,
+    destination:
+      destination.code +
+      " " +
+      "-" +
+      " " +
+      destination.state +
+      " " +
+      "-" +
+      " " +
+      destination.country,
+    ar,
+  };
+
+  if (shipments[0].agent_id) {
+    let agent = await db.dbs.Users.findOne({
+      where: { uuid: shipments[0].agent_id },
+    });
+    if (agent) {
+      let opts2 = {
+        name: agent.first_name + " " + agent.last_name,
+        organisation: agent.organisation,
+        content: shipments[0].content,
+        total_weight: total_weights,
+        shipment_num: shipment_num,
+        bag_no: shipments[0].length,
+        departure:
+          departure.code +
+          " " +
+          "-" +
+          " " +
+          departure.state +
+          " " +
+          "-" +
+          " " +
+          departure.country,
+        destination:
+          destination.code +
+          " " +
+          "-" +
+          " " +
+          destination.state +
+          " " +
+          "-" +
+          " " +
+          destination.country,
+        email: agent.email,
+        ar,
+      };
+      utilities.parkingList.sendMail(opts2);
+    }
+  }
+  utilities.parkingList.sendMail(opts);
+};
+
 // daily, weekly,bi-weekly dates
 function getDatesOnDaysOfWeek(options: any) {
   const result = [];
@@ -256,13 +364,11 @@ const paymentForShipmentBookingByReceipt = async (option: any) => {
 };
 
 const checkBaggageConfirmation = async (option: any) => {
-  console.log({ option });
   setInterval(async () => {
     const notConfirmedShipment = await db.dbs.ShippingItems.findOne({
       where: { shipment_num: option.shipment_num, is_confirmed: 0 },
     });
 
-    console.log({ notConfirmedShipment: notConfirmedShipment.stod });
     if (notConfirmedShipment) {
       if (
         notConfirmedShipment.stod - Date.now() < 15000000 ||
@@ -499,6 +605,7 @@ const validateTransaction = async (data: any, type: string) => {
           utilities.reciever.sendMail(opts2);
           utilities.paymentSuccess.sendMail(opts3);
 
+          utilities.helpers.parkingListMail(data.shipment_num);
           return "Transaction successful";
         } catch (error: any) {
           await db.dbs.PaystackError.create({
@@ -762,6 +869,7 @@ const validateTransaction = async (data: any, type: string) => {
             shipment_ref: shipment.booking_reference,
           };
           console.log("00000000000000000000000000000");
+          utilities.helpers.parkingListMail(data.shipment_num);
           utilities.reciever.sendMail(opts2);
           utilities.paymentSuccess.sendMail(opts3);
 
@@ -891,7 +999,7 @@ const validateTransaction = async (data: any, type: string) => {
       method: "get",
       url: url,
       headers: {
-        Authorization: `Bearer sk_test_87c7081a3269181a1a163eb7792c8cf67ac1b2ff`,
+        Authorization: `Bearer ${process.env.PAYSTACK_KEY}`,
         "Content-Type": "application/json",
         "Accept-Encoding": "application/json",
       },
@@ -900,38 +1008,141 @@ const validateTransaction = async (data: any, type: string) => {
     try {
       const result = await utilities.axios(option);
 
+      console.log({ result, res: result.data.data });
+
       if (result.data.data.status == "success") {
-        try {
-          var amount = result.data.data.amount / 100;
+        // try {
+        var amount = result.data.data.amount / 100;
+
+        let shipment = await db.dbs.ShippingItems.findOne({
+          where: { shipment_num: data.shipment_num },
+        });
+
+        if (!shipment) {
+          return "Shipment number not recognised by system";
+        }
+
+        let checkT = await db.dbs.Transactions.findOne({
+          where: {
+            reference: data.reference,
+          },
+        });
+
+        let user = await db.dbs.Users.findOne({ where: { id: data.id } });
+
+        console.log("1111111111111111111111111111111111111111111111111");
+
+        if (!checkT) {
+          let t = await db.dbs.Transactions.create({
+            uuid: utilities.uuid(),
+            user_id: data.id,
+            amount: amount,
+            reference: data.reference,
+            departure: shipment.pickup_location,
+            arrival: shipment.destination,
+            cargo_id: shipment.cargo_id,
+            departure_date: shipment.depature_date,
+            arrival_date: shipment.arrival_date,
+            booked_by: shipment.shipperName,
+            company_name: data.company_name,
+            shipment_no: data.shipment_num,
+            weight:
+              parseFloat(shipment.volumetric_weight) >
+              parseFloat(shipment.weight)
+                ? shipment.volumetric_weight
+                : shipment.weight,
+            reciever_organisation: shipment.reciever_organisation,
+            pricePerkeg: shipment.ratePerKg,
+            no_of_bags: shipment.no_of_bags,
+            type: "credit",
+            method: "paystack",
+            description: `Payment for shipment with no ${shipment.shipment_num}`,
+            status: "success",
+          });
+
+          console.log("2222222222222222222222222222");
+
+          await db.dbs.CustomerAuditLog.create({
+            uuid: utilities.uuid(),
+            user_id: user.id,
+            description: `A user with name ${user.first_name} ${user.last_name} payment of the sum of ${amount} using the paystack checkout was successful`,
+            data: JSON.stringify(t),
+          });
+
+          console.log({ data });
+
+          console.log("333333333333333333333333");
+
+          let checker = await db.dbs.PaystackStarter.findOne({
+            where: { reference: data.reference },
+          });
+
+          console.log("4444444444444444444444444444");
+
+          if (checker) {
+            checker.status = "success";
+            await checker.save();
+          }
+
+          console.log("55555555555555555555555");
 
           await db.dbs.ShippingItems.update(
             { payment_status: "SUCCESS" },
-            { where: { shipment_num: data.shipment_num } }
+            {
+              where: {
+                reference: data.reference,
+              },
+            }
           );
 
-          let transaction = await db.dbs.Transactions.findOne({
-            where: { shipment_no: data.shipment_num },
-          });
-
-          if (amount < parseFloat(transaction.amount)) {
-            return "Amount paid is less than amount charged for shipments, kindly contact customer support.";
-          }
-
-          transaction.reference = data.reference;
-          transaction.type = "credit";
-          transaction.method = "paystack";
-          transaction.status = "success";
-          await transaction.save();
-
-          return "Transaction successful";
-        } catch (error: any) {
-          await db.dbs.PaystackError.create({
-            uuid: utilities.uuid(),
-            data: JSON.stringify(error.response.data),
-          });
-
-          return error.response.data.message;
+          await db.dbs.ShippingItems.update(
+            { status: "upcoming" },
+            {
+              where: {
+                reference: data.reference,
+              },
+            }
+          );
         }
+
+        console.log("666666666666666666666666666666");
+
+        if (shipment.agent_id) {
+          let checker = await db.dbs.Users.findOne({
+            where: { id: shipment.agent_id },
+          });
+          console.log("777777777777777777777777777777");
+
+          const opts1 = {
+            name: checker.first_name + " " + checker.last_name,
+            email: checker.email,
+            shipment_num: shipment.shipment_num,
+          };
+          utilities.agent.sendMail(opts1);
+          console.log("88888888888888888888888888888888");
+        }
+
+        const opts2 = {
+          name: shipment.reciever_firstname + " " + shipment.reciever_lastname,
+          email: shipment.reciever_email,
+          shipment_num: shipment.shipment_num,
+          shipper_name: shipment.shipperName,
+          arrival_date: shipment.arrival_date,
+        };
+        console.log("9999999999999999999999999999999999");
+
+        const opts3 = {
+          email: user.email,
+          name: user.shipperName,
+          amount: amount,
+          shipment_ref: shipment.booking_reference,
+        };
+        console.log("00000000000000000000000000000");
+        utilities.helpers.parkingListMail(data.shipment_num);
+        utilities.reciever.sendMail(opts2);
+        utilities.paymentSuccess.sendMail(opts3);
+
+        return "Transaction successful";
       } else {
         try {
           var amount = result.data.data.amount / 100;
@@ -957,6 +1168,7 @@ const validateTransaction = async (data: any, type: string) => {
         }
       }
     } catch (err: any) {
+      console.log({ err });
       await db.dbs.PaystackError.create({
         uuid: utilities.uuid(),
         data: JSON.stringify(err.response.data),
@@ -1060,7 +1272,6 @@ const addShipmentAndCreditUser = async (
   const {
     items,
     pickup_location,
-    cargo_type,
     destination,
     stod,
     total_weight,
@@ -1168,7 +1379,7 @@ const addShipmentAndCreditUser = async (
     return resp;
   }
 
-  for (const item of cargo_type) {
+  for (const item of req.body.cargo_type) {
     if (cargo.cargo_types) {
       if (!JSON.parse(cargo.cargo_types).includes(item)) {
         let resp = {
@@ -1196,6 +1407,7 @@ const addShipmentAndCreditUser = async (
       weight,
       length,
       shipment_ref,
+      cargo_type,
       category,
       ba_code_url,
       promo_code,
@@ -1287,6 +1499,7 @@ const addShipmentAndCreditUser = async (
         reference: payment_ref,
         value,
         pickup_location,
+        cargo_index: cargo_type,
         chargeable_weight,
         cargo_id: cargo.id,
         destination,
@@ -1342,6 +1555,7 @@ const addShipmentAndCreditUser = async (
         destination,
         depature_date: depature_date.split("/").reverse().join("-"),
         width,
+        cargo_index: cargo_type,
         length: length,
         height,
         insurance,
@@ -1413,6 +1627,7 @@ const addShipmentAndCreditUser = async (
   let amount = total_amount;
   console.log({ customer111: req.user.customer_id });
 
+  utilities.helpers.parkingListMail(shipment_num);
   utilities.helpers.logApiTransaction(
     req.user.customer_id,
     amount,
@@ -1451,7 +1666,6 @@ const logPendingShipment = async (req: any, res: Response, item: any) => {
     total_weight,
     agent_id,
     payment_ref,
-    cargo_type,
     reciever_email,
     total_amount,
     reciever_firstname,
@@ -1555,7 +1769,7 @@ const logPendingShipment = async (req: any, res: Response, item: any) => {
     return resp;
   }
 
-  for (const item of cargo_type) {
+  for (const item of req.body.cargo_type) {
     if (cargo.cargo_types) {
       if (!JSON.parse(cargo.cargo_types).includes(item)) {
         let resp = {
@@ -1584,6 +1798,7 @@ const logPendingShipment = async (req: any, res: Response, item: any) => {
       length,
       shipment_ref,
       category,
+      cargo_type,
       ba_code_url,
       promo_code,
       depature_date,
@@ -1669,6 +1884,7 @@ const logPendingShipment = async (req: any, res: Response, item: any) => {
         flight_id: v.id,
         type,
         user_id: req.user.id,
+        cargo_index: cargo_type,
         agent_id: agent.id,
         shipment_num,
         reference: payment_ref,
@@ -1725,6 +1941,7 @@ const logPendingShipment = async (req: any, res: Response, item: any) => {
         value,
         pickup_location,
         stod: items[0].depature_date + " " + stod,
+        cargo_index: cargo_type,
         chargeable_weight,
         cargo_id: cargo.id,
         destination,
@@ -1978,6 +2195,7 @@ module.exports = {
   updateShipment,
   logApiTransaction,
   getDatesOnDaysOfWeek,
+  parkingListMail,
   getMonthlyDate,
   getYearlyDate,
   checkPromo,

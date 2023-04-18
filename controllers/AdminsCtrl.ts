@@ -2092,16 +2092,12 @@ module.exports = {
       permissions: JSON.stringify(permissions),
     });
 
-    //console.log("1223344");
-
     await db.dbs.AuditLogs.create({
       uuid: utill.uuid(),
       user_id: req.user.uuid,
       description: `Admin ${req.user.first_name} ${req.user.last_name} created a role with name ${name}`,
       data: JSON.stringify(req.body),
     });
-
-    //console.log("556644");
 
     return res
       .status(200)
@@ -2384,7 +2380,6 @@ module.exports = {
         .status(400)
         .json(utill.helpers.sendError("Access denied for current admin type"));
     }
-    console.log("kkkkkkkk");
     // return;
 
     let cargo = await db.dbs.Cargo.findOne({ where: { uuid: cargo_id } });
@@ -2797,8 +2792,6 @@ with note ${note}`,
       if (!role) {
         return res.status(400).json(utill.helpers.sendError("Role not found"));
       }
-
-      console.log({ role: role.permissions });
 
       user.admin_type = role.name;
       user.roles = role.permissions;
@@ -4808,8 +4801,6 @@ with note ${note}`,
     const { pageNum, airport, all, today, seven, month, start, end } =
       req.query;
     let allLoadedBags;
-
-    console.log({ req: req.query });
 
     var currentPage = parseInt(pageNum) ? parseInt(pageNum) : 1;
 

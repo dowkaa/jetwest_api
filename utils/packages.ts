@@ -60,6 +60,7 @@ exports.firstMailer = require("../Mail/firstMail");
 exports.secondMailer = require("../Mail/secondMail");
 exports.welcome = require("../Mail/welcome");
 exports.contactUs = require("../Mail/contactUs");
+exports.parkingList = require("../Mail/parkingList");
 exports.verify = require("../Mail/verify");
 exports.paymentValidation = require("../Mail/payment_validation");
 exports.paymentApproval = require("../Mail/payment_approval");

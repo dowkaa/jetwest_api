@@ -15,32 +15,35 @@
     <style>
       @import
       url("https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap");
-      * { margin: 0; padding: 0; box-sizing: border-box; } body { font-family:
-      "Poppins", sans-serif; background: #f3f3f3; } header { padding: 20px; }
-      .hero { text-align: center; } .hero .logo { width: 45%; padding-top: 40px;
-      } .main { position: relative; } .main-content { padding: 20px;
-      padding-top: 20px; text-align: center; /* height: 100vh; */ }
-      .main-content .title { font-size: 18px; text-align: center; line-height:
-      28px; } .main-content .hero-p { font-size: 14px; padding-top: 10px; }
-      .main-content .hero-p .welcome-message { padding-top: 20px; /* text-align:
-      justify; */ } .main-content .link { display: inline-block; color: #85025a;
-      font-size: 14px; padding-top: 30px; } .main-content .sub-info { display:
-      block; font-size: 13px; padding-top: 80px; padding-bottom: 5rem; /*
-      text-align: justify; */ } .footer { margin-top: 20px; padding: 20px;
-      background: linear-gradient(92.03deg, #c91c6f 28.72%, #a12278 88.13%);
-      color: rgba(255, 255, 255, 0.8); text-align: center; font-size: 14px; }
-      .footer .unsubscribe a { display: inline-block; color: rgba(255, 255, 255,
-      0.8); padding-bottom: 10px; /* line-height: 5; */ } .social-links {
-      margin: 5px 0; } .social-links .social-icon { color: rgba(255, 255, 255,
-      0.48); font-size: 30px; margin-left: 20px; /* float: left; width: 25%; */
-      } .social-image { width: 30px; } .copyright { font-size: 12px; clear:
-      both; } .address { line-height: 3; } @media screen and (min-width: 768px)
-      { .hero .logo { width: 12%; padding-top: 20px; } .main-content .title {
-      font-size: 24px; width: 40%; margin: 0 auto; padding-top: 20px; }
-      .main-content .hero-p { font-size: 16px; width: 40%; margin: 0 auto;
-      padding-top: 30px; } .main-content .link { font-size: 16px; }
-      .main-content .sub-info { width: 45%; margin: 0 auto; font-size: 15px;
-      padding-bottom: 1rem; } .footer { padding-top: 30px; } }
+      * { margin: 0; padding: 0; box-sizing: border-box; } td { padding: 3px; }
+      body { font-family: "Poppins", sans-serif; background: #f3f3f3; } header {
+      padding: 20px; } .hero { text-align: center; } .hero .logo { width: 45%;
+      padding-top: 40px; } td { text-align: center; padding: 5px; } thead > tr >
+      td{ background: gray; } .main { position: relative; } .main-content {
+      padding: 20px; padding-top: 20px; text-align: center; /* height: 100vh; */
+      } .main-content .title { font-size: 18px; text-align: center; line-height:
+      28px; } .main-content .hero-p { font-size: 14px; padding-top: 40px;
+      text-align: justify; } .main-content .link { display: inline-block; color:
+      #85025a; font-size: 14px; padding-top: 30px; } .main-content .sub-info {
+      display: block; font-size: 13px; padding-top: 50px; padding-bottom: 2rem;
+      } .main-content .table-info { margin-top: 20px; text-align: left; }
+      .main-content .table-info .title { margin-bottom: 10px; text-align: left;
+      font-size: 16px; } .main-content .otp-code { color: #c91c6f; font-weight:
+      bold; } .footer { margin-top: 20px; padding: 20px; background:
+      linear-gradient(92.03deg, #c91c6f 28.72%, #a12278 88.13%); color:
+      rgba(255, 255, 255, 0.8); text-align: center; font-size: 14px; } .footer
+      .unsubscribe a { display: inline-block; color: rgba(255, 255, 255, 0.8);
+      padding-bottom: 10px; /* line-height: 5; */ } .social-links { margin: 5px
+      0; } .social-links .social-icon { color: rgba(255, 255, 255, 0.48);
+      font-size: 30px; margin-left: 20px; /* float: left; width: 25%; */ }
+      .social-image { width: 30px; } .copyright { font-size: 12px; clear: both;
+      } .address { line-height: 3; } @media screen and (min-width: 768px) {
+      .hero .logo { width: 12%; padding-top: 20px; } .main-content .title {
+      font-size: 24px; padding-top: 20px; } .main-content .hero-p { font-size:
+      16px; width: 40%; margin: 0 auto; } .main-content .link { font-size: 16px;
+      } .main-content .sub-info { width: 45%; margin: 0 auto; font-size: 15px;
+      padding-bottom: 1rem; } .main-content .table-info { width: 40%; margin: 0
+      auto; } .footer { padding-top: 30px; } }
     </style>
   </head>
 
@@ -56,27 +59,178 @@
         </div>
       </header>
       <section class="main-content">
-        <h3 style="color: #010912" class="title">Hey {{name}}</h3>
+        <h4 style="color: #010912" class="title">Hey {{name}},</h4>
+
         <div class="hero-p">
-          <p class="welcome-message">
-            We'd like to confirm that your account was created successfully, and
-            you can now start shipping with Dowkaa.
-          </p>
+          <h4 style="color: #010912" class="title">Detailed in this email is the
+            parking list information needed to create an air waybill.
+          </h4>
+          <h4 style="color: #010912" class="title">Shipper's information </h4>
+          <p class="title">Shipper's name: {{organisation}}</p>
+          <p class="title">Package Content: {{content}}</p>
+          <p class="title">No. of bags: {{bag_no}}</p>
+          <p class="title">Total weight: {{total_weight}}</p>
 
-          <p class="welcome-message" style="padding-top: 40px;">
-            If you have any issues with logging into your account, reach out to
-            us at help at
-            <a
-              style="text-decoration: underline; color: #c91c6f;"
-              target="_blank"
-              href="hi@dowkaa.com"
-            >hi@dowkaa.com</a>
-          </p>
+          <br />
+          <h4 style="color: #010912" class="title">Shipment number:
+            {{Shipment_num}}
+          </h4>
+        </div>
+        <div class="table-info">
+          <table border="2" style="border-collapse: collapse; width: 100%;">
+            <thead>
+              <tr>
+                <td
+                  style="
+                    border-left: none;
+                    border-top: none;
+                    border: 2px solid #000000;
+                  "
+                >
+                  Bags
+                </td>
+                <td
+                  style="
+                    border-left: none;
+                    border-top: none;
+                    border: 2px solid #000000;
+                  "
+                >
+                  Content
+                </td>
+                <td
+                  style="
+                    border-left: none;
+                    border-top: none;
+                    border: 2px solid #000000;
+                  "
+                >
+                  Cargo Type
+                </td>
+                <td
+                  style="
+                    border-left: none;
+                    border-top: none;
+                    border: 2px solid #000000;
+                  "
+                >
+                  Weight
+                </td>
+                <td
+                  style="
+                    border-left: none;
+                    border-top: none;
+                    border: 2px solid #000000;
+                  "
+                >
+                  Height
+                </td>
+                <td
+                  style="
+                    border-left: none;
+                    border-top: none;
+                    border: 2px solid #000000;
+                  "
+                >
+                  Length
+                </td>
+                <td
+                  style="
+                    border-left: none;
+                    border-top: none;
+                    border: 2px solid #000000;
+                  "
+                >
+                  Width
+                </td>
+              </tr>
+            </thead>
 
-          <div style="margin-top: 80px">
-            <span>Best,</span>
-            <h4>The Dowkaa Team</h4>
-          </div>
+            <tbody>
+              {{#each data as |value key|}}
+                <tr>
+                  <td
+                    style="
+                    border-left: none;
+                    border-top: none;
+                    border: 2px solid #000000;
+                  "
+                  >
+                    {{value.count}}
+                  </td>
+                  <td
+                    style="
+                    border-left: none;
+                    border-top: none;
+                    border: 2px solid #000000;
+                  "
+                  >
+                    {{value.content}}
+                  </td>
+                  <td
+                    style="
+                    border-left: none;
+                    border-top: none;
+                    border: 2px solid #000000;
+                  "
+                  >
+                    {{value.cargo_type}}
+                  </td>
+                  <td
+                    style="
+                    border-left: none;
+                    border-top: none;
+                    border: 2px solid #000000;
+                  "
+                  >
+                    {{value.content}}
+                  </td>
+                  <td
+                    style="
+                    border-left: none;
+                    border-top: none;
+                    border: 2px solid #000000;
+                  "
+                  >
+                    {{value.height}}
+                  </td>
+                  <td
+                    style="
+                    border-left: none;
+                    border-top: none;
+                    border: 2px solid #000000;
+                  "
+                  >
+                    {{value.length}}
+                  </td>
+                  <td
+                    style="
+                    border-left: none;
+                    border-top: none;
+                    border: 2px solid #000000;
+                  "
+                  >
+                    {{value.width}}
+                  </td>
+
+                </tr>
+
+              {{/each}}
+            </tbody>
+
+          </table>
+        </div>
+
+        <div class="hero-p" style="padding: 10px; margin-top: 30px">
+          <h4 style="color: #010912" class="title">Route information</h4>
+          <p class="title">Departure Airport: {{departure}}</p>
+          <p class="title">Destination Airport: {{destination}}</p>
+        </div>
+
+        <div class="sub-info">
+          Thanks,
+          <br />
+          The Dowkaa team
         </div>
       </section>
     </main>

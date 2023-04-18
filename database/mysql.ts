@@ -131,6 +131,26 @@ dbs.ShippingItems.belongsTo(dbs.ScheduleFlights, {
   as: "shipping_items",
 });
 
+dbs.Users.hasMany(dbs.ShippingItems, {
+  foreignKey: "user_id",
+  as: "shipments_booked_on_flight",
+});
+
+dbs.ShippingItems.belongsTo(dbs.Users, {
+  foreignKey: "user_id",
+  as: "shipments_booked_on_flight",
+});
+
+dbs.Users.hasMany(dbs.ShippingItems, {
+  foreignKey: "agent_id",
+  as: "agents",
+});
+
+dbs.ShippingItems.belongsTo(dbs.Users, {
+  foreignKey: "agent_id",
+  as: "agents",
+});
+
 dbs.ScheduleFlights.hasMany(dbs.ShippingItems, {
   foreignKey: "flight_id",
   as: "shipping_items",
@@ -138,12 +158,12 @@ dbs.ScheduleFlights.hasMany(dbs.ShippingItems, {
 
 dbs.ScheduleFlights.belongsTo(dbs.Cargo, {
   foreignKey: "aircraft_id",
-  as: "scheduled",
+  as: "cargo",
 });
 
 dbs.Cargo.hasMany(dbs.ScheduleFlights, {
   foreignKey: "aircraft_id",
-  as: "scheduled",
+  as: "cargo",
 });
 
 dbs.ShipmentInvoives.belongsTo(dbs.Users, {

@@ -542,6 +542,7 @@ module.exports = {
         length: util.Joi.number().required(),
         weight: util.Joi.number().required(),
         height: util.Joi.number().required(),
+        cargo_type: util.Joi.string().required(),
         category: util.Joi.string().allow(""),
         promo_code: util.Joi.string().allow(""),
         value: util.Joi.number().required(),
@@ -705,6 +706,7 @@ module.exports = {
         shipment_ref,
         category,
         ba_code_url,
+        cargo_type,
         promo_code,
         depature_date,
         value,
@@ -793,6 +795,7 @@ module.exports = {
         value,
         pickup_location,
         chargeable_weight,
+        cargo_index: cargo_type,
         cargo_id: cargo.id,
         destination,
         depature_date: depature_date.split("/").reverse().join("-"),
@@ -1082,6 +1085,7 @@ module.exports = {
       };
       util.reciever.sendMail(opts2);
       util.paymentSuccess.sendMail(opts3);
+      util.helpers.parkingListMail(shipment_num);
 
       return res
         .status(200)

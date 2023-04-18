@@ -476,7 +476,7 @@ module.exports = {
       .keys({
         items: utill.Joi.array().required(),
         pickup_location: utill.Joi.string().required(),
-        cargo_type: utill.Joi.string().required(),
+        cargo_type: utill.Joi.array().required(),
         payment_ref: utill.Joi.string().required(),
         destination: utill.Joi.string().required(),
         total_weight: utill.Joi.number().required(),
@@ -507,6 +507,7 @@ module.exports = {
         shipment_ref: utill.Joi.string().required(),
         width: utill.Joi.number().required(),
         length: utill.Joi.number().required(),
+        cargo_type: utill.Joi.string().required(),
         weight: utill.Joi.number().required(),
         height: utill.Joi.number().required(),
         category: utill.Joi.string().allow(""),
@@ -530,7 +531,6 @@ module.exports = {
       items,
       pickup_location,
       destination,
-      cargo_type,
       stod,
       total_weight,
       agent_id,
@@ -649,7 +649,7 @@ module.exports = {
         );
     }
 
-    for (const item of cargo_type) {
+    for (const item of req.body.cargo_type) {
       if (cargo.cargo_types) {
         if (!JSON.parse(cargo.cargo_types).includes(item)) {
           return res
@@ -677,6 +677,7 @@ module.exports = {
         weight,
         length,
         shipment_ref,
+        cargo_type,
         category,
         ba_code_url,
         promo_code,
@@ -783,6 +784,7 @@ module.exports = {
           shipment_routeId: route.id,
           scan_code,
           weight,
+          cargo_index: cargo_type,
           ratePerKg: route.ratePerKg,
           logo_url: v.logo_url,
           arrival_date: v.arrival_date,
@@ -819,6 +821,7 @@ module.exports = {
           pickup_location,
           chargeable_weight,
           cargo_id: cargo.id,
+          cargo_index: cargo_type,
           destination,
           depature_date: depature_date.split("/").reverse().join("-"),
           width,
@@ -870,14 +873,14 @@ module.exports = {
       customer_id: req.user.customer_id,
     };
 
-    let response = await utill.helpers.validateTransaction(option);
+    utill.helpers.validateTransaction(option, "team");
 
     // if (status) {
     return res
       .status(200)
       .json(
         utill.helpers.sendSuccess(
-          "Shipment booked successfully, the Dowkaa team would reach out to to soon."
+          "Shipment booked successfully, the Dowkaa team would reach out to you soon."
         )
       );
   },
