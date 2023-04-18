@@ -158,12 +158,12 @@ dbs.ScheduleFlights.hasMany(dbs.ShippingItems, {
 
 dbs.ScheduleFlights.belongsTo(dbs.Cargo, {
   foreignKey: "aircraft_id",
-  as: "cargo",
+  as: "scheduled",
 });
 
 dbs.Cargo.hasMany(dbs.ScheduleFlights, {
   foreignKey: "aircraft_id",
-  as: "cargo",
+  as: "scheduled",
 });
 
 dbs.ShipmentInvoives.belongsTo(dbs.Users, {

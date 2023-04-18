@@ -486,7 +486,7 @@ module.exports = {
       include: [
         {
           model: db.dbs.Cargo,
-          as: "cargo",
+          as: "scheduled",
         },
       ],
     });
