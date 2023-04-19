@@ -1,5 +1,5 @@
 export {};
-import { NextFunction, Response } from "express";
+import { Request, Response, NextFunction } from "express";
 const util = require("../utils/packages");
 const { paginate } = require("paginate-info");
 const { Op, QueryTypes } = require("sequelize");
@@ -543,6 +543,14 @@ module.exports = {
     res: Response,
     next: NextFunction
   ): Promise<Response> => {
+    const { pageNum } = req.query;
+
+    if (!pageNum || isNaN(pageNum)) {
+      return res
+        .status(400)
+        .json(util.helpers.sendError("Kindly add a valid page number"));
+    }
+
     let user = await db.dbs.Users.findOne({ where: { uuid: req.user.uuid } });
 
     if (user.type === "Shipper") {
@@ -554,11 +562,48 @@ module.exports = {
           )
         );
     }
-    let allShipments = await db.dbs.ShippingItems.findAll({
+
+    var currentPage = parseInt(pageNum) ? parseInt(pageNum) : 1;
+
+    var page = currentPage - 1;
+    var pageSize = 25;
+    const offset = page * pageSize;
+    const limit = pageSize;
+
+    let allShipments = await db.dbs.ShippingItems.findAndCountAll({
+      offset: offset,
+      limit: limit,
       where: { user_id: req.user.id },
+      order: [["id", "DESC"]],
     });
 
-    return res.status(200).json({ allShipments });
+    var next_page = currentPage + 1;
+    var prev_page = currentPage - 1;
+    var nextP = `/api/dowkaa/open-api/all-shipments?pageNum=` + next_page;
+    var prevP = `/api/dowkaa/open-api/all-shipments?pageNum=` + prev_page;
+
+    const meta = paginate(
+      currentPage,
+      allShipments.count,
+      allShipments.rows,
+      pageSize
+    );
+
+    return res.status(200).json({
+      status: "SUCCESS",
+      data: allShipments,
+      per_page: pageSize,
+      current_page: currentPage,
+      last_page: meta.pageCount, //transactions.count,
+      first_page_url: `/api/dowkaa/open-api/all-shipments?pageNum=1`,
+      last_page_url:
+        `/api/dowkaa/open-api/all-shipments?pageNum=` + meta.pageCount, //transactions.count,
+      next_page_url: nextP,
+      prev_page_url: prevP,
+      path: `/api/dowkaa/open-api/all-shipments?pageNum=`,
+      from: 1,
+      to: meta.pageCount, //transactions.count,
+    });
   },
 
   singleShpment: async (
@@ -596,8 +641,6 @@ module.exports = {
     res: Response,
     next: NextFunction
   ): Promise<Response> => {
-    let user = await db.dbs.Users.findOne({ where: { uuid: req.user.uuid } });
-
     let { booking_ref, pageNum } = req.query;
 
     if (!pageNum || isNaN(pageNum) || !booking_ref) {
@@ -1100,19 +1143,101 @@ module.exports = {
     res: Response,
     next: NextFunction
   ): Promise<Response> => {
-    let id = req.query.flight_id;
+    const { pageNum, flight_uuid } = req.query;
 
-    if (!id) {
+    if (!pageNum || isNaN(pageNum)) {
+      return res
+        .status(400)
+        .json(util.helpers.sendError("Kindly add a valid page number"));
+    }
+
+    if (!flight_uuid) {
       return res
         .status(400)
         .json(util.helpers.sendError("Kindly add a valid scheduled flight id"));
     }
 
-    let shippingItems = await db.dbs.ShippingItems.findAll({
-      where: { flight_id: id },
+    var flight = await db.dbs.ScheduleFlights.findOne({
+      where: { uuid: flight_uuid },
     });
 
-    return res.status(200).json({ shippingItems });
+    if (!flight) {
+      return res
+        .status(400)
+        .json(
+          util.helpers.sendError("Sceduled flight with unique id not found")
+        );
+    }
+
+    let user = await db.dbs.Users.findOne({ where: { uuid: req.user.uuid } });
+
+    if (user.type === "Shipper") {
+      return res
+        .status(400)
+        .json(
+          util.helpers.sendError(
+            "Non Shippers are not allowed to access this API"
+          )
+        );
+    }
+
+    var currentPage = parseInt(pageNum) ? parseInt(pageNum) : 1;
+
+    var page = currentPage - 1;
+    var pageSize = 25;
+    const offset = page * pageSize;
+    const limit = pageSize;
+
+    let allShipments = await db.dbs.ShippingItems.findAndCountAll({
+      offset: offset,
+      limit: limit,
+      where: { flight_id: flight.id },
+      order: [["id", "DESC"]],
+    });
+
+    // /api/dowkaa/open-api/get-shipments-in-flight?pageNum=1&flight_id=92
+
+    var next_page = currentPage + 1;
+    var prev_page = currentPage - 1;
+    var nextP =
+      `/api/dowkaa/open-api/get-shipments-in-flight?pageNum=` +
+      next_page +
+      `&flight_id=` +
+      flight_uuid;
+    var prevP =
+      `/api/dowkaa/open-api/get-shipments-in-flight?pageNum=` +
+      prev_page +
+      `&flight_id=` +
+      flight_uuid;
+
+    const meta = paginate(
+      currentPage,
+      allShipments.count,
+      allShipments.rows,
+      pageSize
+    );
+
+    return res.status(200).json({
+      status: "SUCCESS",
+      data: allShipments,
+      per_page: pageSize,
+      current_page: currentPage,
+      last_page: meta.pageCount, //transactions.count,
+      first_page_url:
+        `/api/dowkaa/open-api/get-shipments-in-flight?pageNum=1` +
+        `&flight_id=` +
+        flight_uuid,
+      last_page_url:
+        `/api/dowkaa/open-api/get-shipments-in-flight?pageNum=` +
+        meta.pageCount +
+        `&flight_id=` +
+        flight_uuid, //transactions.count,
+      next_page_url: nextP,
+      prev_page_url: prevP,
+      path: `/api/dowkaa/open-api/get-shipments-in-flight?pageNum=&flight_id=`,
+      from: 1,
+      to: meta.pageCount, //transactions.count,
+    });
   },
 
   getData: async (
@@ -1153,5 +1278,109 @@ module.exports = {
       });
 
     return res.status(200).json({ allLogistics });
+  },
+
+  allPendingShipments: async (
+    req: Request,
+    res: Response,
+    next: NextFunction
+  ) => {
+    const { pickup_location, destination } = req.query;
+    if (!(pickup_location && destination)) {
+      return res
+        .status(400)
+        .json(
+          util.helpers.sendError(
+            "Kindly add valid pick up location and destintion"
+          )
+        );
+    }
+    let checker = await db.dbs.ScheduleFlights.findAll({
+      where: {
+        departure_station: pickup_location,
+        destination_station: destination,
+        status: "pending",
+      },
+      include: [
+        {
+          model: db.dbs.Cargo,
+          as: "scheduled",
+        },
+      ],
+    });
+
+    return res.status(200).json({ data: checker });
+  },
+
+  checkFlightAvailability: async (
+    req: any,
+    res: Response,
+    next: NextFunction
+  ) => {
+    const { pickup_location, destination, stod, total_weight, date } =
+      req.query;
+
+    if (!(pickup_location && destination && stod && total_weight && date)) {
+      return res
+        .status(400)
+        .json(
+          util.helpers.sendError(
+            "Kindly add valid pick up location, destintion stod and total weight"
+          )
+        );
+    }
+
+    let v = await db.dbs.ScheduleFlights.findOne({
+      where: {
+        departure_station: pickup_location,
+        destination_station: destination,
+        stod: stod,
+        status: "pending",
+      },
+    });
+
+    if (!v) {
+      return res
+        .status(400)
+        .json(
+          util.helpers.sendError(
+            "Flight for destination and time not available"
+          )
+        );
+    }
+
+    let arr = JSON.parse(v.departure_date);
+
+    if (!arr.includes(date)) {
+      return res
+        .status(400)
+        .json(
+          util.helpers.sendError(
+            `Scheduled flight not available for the departure date entered kindly reschedule for another departure date`
+          )
+        );
+    }
+
+    if (Date.parse(date + " " + stod) - new Date().getTime() <= 1079999) {
+      return res
+        .status(400)
+        .json(
+          util.helpers.sendError(
+            "Flight not available for booking, already in transit"
+          )
+        );
+    }
+
+    if (v.available_capacity < parseInt(total_weight)) {
+      return res
+        .status(400)
+        .json(
+          util.helpers.sendError(
+            "Flight not availbale to carry total weight, kindly book another flight or contact customer support"
+          )
+        );
+    }
+
+    return res.status(200).json(util.helpers.sendSuccess("Flight available"));
   },
 };
