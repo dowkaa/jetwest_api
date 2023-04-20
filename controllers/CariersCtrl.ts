@@ -638,10 +638,10 @@ module.exports = {
     }
 
     if (JSON.parse(item.departure_date.includes(date))) {
-      let checker = util.appCache.has(req.url);
+      let checker = util.appCache.has(req.url + item.id);
       let users;
       if (checker) {
-        users = util.appCache.get(req.url);
+        users = util.appCache.get(req.url + item.id);
       } else {
         users = await db.dbs.Users.findAll({
           attributes: {
@@ -667,7 +667,7 @@ module.exports = {
           ],
           order: [["createdAt", "DESC"]],
         });
-        util.appCache.set(req.url, users);
+        util.appCache.set(req.url + item.id, users);
       }
 
       return res.status(200).json({ users });
