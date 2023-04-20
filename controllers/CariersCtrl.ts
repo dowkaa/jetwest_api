@@ -583,9 +583,17 @@ module.exports = {
         );
     }
 
-    let user = await db.dbs.Users.findOne({
-      where: { uuid: req.user.uuid, verification_status: "completed" },
-    });
+    let checker = util.appCache.has("get-user-from-schedule" + uuid);
+    let user;
+
+    if (checker) {
+      user = util.appCache.get("get-user-from-schedule" + uuid);
+    } else {
+      user = await db.dbs.Users.findOne({
+        where: { uuid: req.user.uuid, verification_status: "completed" },
+      });
+      util.appCache.set("get-user-from-schedule" + uuid, user);
+    }
 
     if (user.type !== "Carrier") {
       return res
@@ -613,7 +621,15 @@ module.exports = {
         .json(util.helpers.sendError("Kindly add a valid scheduled flight id"));
     }
 
-    let item = await db.dbs.ScheduleFlights.findOne({ where: { uuid: uuid } });
+    let itemChecker = util.appCache.has("get-item-from-schedule" + uuid);
+    let item;
+
+    if (itemChecker) {
+      item = util.appCache.get("get-item-from-schedule" + uuid);
+    } else {
+      item = await db.dbs.ScheduleFlights.findOne({ where: { uuid: uuid } });
+      util.appCache.set("get-item-from-schedule" + uuid, item);
+    }
 
     if (!item) {
       return res
