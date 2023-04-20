@@ -650,7 +650,7 @@ module.exports = {
           include: [
             {
               model: db.dbs.ShippingItems,
-              where: { flight_id: item.id },
+              where: { flight_id: item.id, depature_date: date },
               as: "shipments_booked_on_flight",
               required: true,
               include: [
