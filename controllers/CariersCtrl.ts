@@ -615,13 +615,13 @@ module.exports = {
 
     let item = await db.dbs.ScheduleFlights.findOne({ where: { uuid: uuid } });
 
-    if (JSON.parse(item.departure_date.includes(date))) {
-      if (!item) {
-        return res
-          .status(400)
-          .json(util.helpers.sendError("Scheduled flight with uuid not found"));
-      }
+    if (!item) {
+      return res
+        .status(400)
+        .json(util.helpers.sendError("Scheduled flight with uuid not found"));
+    }
 
+    if (JSON.parse(item.departure_date.includes(date))) {
       let checker = util.appCache.has(req.url);
       let users;
       if (checker) {
