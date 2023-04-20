@@ -571,7 +571,17 @@ module.exports = {
     res: Response,
     next: NextFunction
   ): Promise<Response> => {
-    let uuid = req.query.uuid;
+    let { uuid, date } = req.query;
+
+    if (!(date && uuid)) {
+      return res
+        .status(400)
+        .json(
+          util.helpers.sendError(
+            "Kindly add a valid date and a valid schedule unique id"
+          )
+        );
+    }
 
     let user = await db.dbs.Users.findOne({
       where: { uuid: req.user.uuid, verification_status: "completed" },
@@ -605,38 +615,52 @@ module.exports = {
 
     let item = await db.dbs.ScheduleFlights.findOne({ where: { uuid: uuid } });
 
-    if (!item) {
-      return res
-        .status(400)
-        .json(util.helpers.sendError("Scheduled flight with uuid not found"));
-    }
+    if (JSON.parse(item.departure_date.includes(date))) {
+      if (!item) {
+        return res
+          .status(400)
+          .json(util.helpers.sendError("Scheduled flight with uuid not found"));
+      }
 
-    let users = await db.dbs.Users.findAll({
-      attributes: {
-        exclude: ["id", "password", "otp", "locked", "activated"],
-      },
-      include: [
-        {
-          model: db.dbs.ShippingItems,
-          where: { flight_id: item.id },
-          as: "shipments_booked_on_flight",
-          required: true,
+      let checker = util.appCache.has(req.url);
+      let users;
+      if (checker) {
+        users = util.appCache.get(req.url);
+      } else {
+        users = await db.dbs.Users.findAll({
+          attributes: {
+            exclude: ["id", "password", "otp", "locked", "activated"],
+          },
           include: [
             {
-              model: db.dbs.Users,
-              as: "agents",
-              distinct: true,
-              attributes: {
-                exclude: ["id", "password", "otp", "locked", "activated"],
-              },
+              model: db.dbs.ShippingItems,
+              where: { flight_id: item.id },
+              as: "shipments_booked_on_flight",
+              required: true,
+              include: [
+                {
+                  model: db.dbs.Users,
+                  as: "agents",
+                  distinct: true,
+                  attributes: {
+                    exclude: ["id", "password", "otp", "locked", "activated"],
+                  },
+                },
+              ],
             },
           ],
-        },
-      ],
-      order: [["createdAt", "DESC"]],
-    });
+          order: [["createdAt", "DESC"]],
+        });
+        util.appCache.set(req.url, users);
+      }
 
-    return res.status(200).json({ users });
+      return res.status(200).json({ users });
+    }
+    return res
+      .status(400)
+      .json(
+        util.helpers.sendError(`Schedule flight flight on ${date} not found`)
+      );
   },
 
   getData: async (
