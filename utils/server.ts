@@ -11,6 +11,7 @@ function createServer() {
 
   // session
   app.use(packages.cookieParser());
+  app.use(packages.compression());
   app.use(packages.express.json());
   app.use(
     packages.session({

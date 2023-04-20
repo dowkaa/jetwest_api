@@ -43,7 +43,7 @@ router.post(
 router.get(
   "/recent-cargos",
   [jwtMiddleWare, signatureSigner],
-  AdminCtrl.allAircrafts
+  AdminCtrl.allAircrafts // done
 );
 
 router.post(
@@ -55,45 +55,45 @@ router.post(
 router.get(
   "/agent-aircrafts",
   [jwtMiddleWare, signatureSigner],
-  AdminCtrl.AgentAircrafts
+  AdminCtrl.AgentAircrafts // done
 );
 
 router.get(
   "/single-aircraft",
   [jwtMiddleWare, signatureSigner],
-  AdminCtrl.singleAircraft
+  AdminCtrl.singleAircraft // done
 );
 
 router.get(
   "/all-admins",
   [jwtMiddleWare, signatureSigner],
-  AdminCtrl.allAdmins
+  AdminCtrl.allAdmins // done
 );
 
-router.get("/all-roles", [jwtMiddleWare, signatureSigner], AdminCtrl.allRoles);
+router.get("/all-roles", [jwtMiddleWare, signatureSigner], AdminCtrl.allRoles); // done
 
 router.get(
   "/non-paginated-roles",
   [jwtMiddleWare, signatureSigner],
-  AdminCtrl.nonPaginatedRoles
+  AdminCtrl.nonPaginatedRoles // done
 );
 
 router.get(
   "/decline-cargos",
   [jwtMiddleWare, signatureSigner],
-  AdminCtrl.declinedAircrafts
+  AdminCtrl.declinedAircrafts // done
 );
 
 router.get(
   "/activated-cargos",
   [jwtMiddleWare, signatureSigner],
-  AdminCtrl.activatedAircrafts
+  AdminCtrl.activatedAircrafts // done
 );
 
 router.get(
   "/all-permissions",
   [jwtMiddleWare, signatureSigner],
-  AdminCtrl.allPermissions
+  AdminCtrl.allPermissions // done
 );
 
 router.post(
@@ -102,7 +102,7 @@ router.post(
   AdminCtrl.updateAdmin
 );
 
-router.get("/all-unpaginated-aircrafts", AdminCtrl.unpaginatedAircrafts);
+router.get("/all-unpaginated-aircrafts", AdminCtrl.unpaginatedAircrafts); // done
 
 // schedule flights
 
@@ -121,37 +121,37 @@ router.post(
 router.get(
   "/all-scheduled-flights",
   [jwtMiddleWare, signatureSigner],
-  AdminCtrl.allScheduledFlights
+  AdminCtrl.allScheduledFlights // done
 );
 
 router.get(
   "/flights-in-progress",
   [jwtMiddleWare, signatureSigner],
-  AdminCtrl.flightsInProgress
+  AdminCtrl.flightsInProgress // done
 );
 
 router.get(
   "/completed-flights",
   [jwtMiddleWare, signatureSigner],
-  AdminCtrl.flightsCompleted // allAircraftReports
+  AdminCtrl.flightsCompleted // done
 );
 
 router.get(
   "/single-flight",
   [jwtMiddleWare, signatureSigner],
-  AdminCtrl.singleFlight
+  AdminCtrl.singleFlight // done
 );
 // aircraft reports
 router.get(
   "/all-aircraft-reports",
   [jwtMiddleWare, signatureSigner],
-  AdminCtrl.allAircraftReports
+  AdminCtrl.allAircraftReports // done
 );
 
 router.get(
   "/single-aircraft-report",
   [jwtMiddleWare, signatureSigner],
-  AdminCtrl.singleAircraftReport
+  AdminCtrl.singleAircraftReport // done
 );
 
 router.post(
@@ -163,7 +163,7 @@ router.post(
 router.get(
   "/delete-aircraft",
   [jwtMiddleWare, signatureSigner],
-  AdminCtrl.deleteAircraft
+  AdminCtrl.deleteAircraft //
 );
 
 // compliance
@@ -171,57 +171,57 @@ router.get(
 router.get(
   "/all-shippers",
   [jwtMiddleWare, signatureSigner],
-  AdminCtrl.allShippers
+  AdminCtrl.allShippers // done
 );
 
 router.get(
   "/activated-shippers",
   [jwtMiddleWare, signatureSigner],
-  AdminCtrl.allActivatedShippers
+  AdminCtrl.allActivatedShippers // done
 );
 
 router.get(
   "/declined-shippers",
   [jwtMiddleWare, signatureSigner],
-  AdminCtrl.allDeclinedShippers
+  AdminCtrl.allDeclinedShippers // done
 );
 
 // carriers
 router.get(
   "/all-carriers",
   [jwtMiddleWare, signatureSigner],
-  AdminCtrl.allCarriers
+  AdminCtrl.allCarriers //done
 );
 
 router.get(
   "/activated-carriers",
   [jwtMiddleWare, signatureSigner],
-  AdminCtrl.allActivatedCarriers
+  AdminCtrl.allActivatedCarriers // done
 );
 
 router.get(
   "/declined-carriers",
   [jwtMiddleWare, signatureSigner],
-  AdminCtrl.allDeclinedCarriers
+  AdminCtrl.allDeclinedCarriers // done
 );
 
 // Agents
 router.get(
   "/all-agents",
   [jwtMiddleWare, signatureSigner],
-  AdminCtrl.allAgents
+  AdminCtrl.allAgents // done
 );
 
 router.get(
   "/activated-agents",
   [jwtMiddleWare, signatureSigner],
-  AdminCtrl.allActivatedAgents
+  AdminCtrl.allActivatedAgents // done
 );
 
 router.get(
   "/declined-agents",
   [jwtMiddleWare, signatureSigner],
-  AdminCtrl.allDeclinedAgents
+  AdminCtrl.allDeclinedAgents // done
 );
 
 router.post(
@@ -239,45 +239,45 @@ router.get(
 router.get(
   "/all-destinations",
   [jwtMiddleWare, signatureSigner],
-  AdminCtrl.allShipmentRoutes
+  AdminCtrl.allShipmentRoutes // done
 );
 
-router.get("/unpaginated-destinations", AdminCtrl.allDestinations);
+router.get("/unpaginated-destinations", AdminCtrl.allDestinations); // done
 // logistics
 router.get(
   "/all-shipments",
   [jwtMiddleWare, signatureSigner],
-  AdminCtrl.allShipments
+  AdminCtrl.allShipments // done
 );
 router.get(
   "/single-shipment",
   [jwtMiddleWare, signatureSigner],
-  AdminCtrl.singleShipment
+  AdminCtrl.singleShipment // done
 );
 router.get(
   "/pending-shipment",
   [jwtMiddleWare, signatureSigner],
-  AdminCtrl.pendingShipments
+  AdminCtrl.pendingShipments //done
 );
 router.get(
   "/enroute-shipments",
   [jwtMiddleWare, signatureSigner],
-  AdminCtrl.enrouteShipments
+  AdminCtrl.enrouteShipments // done
 );
 
 router.get(
   "/completed-shipments",
   [jwtMiddleWare, signatureSigner],
-  AdminCtrl.completedShipments
+  AdminCtrl.completedShipments // done
 );
 
 router.get(
   "/almost-completed-flights",
   [jwtMiddleWare, signatureSigner],
-  AdminCtrl.almostCompletedShipments
+  AdminCtrl.almostCompletedShipments // done
 );
 
-router.get("/all-users", [jwtMiddleWare, signatureSigner], AdminCtrl.allUsers);
+router.get("/all-users", [jwtMiddleWare, signatureSigner], AdminCtrl.allUsers); // done
 router.post(
   "/update-user-note",
   [jwtMiddleWare, signatureSigner],
@@ -286,7 +286,7 @@ router.post(
 router.get(
   "/single-user",
   [jwtMiddleWare, signatureSigner],
-  AdminCtrl.singleUser
+  AdminCtrl.singleUser // done
 );
 
 // routes
@@ -305,7 +305,7 @@ router.post(
 router.get(
   "/all-routes",
   [jwtMiddleWare, signatureSigner],
-  AdminCtrl.allRoutes
+  AdminCtrl.allRoutes // done
 );
 
 router.get(
@@ -316,7 +316,7 @@ router.get(
 router.get(
   "/single-route",
   [jwtMiddleWare, signatureSigner],
-  AdminCtrl.singleRoute
+  AdminCtrl.singleRoute // done
 );
 
 // update flight

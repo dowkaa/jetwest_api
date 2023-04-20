@@ -30,9 +30,7 @@ module.exports = {
       return res.status(400).json(utill.helpers.sendError(errorMessage));
     }
 
-    let user = await db.dbs.Users.findOne({ where: { uuid: req.user.uuid } });
-
-    if (parseInt(user.is_Admin) != 1) {
+    if (parseInt(req.user.is_Admin) != 1) {
       return res
         .status(400)
         .json(
@@ -42,7 +40,7 @@ module.exports = {
         );
     }
 
-    if (user.admin_type !== "Super Admin") {
+    if (req.user.admin_type !== "Super Admin") {
       return res
         .status(400)
         .json(utill.helpers.sendError("Access denied for current admin type"));
@@ -107,15 +105,7 @@ module.exports = {
     res: Response,
     next: NextFunction
   ): Promise<Response> => {
-    let permissions;
-
-    let checker = utill.appCache.has("permissions");
-    if (!checker) {
-      permissions = await db.dbs.Permissions.findOne();
-      utill.appCache.set("permissions", permissions);
-    } else {
-      permissions = utill.appCache.get("permissions");
-    }
+    let permissions = await db.dbs.Permissions.findOne();
 
     return res.status(200).json({ permissions });
   },
@@ -502,9 +492,7 @@ module.exports = {
       return res.status(400).json(utill.helpers.sendError(errorMessage));
     }
 
-    let user = await db.dbs.Users.findOne({ where: { uuid: req.user.uuid } });
-
-    if (parseInt(user.is_Admin) != 1) {
+    if (parseInt(req.user.is_Admin) != 1) {
       return res
         .status(400)
         .json(
@@ -516,8 +504,8 @@ module.exports = {
 
     if (
       !(
-        user.admin_type === "Flight Operator" ||
-        user.admin_type === "Super Admin"
+        req.user.admin_type === "Flight Operator" ||
+        req.user.admin_type === "Super Admin"
       )
     ) {
       return res
@@ -1086,16 +1074,9 @@ module.exports = {
     res: Response,
     next: NextFunction
   ): Promise<Response> => {
-    let checker = utill.appCache.has("unpaginated-cargos");
-    let aircrafts;
-    if (checker) {
-      aircrafts = utill.appCache.get("unpaginated-cargos");
-    } else {
-      aircrafts = await db.dbs.Cargo.findAll({
-        where: { status: "Activated" },
-      });
-      utill.appCache.set("unpaginated-cargos", aircrafts);
-    }
+    let aircrafts = await db.dbs.Cargo.findAll({
+      where: { status: "Activated" },
+    });
 
     return res.status(200).json({ aircrafts });
   },
@@ -1105,6 +1086,10 @@ module.exports = {
     res: Response,
     next: NextFunction
   ): Promise<Response> => {
+    // let allFlights = await db.dbs.ScheduleFlights.findAll({});
+
+    // return res.status(200).json({ allFlights });
+
     const { pageNum } = req.query;
 
     if (!pageNum || isNaN(pageNum)) {
@@ -1120,18 +1105,11 @@ module.exports = {
     const offset = page * pageSize;
     const limit = pageSize;
 
-    let allFlights;
-    let checker = utill.appCache.has("all-flights-pageNum="+pageNum);
-    if (checker) {
-      allFlights = utill.appCache.get("all-flights-pageNum=" + pageNum);
-    } else {
-      allFlights = await db.dbs.ScheduleFlights.findAndCountAll({
-        offset: offset,
-        limit: limit,
-        order: [["id", "DESC"]],
-      });
-      utill.appCache.set("all-flights-pageNum=" + pageNum, allFlights);
-    }
+    let allFlights = await db.dbs.ScheduleFlights.findAndCountAll({
+      offset: offset,
+      limit: limit,
+      order: [["id", "DESC"]],
+    });
 
     var next_page = currentPage + 1;
     var prev_page = currentPage - 1;
@@ -1167,6 +1145,12 @@ module.exports = {
     res: Response,
     next: NextFunction
   ): Promise<Response> => {
+    // let flights = await db.dbs.ScheduleFlights.findAll({
+    //   where: { status: "In progress" },
+    // });
+
+    // return res.status(200).json({ data: flights });
+
     const { pageNum } = req.query;
 
     if (!pageNum || isNaN(pageNum)) {
@@ -1182,22 +1166,12 @@ module.exports = {
     const offset = page * pageSize;
     const limit = pageSize;
 
-    let flights;
-    let checker = utill.appCache.has("Flights-in-progress-pageNum="+pageNum);
-
-    if (checker) {
-      flights = utill.appCache.get("Flights-in-progress-pageNum=" + pageNum);
-    } else {
-      flights = await db.dbs.ScheduleFlights.findAndCountAll({
-        offset: offset,
-        limit: limit,
-        where: { status: "In progress" },
-        order: [["id", "DESC"]],
-      });
-      if (flights.rows.length > 0) {
-        utill.appCache.set("Flights-in-progress-pageNum=" + pageNum, flights);
-      }
-    }
+    let flights = await db.dbs.ScheduleFlights.findAndCountAll({
+      offset: offset,
+      limit: limit,
+      where: { status: "In progress" },
+      order: [["id", "DESC"]],
+    });
 
     var next_page = currentPage + 1;
     var prev_page = currentPage - 1;
@@ -1228,6 +1202,11 @@ module.exports = {
     res: Response,
     next: NextFunction
   ): Promise<Response> => {
+    // let flights = await db.dbs.ScheduleFlights.findAll({
+    //   where: { status: "completed" },
+    // });
+    // return res.status(200).json({ data: flights });
+
     const { pageNum } = req.query;
 
     if (!pageNum || isNaN(pageNum)) {
@@ -1243,22 +1222,12 @@ module.exports = {
     const offset = page * pageSize;
     const limit = pageSize;
 
-    let flights;
-    let checker = utill.appCache.has("completed-flights-pageNum="+pageNum);
-
-    if (checker) {
-      flights = utill.appCache.get("completed-flights-pageNum=" + pageNum);
-    } else {
-      flights = await db.dbs.ScheduleFlights.findAndCountAll({
-        offset: offset,
-        limit: limit,
-        where: { status: "completed" },
-        order: [["id", "DESC"]],
-      });
-      if (flights.rows.length > 0) {
-        utill.appCache.set("completed-flights-pageNum=" + pageNum, flights);
-      }
-    }
+    let flights = await db.dbs.ScheduleFlights.findAndCountAll({
+      offset: offset,
+      limit: limit,
+      where: { status: "completed" },
+      order: [["id", "DESC"]],
+    });
 
     var next_page = currentPage + 1;
     var prev_page = currentPage - 1;
@@ -1309,19 +1278,12 @@ module.exports = {
     const offset = page * pageSize;
     const limit = pageSize;
 
-    let checker = utill.appCache.has("all-pending-flights-pageNum=" + pageNum);
-    let flights;
-    if (checker) {
-      flights = utill.appCache.get("all-pending-flights-pageNum=" + pageNum);
-    } else {
-      flights = await db.dbs.ScheduleFlights.findAndCountAll({
-        offset: offset,
-        limit: limit,
-        where: { status: "pending" },
-        order: [["id", "DESC"]],
-      });
-      utill.appCache.set("all-pending-flights-pageNum=" + pageNum, flights);
-    }
+    let flights = await db.dbs.ScheduleFlights.findAndCountAll({
+      offset: offset,
+      limit: limit,
+      where: { status: "pending" },
+      order: [["id", "DESC"]],
+    });
 
     var next_page = currentPage + 1;
     var prev_page = currentPage - 1;
@@ -1480,16 +1442,10 @@ module.exports = {
         .status(400)
         .json(utill.helpers.sendError("Kindly add a valid search parameter"));
     }
-    let checker = utill.appCache.has("single-flight" + uuid);
-    let flights;
-    if (!checker) {
-      flights = await db.dbs.ScheduleFlights.findOne({
-        where: { uuid: uuid },
-      });
-      utill.appCache.set("single-flight" + uuid, flights);
-    } else {
-      flights = utill.appCache.get("single-flight" + uuid);
-    }
+    let flights = await db.dbs.ScheduleFlights.findOne({
+      where: { uuid: uuid },
+    });
+
     return res.status(200).json({ data: flights });
   },
 
@@ -1597,14 +1553,8 @@ module.exports = {
     res: Response,
     next: NextFunction
   ): Promise<Response> => {
-    let checker = utill.appCache.has("all-unpaginated-destinations");
-    let destinations;
-    if (checker) {
-      destinations = utill.appCache.get("all-unpaginated-destinations");
-    } else {
-      destinations = await db.dbs.Destinations.findAll();
-      utill.appCache.set("all-unpaginated-destinations", destinations);
-    }
+    let destinations = await db.dbs.Destinations.findAll();
+
     return res.status(200).json({ destinations });
   },
 
@@ -1632,24 +1582,12 @@ module.exports = {
     const offset = page * pageSize;
     const limit = pageSize;
 
-    let checker = utill.appCache.has("all-destinations-count-pageNum="+pageNum);
-    let destinations;
+    let destinations = await db.dbs.Destinations.findAndCountAll({
+      offset: offset,
+      limit: limit,
+      order: [["id", "DESC"]],
+    });
 
-    if (checker) {
-      destinations = utill.appCache.get(
-        "all-destinations-count-pageNum=" + pageNum
-      );
-    } else {
-      destinations = await db.dbs.Destinations.findAndCountAll({
-        offset: offset,
-        limit: limit,
-        order: [["id", "DESC"]],
-      });
-      utill.appCache.set(
-        "all-destinations-count-pageNum=" + pageNum,
-        destinations
-      );
-    }
     var next_page = currentPage + 1;
     var prev_page = currentPage - 1;
     var nextP = `/api/jetwest/admin/all-destinations?pageNum=` + next_page;
@@ -1961,14 +1899,7 @@ module.exports = {
         .json(utill.helpers.sendError("Kindly add a valid route id"));
     }
 
-    let checker = utill.appCache.has("single-route" + uuid);
-    let route;
-    if (checker) {
-      route = utill.appCache.get("single-route" + uuid);
-    } else {
-      route = await db.dbs.ShipmentRoutes.findOne({ where: { uuid: uuid } });
-      utill.appCache.set("single-route" + uuid, route);
-    }
+    let route = await db.dbs.ShipmentRoutes.findOne({ where: { uuid: uuid } });
 
     if (!route) {
       return res.status(400).json(utill.helpers.sendError("Route not found"));
@@ -2062,18 +1993,11 @@ module.exports = {
     const offset = page * pageSize;
     const limit = pageSize;
 
-    let checker = utill.appCache.has("all-routes-pageNum="+pageNum);
-    var routes;
-    if (checker) {
-      routes = utill.appCache.get("all-routes-pageNum=" + pageNum);
-    } else {
-      routes = await db.dbs.ShipmentRoutes.findAndCountAll({
-        offset: offset,
-        limit: limit,
-        order: [["id", "DESC"]],
-      });
-      utill.appCache.set("all-routes-pageNum=" + pageNum, routes);
-    }
+    var routes = await db.dbs.ShipmentRoutes.findAndCountAll({
+      offset: offset,
+      limit: limit,
+      order: [["id", "DESC"]],
+    });
 
     var next_page = currentPage + 1;
     var prev_page = currentPage - 1;
@@ -2192,22 +2116,12 @@ module.exports = {
     const offset = page * pageSize;
     const limit = pageSize;
 
-    let checker = utill.appCache.has("all_admins-pageNum="+pageNum);
-    let admin;
-
-    if (checker) {
-      admin = utill.appCache.get("all_admins-pageNum=" + pageNum);
-    } else {
-      admin = admin = await db.dbs.Users.findAndCountAll({
-        offset: offset,
-        limit: limit,
-        where: { is_admin: 1 },
-        order: [["id", "DESC"]],
-      });
-      if (admin.rows.length > 0) {
-        utill.appCache.set("all_admins-pageNum=" + pageNum, admin);
-      }
-    }
+    var admin = await db.dbs.Users.findAndCountAll({
+      offset: offset,
+      limit: limit,
+      where: { is_admin: 1 },
+      order: [["id", "DESC"]],
+    });
 
     var next_page = currentPage + 1;
     var prev_page = currentPage - 1;
@@ -2248,7 +2162,11 @@ module.exports = {
     const offset = page * pageSize;
     const limit = pageSize;
 
-    if (parseInt(req.user.is_Admin) != 1) {
+    let user = await db.dbs.Users.findOne({
+      where: { uuid: { [Op.or]: [req.user.uuid, req.user.id] } },
+    });
+
+    if (parseInt(user.is_Admin) != 1) {
       return res
         .status(400)
         .json(
@@ -2258,27 +2176,18 @@ module.exports = {
         );
     }
 
-    if (!(req.user.admin_type === "Super Admin")) {
+    if (!(user.admin_type === "Super Admin")) {
       return res
         .status(400)
         .json(utill.helpers.sendError("Access denied for current admin type"));
     }
 
-    let checker = utill.appCache.has("all_roles-pageNum=" + pageNum);
-    let roles;
+    var roles = await db.dbs.Roles.findAndCountAll({
+      offset: offset,
+      limit: limit,
+      order: [["id", "DESC"]],
+    });
 
-    if (checker) {
-      roles = utill.appCache.get("all_roles-pageNum="+pageNum);
-    } else {
-      roles = await db.dbs.Roles.findAndCountAll({
-        offset: offset,
-        limit: limit,
-        order: [["id", "DESC"]],
-      });
-      if (roles.rows.length > 0) {
-        utill.appCache.set("all_roles-pageNum=" + pageNum, roles);
-      }
-    }
     //1`;
 
     var next_page = currentPage + 1;
@@ -2324,7 +2233,11 @@ module.exports = {
     const offset = page * pageSize;
     const limit = pageSize;
 
-    if (parseInt(req.user.is_Admin) != 1) {
+    let user = await db.dbs.Users.findOne({
+      where: { uuid: { [Op.or]: [req.user.uuid, req.user.id] } },
+    });
+
+    if (parseInt(user.is_Admin) != 1) {
       return res
         .status(400)
         .json(
@@ -2336,8 +2249,8 @@ module.exports = {
 
     if (
       !(
-        req.user.admin_type === "Flight Operator" ||
-        req.user.admin_type === "Super Admin"
+        user.admin_type === "Flight Operator" ||
+        user.admin_type === "Super Admin"
       )
     ) {
       return res
@@ -2345,22 +2258,11 @@ module.exports = {
         .json(utill.helpers.sendError("Access denied for current admin type"));
     }
 
-    let checker = utill.appCache.has("all_cargos-pageNum="+pageNum);
-    let cargos;
-
-    if (checker) {
-      cargos = utill.appCache.get("all_cargos-pageNum=" + pageNum);
-    } else {
-      cargos = await db.dbs.Cargo.findAndCountAll({
-        offset: offset,
-        limit: limit,
-        order: [["id", "DESC"]],
-      });
-      if (cargos.rows.length > 0) {
-        utill.appCache.set("all_cargos-pageNum=" + pageNum, cargos);
-        console.log("22222222222222222222222222");
-      }
-    }
+    var cargos = await db.dbs.Cargo.findAndCountAll({
+      offset: offset,
+      limit: limit,
+      order: [["id", "DESC"]],
+    });
 
     //1`;
 
@@ -2668,20 +2570,11 @@ with note ${note}`,
     const offset = page * pageSize;
     const limit = pageSize;
 
-    let checker = utill.appCache.has("aircraft-reports-pageNum="+pageNum);
-    let reports;
-    if (checker) {
-      reports = utill.appCache.get("aircraft-reports-pageNum=" + pageNum);
-    } else {
-      reports = await db.dbs.AircraftAuditLog.findAndCountAll({
-        offset: offset,
-        limit: limit,
-        order: [["id", "DESC"]],
-      });
-      if (reports.rows.length > 0) {
-        utill.appCache.set("aircraft-reports-pageNum=" + pageNum, reports);
-      }
-    }
+    let reports = await db.dbs.AircraftAuditLog.findAndCountAll({
+      offset: offset,
+      limit: limit,
+      order: [["id", "DESC"]],
+    });
 
     var next_page = currentPage + 1;
     var prev_page = currentPage - 1;
@@ -2720,17 +2613,10 @@ with note ${note}`,
         .json(utill.helpers.sendError("Kindly add a valid id"));
     }
 
-    let report;
-    let checker = utill.appCache.has("single-aircraft-report" + uuid);
+    let report = await db.dbs.AircraftAuditLog.findOne({
+      where: { uuid: uuid },
+    });
 
-    if (checker) {
-      report = utill.appCache.get("single-aircraft-report" + uuid);
-    } else {
-      report = await db.dbs.AircraftAuditLog.findOne({
-        where: { uuid: uuid },
-      });
-      utill.appCache.set("single-aircraft-report" + uuid, report);
-    }
     if (!report) {
       return res.status(400).json(utill.helpers.sendError("Report not found"));
     }
@@ -2797,7 +2683,9 @@ with note ${note}`,
   ): Promise<Response> => {
     let { uuid } = req.query;
 
-    if (parseInt(req.user.is_Admin) != 1) {
+    let user = await db.dbs.Users.findOne({ where: { uuid: req.user.uuid } });
+
+    if (parseInt(user.is_Admin) != 1) {
       return res
         .status(400)
         .json(
@@ -2809,8 +2697,8 @@ with note ${note}`,
 
     if (
       !(
-        req.user.admin_type === "Flight Operator" ||
-        req.user.admin_type === "Super Admin"
+        user.admin_type === "Flight Operator" ||
+        user.admin_type === "Super Admin"
       )
     ) {
       return res
@@ -2960,7 +2848,9 @@ with note ${note}`,
   ): Promise<Response> => {
     const { pageNum } = req.query;
 
-    if (parseInt(req.user.is_Admin) != 1) {
+    let user = await db.dbs.Users.findOne({ where: { uuid: req.user.uuid } });
+
+    if (parseInt(user.is_Admin) != 1) {
       return res
         .status(400)
         .json(
@@ -2972,8 +2862,8 @@ with note ${note}`,
 
     if (
       !(
-        req.user.admin_type === "Flight Operator" ||
-        req.user.admin_type === "Super Admin"
+        user.admin_type === "Flight Operator" ||
+        user.admin_type === "Super Admin"
       )
     ) {
       return res
@@ -3001,27 +2891,12 @@ with note ${note}`,
     //   order: [["id", "DESC"]],
     // });
 
-    let cargosCount = utill.appCache.has("cargosCount-pageNum="+pageNum + req.user.uuid);
-    var cargos;
-
-    if (cargosCount) {
-      cargos = utill.appCache.get(
-        "cargosCount-pageNum=" + pageNum + req.user.uuid
-      );
-    } else {
-      cargos = await db.dbs.Cargo.findAndCountAll({
-        offset: offset,
-        limit: limit,
-        where: { owner_id: req.user.uuid },
-        order: [["id", "DESC"]],
-      });
-      if (cargos.rows.length > 0) {
-        utill.appCache.set(
-          "cargosCount-pageNum=" + pageNum + req.user.uuid,
-          cargos
-        );
-      }
-    }
+    var cargos = await db.dbs.Cargo.findAndCountAll({
+      offset: offset,
+      limit: limit,
+      where: { owner_id: req.user.uuid },
+      order: [["id", "DESC"]],
+    });
 
     //1`;
 
@@ -3054,15 +2929,7 @@ with note ${note}`,
     res: Response,
     next: NextFunction
   ): Promise<Response> => {
-    let checker = utill.appCache.has("non-paiginated-roles");
-    let roles;
-
-    if (checker) {
-      roles = utill.appCache.get("non-paiginated-roles");
-    } else {
-      roles = await db.dbs.Roles.findAll();
-      utill.appCache.set("non-paiginated-roles", roles);
-    }
+    let roles = await db.dbs.Roles.findAll();
 
     return res.status(200).json({ roles });
   },
@@ -3074,7 +2941,9 @@ with note ${note}`,
   ): Promise<Response> => {
     let { uuid } = req.query;
 
-    if (parseInt(req.user.is_Admin) != 1) {
+    let user = await db.dbs.Users.findOne({ where: { uuid: req.user.uuid } });
+
+    if (parseInt(user.is_Admin) != 1) {
       return res
         .status(400)
         .json(
@@ -3086,8 +2955,8 @@ with note ${note}`,
 
     if (
       !(
-        req.user.admin_type === "Flight Operator" ||
-        req.user.admin_type === "Super Admin"
+        user.admin_type === "Flight Operator" ||
+        user.admin_type === "Super Admin"
       )
     ) {
       return res
@@ -3101,18 +2970,9 @@ with note ${note}`,
         .json(utill.helpers.sendError("Kindly add a valid aircraft ID"));
     }
 
-    let checker = utill.appCache.has("cargos" + uuid);
-    let cargos;
-
-    if (checker) {
-      cargos = utill.appCache.get("cargos" + uuid);
-    } else {
-      cargos = await db.dbs.Cargo.findOne({
-        where: { uuid: uuid },
-      });
-      utill.appCache.set("cargos" + uuid, cargos);
-      console.log("22222222222222222222222222");
-    }
+    var cargos = await db.dbs.Cargo.findOne({
+      where: { uuid: uuid },
+    });
 
     return res.status(200).json({ aircraft: cargos });
   },
@@ -3143,22 +3003,13 @@ with note ${note}`,
     //   // where: { user_id: req.user.id },
     //   order: [["id", "DESC"]],
     // });
-    let cargosCount = utill.appCache.has("declined-cargosCount-pageNum="+pageNum);
-    var cargos;
 
-    if (cargosCount) {
-      cargos = utill.appCache.get("declined-cargosCount-pageNum=" + pageNum);
-    } else {
-      cargos = await db.dbs.Cargo.findAndCountAll({
-        offset: offset,
-        limit: limit,
-        where: { status: "Inactive" },
-        order: [["id", "DESC"]],
-      });
-      if (cargos.rows.length > 0) {
-        utill.appCache.set("declined-cargosCount-pageNum=" + pageNum, cargos);
-      }
-    }
+    var cargos = await db.dbs.Cargo.findAndCountAll({
+      offset: offset,
+      limit: limit,
+      where: { status: "Inactive" },
+      order: [["id", "DESC"]],
+    });
 
     //1`;
 
@@ -3213,22 +3064,14 @@ with note ${note}`,
     //   order: [["id", "DESC"]],
     // });
 
-    let checker = utill.appCache.has("activated_cargos-pageNum="+pageNum);
-    let cargos;
+    var cargos = await db.dbs.Cargo.findAndCountAll({
+      offset: offset,
+      limit: limit,
+      where: { status: "Activated" },
+      order: [["id", "DESC"]],
+    });
 
-    if (checker) {
-      cargos = utill.appCache.get("activated_cargos-pageNum="+pageNum);
-    } else {
-      cargos = await db.dbs.Cargo.findAndCountAll({
-        offset: offset,
-        limit: limit,
-        where: { status: "Activated" },
-        order: [["id", "DESC"]],
-      });
-      if (cargos.rows.length > 0) {
-        utill.appCache.set("activated_cargos-pageNum="+pageNum, cargos);
-      }
-    }
+    //1`;
 
     var next_page = currentPage + 1;
     var prev_page = currentPage - 1;
@@ -3352,25 +3195,13 @@ with note ${note}`,
     const offset = page * pageSize;
     const limit = pageSize;
 
-    let checker = utill.appCache.has("all-shippers-count-pageNum="+pageNum);
-    let shippers;
-
-    if (checker) {
-      shippers = utill.appCache.get("all-shippers-count-pageNum="+pageNum);
-    } else {
-      shippers = await db.dbs.Users.findAndCountAll({
-        attributes: {
-          exclude: ["id", "password", "otp", "locked", "activated"],
-        },
-        offset: offset,
-        limit: limit,
-        where: { type: "Shipper" },
-        order: [["id", "DESC"]],
-      });
-      if (shippers.rows.length > 0) {
-        utill.appCache.set("all-shippers-count-pageNum="+pageNum, shippers);
-      }
-    }
+    let shippers = await db.dbs.Users.findAndCountAll({
+      attributes: { exclude: ["id", "password", "otp", "locked", "activated"] },
+      offset: offset,
+      limit: limit,
+      where: { type: "Shipper" },
+      order: [["id", "DESC"]],
+    });
 
     var next_page = currentPage + 1;
     var prev_page = currentPage - 1;
@@ -3416,25 +3247,13 @@ with note ${note}`,
     const offset = page * pageSize;
     const limit = pageSize;
 
-    let checker = utill.appCache.has("all-activated-shippers-pageNum="+pageNum);
-    let activatedShippers;
-
-    if (checker) {
-      activatedShippers = utill.appCache.get("all-activated-shippers-pageNum="+pageNum);
-    } else {
-      activatedShippers = await db.dbs.Users.findAndCountAll({
-        attributes: {
-          exclude: ["id", "password", "otp", "locked", "activated"],
-        },
-        offset: offset,
-        limit: limit,
-        where: { type: "Shipper", verification_status: "completed" },
-        order: [["id", "DESC"]],
-      });
-      if (activatedShippers.rows.length > 0) {
-        utill.appCache.set("all-activated-shippers-pageNum="+pageNum, activatedShippers);
-      }
-    }
+    let activatedShippers = await db.dbs.Users.findAndCountAll({
+      attributes: { exclude: ["id", "password", "otp", "locked", "activated"] },
+      offset: offset,
+      limit: limit,
+      where: { type: "Shipper", verification_status: "completed" },
+      order: [["id", "DESC"]],
+    });
 
     var next_page = currentPage + 1;
     var prev_page = currentPage - 1;
@@ -3485,25 +3304,13 @@ with note ${note}`,
     const offset = page * pageSize;
     const limit = pageSize;
 
-    let checker = utill.appCache.has("all-declined-shippers-pageNum="+pageNum);
-    let declinedShippers;
-
-    if (checker) {
-      declinedShippers = utill.appCache.get("all-declined-shippers-pageNum="+pageNum);
-    } else {
-      declinedShippers = await db.dbs.Users.findAndCountAll({
-        attributes: {
-          exclude: ["id", "password", "otp", "locked", "activated"],
-        },
-        offset: offset,
-        limit: limit,
-        where: { type: "Shipper", verification_status: "declined" },
-        order: [["id", "DESC"]],
-      });
-      if (declinedShippers.rows.length > 0) {
-        utill.appCache.set("all-declined-shippers-pageNum="+pageNum, declinedShippers);
-      }
-    }
+    let declinedShippers = await db.dbs.Users.findAndCountAll({
+      attributes: { exclude: ["id", "password", "otp", "locked", "activated"] },
+      offset: offset,
+      limit: limit,
+      where: { type: "Shipper", verification_status: "declined" },
+      order: [["id", "DESC"]],
+    });
 
     var next_page = currentPage + 1;
     var prev_page = currentPage - 1;
@@ -3556,24 +3363,13 @@ with note ${note}`,
     const offset = page * pageSize;
     const limit = pageSize;
 
-    let checker = utill.appCache.has("all-carriers-pageNum="+pageNum);
-    let carriers;
-    if (checker) {
-      carriers = utill.appCache.get("all-carriers-pageNum="+pageNum);
-    } else {
-      carriers = await db.dbs.Users.findAndCountAll({
-        attributes: {
-          exclude: ["id", "password", "otp", "locked", "activated"],
-        },
-        offset: offset,
-        limit: limit,
-        where: { type: "Carrier" },
-        order: [["id", "DESC"]],
-      });
-      if (carriers.rows.length > 0) {
-        utill.appCache.set("all-carriers-pageNum="+pageNum, carriers);
-      }
-    }
+    let carriers = await db.dbs.Users.findAndCountAll({
+      attributes: { exclude: ["id", "password", "otp", "locked", "activated"] },
+      offset: offset,
+      limit: limit,
+      where: { type: "Carrier" },
+      order: [["id", "DESC"]],
+    });
 
     var next_page = currentPage + 1;
     var prev_page = currentPage - 1;
@@ -3619,24 +3415,13 @@ with note ${note}`,
     const offset = page * pageSize;
     const limit = pageSize;
 
-    let checker = utill.appCache.has("all-activated-carriers-pageNum="+pageNum);
-    let activatedCarriers;
-    if (checker) {
-      activatedCarriers = utill.appCache.get("all-activated-carriers-pageNum="+pageNum);
-    } else {
-      activatedCarriers = await db.dbs.Users.findAndCountAll({
-        attributes: {
-          exclude: ["id", "password", "otp", "locked", "activated"],
-        },
-        offset: offset,
-        limit: limit,
-        where: { type: "Carrier", verification_status: "completed" },
-        order: [["id", "DESC"]],
-      });
-      if (activatedCarriers.rows.length > 0) {
-        utill.appCache.set("all-activated-carriers-pageNum="+pageNum, activatedCarriers);
-      }
-    }
+    let activatedCarriers = await db.dbs.Users.findAndCountAll({
+      attributes: { exclude: ["id", "password", "otp", "locked", "activated"] },
+      offset: offset,
+      limit: limit,
+      where: { type: "Carrier", verification_status: "completed" },
+      order: [["id", "DESC"]],
+    });
 
     var next_page = currentPage + 1;
     var prev_page = currentPage - 1;
@@ -3687,24 +3472,13 @@ with note ${note}`,
     const offset = page * pageSize;
     const limit = pageSize;
 
-    let checker = utill.appCache.has("all-declined-carriers-pageNum="+pageNum);
-    let declinedCarriers;
-    if (checker) {
-      declinedCarriers = utill.appCache.get("all-declined-carriers-pageNum="+pageNum);
-    } else {
-      declinedCarriers = await db.dbs.Users.findAndCountAll({
-        attributes: {
-          exclude: ["id", "password", "otp", "locked", "activated"],
-        },
-        offset: offset,
-        limit: limit,
-        where: { type: "Carrier", verification_status: "declined" },
-        order: [["id", "DESC"]],
-      });
-      if (declinedCarriers.rows.length > 0) {
-        utill.appCache.set("all-declined-carriers-pageNum="+pageNum, declinedCarriers);
-      }
-    }
+    let declinedCarriers = await db.dbs.Users.findAndCountAll({
+      attributes: { exclude: ["id", "password", "otp", "locked", "activated"] },
+      offset: offset,
+      limit: limit,
+      where: { type: "Carrier", verification_status: "declined" },
+      order: [["id", "DESC"]],
+    });
 
     var next_page = currentPage + 1;
     var prev_page = currentPage - 1;
@@ -3756,22 +3530,13 @@ with note ${note}`,
     const offset = page * pageSize;
     const limit = pageSize;
 
-    let checker = utill.appCache.has("all-agents-pageNum="+pageNum);
-    let agents;
-    if (checker) {
-      agents = utill.appCache.get("all-agents-pageNum="+pageNum);
-    } else {
-      agents = await db.dbs.Users.findAndCountAll({
-        attributes: {
-          exclude: ["id", "password", "otp", "locked", "activated"],
-        },
-        offset: offset,
-        limit: limit,
-        where: { type: "Agent" },
-        order: [["id", "DESC"]],
-      });
-      utill.appCache.set("all-agents-pageNum="+pageNum, agents);
-    }
+    let agents = await db.dbs.Users.findAndCountAll({
+      attributes: { exclude: ["id", "password", "otp", "locked", "activated"] },
+      offset: offset,
+      limit: limit,
+      where: { type: "Agent" },
+      order: [["id", "DESC"]],
+    });
 
     var next_page = currentPage + 1;
     var prev_page = currentPage - 1;
@@ -3816,24 +3581,13 @@ with note ${note}`,
     const offset = page * pageSize;
     const limit = pageSize;
 
-    let checker = utill.appCache.has("all-activated-agents-pageNum="+pageNum);
-    let activatedAgents;
-    if (checker) {
-      activatedAgents = utill.appCache.get("all-activated-agents-pageNum="+pageNum);
-    } else {
-      activatedAgents = await db.dbs.Users.findAndCountAll({
-        attributes: {
-          exclude: ["id", "password", "otp", "locked", "activated"],
-        },
-        offset: offset,
-        limit: limit,
-        where: { type: "Agent", verification_status: "completed" },
-        order: [["id", "DESC"]],
-      });
-      if (activatedAgents.rows.length > 0) {
-        utill.appCache.has("all-activated-agents-pageNum="+pageNum);
-      }
-    }
+    let activatedAgents = await db.dbs.Users.findAndCountAll({
+      attributes: { exclude: ["id", "password", "otp", "locked", "activated"] },
+      offset: offset,
+      limit: limit,
+      where: { type: "Agent", verification_status: "completed" },
+      order: [["id", "DESC"]],
+    });
 
     var next_page = currentPage + 1;
     var prev_page = currentPage - 1;
@@ -3884,24 +3638,13 @@ with note ${note}`,
     const offset = page * pageSize;
     const limit = pageSize;
 
-    let checker = utill.appCache.has("all-declined-agents-pageNum="+pageNum);
-    let declinedAgents;
-    if (checker) {
-      declinedAgents = utill.appCache.get("all-declined-agents-pageNum="+pageNum);
-    } else {
-      declinedAgents = await db.dbs.Users.findAndCountAll({
-        attributes: {
-          exclude: ["id", "password", "otp", "locked", "activated"],
-        },
-        offset: offset,
-        limit: limit,
-        where: { type: "Agent", verification_status: "declined" },
-        order: [["id", "DESC"]],
-      });
-      if (declinedAgents.rows.length > 0) {
-        utill.appCache.set("all-declined-agents-pageNum="+pageNum, declinedAgents);
-      }
-    }
+    let declinedAgents = await db.dbs.Users.findAndCountAll({
+      attributes: { exclude: ["id", "password", "otp", "locked", "activated"] },
+      offset: offset,
+      limit: limit,
+      where: { type: "Agent", verification_status: "declined" },
+      order: [["id", "DESC"]],
+    });
 
     var next_page = currentPage + 1;
     var prev_page = currentPage - 1;
@@ -4023,18 +3766,11 @@ with note ${note}`,
     const limit = pageSize;
     ``;
 
-    let checker = utill.appCache.has("all-users-shipments-pageNum="+pageNum);
-    let allShipments;
-    if (checker) {
-      allShipments = utill.appCache.get("all-users-shipments-pageNum="+pageNum);
-    } else {
-      allShipments = await db.dbs.ShippingItems.findAndCountAll({
-        offset: offset,
-        limit: limit,
-        order: [["id", "DESC"]],
-      });
-      utill.appCache.set("all-users-shipments-pageNum="+pageNum, allShipments);
-    }
+    let allShipments = await db.dbs.ShippingItems.findAndCountAll({
+      offset: offset,
+      limit: limit,
+      order: [["id", "DESC"]],
+    });
 
     var next_page = currentPage + 1;
     var prev_page = currentPage - 1;
@@ -4078,16 +3814,9 @@ with note ${note}`,
         .json(utill.helpers.sendError("Kindly add a valid search param"));
     }
 
-    let checker = utill.appCache.has("single-shipment-by-uuid" + uuid);
-    let shipment;
-    if (checker) {
-      shipment = utill.appCache.get("single-shipment-by-uuid" + uuid);
-    } else {
-      shipment = await db.dbs.ShippingItems.findOne({
-        where: { uuid: uuid },
-      });
-      utill.appCache.set("single-shipment-by-uuid" + uuid, shipment);
-    }
+    let shipment = await db.dbs.ShippingItems.findOne({
+      where: { uuid: uuid },
+    });
 
     if (!shipment) {
       return res
@@ -4111,44 +3840,33 @@ with note ${note}`,
         .json(utill.helpers.sendError("Kindly add a valid search param"));
     }
 
-    let checker = utill.appCache.has("single-user" + uuid);
-    let user;
-
-    if (checker) {
-      user = utill.appCache.get("single-user" + uuid);
-    } else {
-      user = await db.dbs.Users.findOne({
-        attributes: { exclude: [, "password", "otp", "locked", "activated"] },
-        where: { uuid: uuid },
-        include: [
-          {
-            model: db.dbs.BusinessCompliance,
-            as: "business_compliance",
-          },
-          {
-            model: db.dbs.Directors,
-            as: "directors",
-          },
-          {
-            model: db.dbs.Cargo,
-            as: "cargo_owner",
-          },
-          {
-            model: db.dbs.ShippingItems,
-            as: "shipments_booked_on_flight",
-          },
-        ],
-      });
-      utill.appCache.set("single-user" + uuid, user);
-    }
+    let user = await db.dbs.Users.findOne({
+      attributes: { exclude: [, "password", "otp", "locked", "activated"] },
+      where: { uuid: uuid },
+    });
 
     if (!user) {
       return res
         .status(400)
-        .json(utill.helpers.sendError("No user with this unique id found"));
+        .json(utill.helpers.sendError("No user with this email found"));
     }
 
-    return res.status(200).json({ user });
+    let business = await db.dbs.BusinessCompliance.findAll({
+      where: { user_id: { [Op.or]: [user.uuid, user.id] } },
+    });
+    let director = await db.dbs.Directors.findAll({
+      where: { user_id: { [Op.or]: [user.uuid, user.id] } },
+    });
+    let cargos = await db.dbs.Cargo.findAll({
+      where: { owner_id: { [Op.or]: [user.uuid, user.id] } },
+    });
+    let shipments = await db.dbs.ShippingItems.findAll({
+      where: { user_id: { [Op.or]: [user.uuid, user.id] } },
+    });
+
+    return res
+      .status(200)
+      .json({ user, business, director, cargos, shipments });
   },
 
   pendingShipments: async (
@@ -4171,21 +3889,12 @@ with note ${note}`,
     const offset = page * pageSize;
     const limit = pageSize;
 
-    let checker = utill.appCache.has("all-users-pending-shipments-pageNum="+pageNum);
-    let pendingShipments;
-    if (checker) {
-      pendingShipments = utill.appCache.get("all-users-pending-shipments-pageNum="+pageNum);
-    } else {
-      pendingShipments = await db.dbs.ShippingItems.findAndCountAll({
-        offset: offset,
-        limit: limit,
-        where: { status: "pending" },
-        order: [["id", "DESC"]],
-      });
-      if (pendingShipments.rows.length > 0) {
-        utill.appCache.set("all-users-pending-shipments-pageNum="+pageNum, pendingShipments);
-      }
-    }
+    let pendingShipments = await db.dbs.ShippingItems.findAndCountAll({
+      offset: offset,
+      limit: limit,
+      where: { status: "pending" },
+      order: [["id", "DESC"]],
+    });
 
     var next_page = currentPage + 1;
     var prev_page = currentPage - 1;
@@ -4236,19 +3945,12 @@ with note ${note}`,
     const offset = page * pageSize;
     const limit = pageSize;
 
-    let checker = utill.appCache.has("all-user-shipments-enroute-pageNum="+pageNum);
-    let enrouteShipments;
-    if (checker) {
-      enrouteShipments = utill.appCache.get("all-user-shipments-enroute-pageNum="+pageNum);
-    } else {
-      enrouteShipments = await db.dbs.ShippingItems.findAndCountAll({
-        offset: offset,
-        limit: limit,
-        where: { status: "enroute" },
-        order: [["id", "DESC"]],
-      });
-      utill.appCache.set("all-user-shipments-enroute-pageNum="+pageNum, enrouteShipments);
-    }
+    let enrouteShipments = await db.dbs.ShippingItems.findAndCountAll({
+      offset: offset,
+      limit: limit,
+      where: { status: "enroute" },
+      order: [["id", "DESC"]],
+    });
 
     var next_page = currentPage + 1;
     var prev_page = currentPage - 1;
@@ -4299,21 +4001,12 @@ with note ${note}`,
     const offset = page * pageSize;
     const limit = pageSize;
 
-    let checker = utill.appCache.has("all-users-completed-shipments-pageNum="+pageNum);
-    let enrouteShipments;
-    if (checker) {
-      enrouteShipments = utill.appCache.get("all-users-completed-shipments-pageNum="+pageNum);
-    } else {
-      enrouteShipments = await db.dbs.ShippingItems.findAndCountAll({
-        offset: offset,
-        limit: limit,
-        where: { status: "completed" },
-        order: [["id", "DESC"]],
-      });
-      if (enrouteShipments.rows.length > 0) {
-        utill.appCache.set("all-users-completed-shipments-pageNum="+pageNum, enrouteShipments);
-      }
-    }
+    let enrouteShipments = await db.dbs.ShippingItems.findAndCountAll({
+      offset: offset,
+      limit: limit,
+      where: { status: "completed" },
+      order: [["id", "DESC"]],
+    });
 
     var next_page = currentPage + 1;
     var prev_page = currentPage - 1;
@@ -4364,24 +4057,14 @@ with note ${note}`,
     const offset = page * pageSize;
     const limit = pageSize;
 
-    let checker = utill.appCache.has("all-users-almost-completed-shipments-pageNum="+pageNum);
-    let almostCompletedShipments;
-    if (checker) {
-      almostCompletedShipments = utill.appCache.get(
-        "all-users-almost-completed-shipments-pageNum="+pageNum
-      );
-    } else {
-      almostCompletedShipments = await db.dbs.ScheduleFlights.findAndCountAll({
+    let almostCompletedShipments = await db.dbs.ScheduleFlights.findAndCountAll(
+      {
         offset: offset,
         limit: limit,
         where: { status: "Almost completed" },
         order: [["id", "DESC"]],
-      });
-      utill.appCache.set(
-        "all-users-almost-completed-shipments-pageNum="+pageNum,
-        almostCompletedShipments
-      );
-    }
+      }
+    );
 
     var next_page = currentPage + 1;
     var prev_page = currentPage - 1;
@@ -4436,31 +4119,22 @@ with note ${note}`,
     const offset = page * pageSize;
     const limit = pageSize;
 
-    let checker = utill.appCache.has("all-system-users-pageNum="+pageNum);
-    let allUsers;
-    if (checker) {
-      allUsers = utill.appCache.get("all-system-users-pageNum="+pageNum);
-    } else {
-      allUsers = await db.dbs.Users.findAndCountAll({
-        attributes: {
-          exclude: ["id", "password", "otp", "locked", "activated"],
+    let allUsers = await db.dbs.Users.findAndCountAll({
+      attributes: { exclude: ["id", "password", "otp", "locked", "activated"] },
+      offset: offset,
+      limit: limit,
+      order: [["id", "DESC"]],
+      include: [
+        {
+          model: db.dbs.BusinessCompliance,
+          as: "business_compliance",
         },
-        offset: offset,
-        limit: limit,
-        order: [["id", "DESC"]],
-        include: [
-          {
-            model: db.dbs.BusinessCompliance,
-            as: "business_compliance",
-          },
-          {
-            model: db.dbs.Directors,
-            as: "directors",
-          },
-        ],
-      });
-      utill.appCache.set("all-system-users-pageNum="+pageNum, allUsers);
-    }
+        {
+          model: db.dbs.Directors,
+          as: "directors",
+        },
+      ],
+    });
 
     var next_page = currentPage + 1;
     var prev_page = currentPage - 1;
@@ -5084,20 +4758,11 @@ with note ${note}`,
     const offset = page * pageSize;
     const limit = pageSize;
 
-    let checker = utill.appCache.has("all-loaded-bags-pageNum=" + pageNum);
-    let allLoadedBags;
-    if (checker) {
-      allLoadedBags = utill.appCache.get("all-loaded-bags-pageNum=" + pageNum);
-    } else {
-      allLoadedBags = await await db.dbs.LoadedBags.findAndCountAll({
-        offset: offset,
-        limit: limit,
-        order: [["createdAt", "DESC"]],
-      });
-      if (allLoadedBags.rows.length > 0) {
-        utill.appCache.set("all-loaded-bags-pageNum=" + pageNum, allLoadedBags);
-      }
-    }
+    let allLoadedBags = await await db.dbs.LoadedBags.findAndCountAll({
+      offset: offset,
+      limit: limit,
+      order: [["createdAt", "DESC"]],
+    });
 
     var next_page = currentPage + 1;
     var prev_page = currentPage - 1;
@@ -5272,23 +4937,11 @@ with note ${note}`,
     const offset = page * pageSize;
     const limit = pageSize;
 
-    let checker = utill.appCache.has("all-offloaded-bags-pageNum=" + pageNum);
-    let allOffloadedBags;
-    if (checker) {
-      allOffloadedBags = utill.appCache.get(
-        "all-offloaded-bags-pageNum=" + pageNum
-      );
-    } else {
-      allOffloadedBags = await db.dbs.OffLoadedBags.findAndCountAll({
-        offset: offset,
-        limit: limit,
-        order: [["createdAt", "DESC"]],
-      });
-      utill.appCache.set(
-        "all-offloaded-bags-pageNum=" + pageNum,
-        allOffloadedBags
-      );
-    }
+    let allOffloadedBags = await db.dbs.OffLoadedBags.findAndCountAll({
+      offset: offset,
+      limit: limit,
+      order: [["createdAt", "DESC"]],
+    });
 
     var next_page = currentPage + 1;
     var prev_page = currentPage - 1;

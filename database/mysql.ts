@@ -156,6 +156,16 @@ dbs.ScheduleFlights.hasMany(dbs.ShippingItems, {
   as: "shipping_items",
 });
 
+dbs.Cargo.belongsTo(dbs.Users, {
+  foreignKey: "owner_id",
+  as: "cargo_owner",
+});
+
+dbs.Users.hasMany(dbs.Cargo, {
+  foreignKey: "owner_id",
+  as: "cargo_owner",
+});
+
 dbs.ScheduleFlights.belongsTo(dbs.Cargo, {
   foreignKey: "aircraft_id",
   as: "scheduled",

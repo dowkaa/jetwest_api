@@ -15,11 +15,6 @@ const http = require("http").Server(app);
 module.exports = http.listen(port || 2023, () => {
   console.log(`Server started on port ${port}`);
 
-  let date = utils.moment("2023-04-11T16:49:22.278Z").format("YYYY-MM-DD");
-  let now = utils.moment().format("YYYY-MM-DD");
-
-  if (date < now) {
-    console.log("hello world");
-  }
+  console.log({ caches: utils.appCache.get("chats") });
   // let date = utils.moment().add(1, "hour").format("YYYY-MM-DD HH:mm:ss");
 });
