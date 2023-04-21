@@ -19,97 +19,103 @@ module.exports = {
         type: "paystack",
         body: JSON.stringify(req.body),
       });
-    } catch (e) {}
 
-    var secret = paystack_key;
-    //validate event
-    var hash = util.crypto
-      .createHmac("sha512", process.env.PAYSTACK_KEY)
-      .update(JSON.stringify(req.body))
-      .digest("hex");
+      var secret = paystack_key;
+      //validate event
+      var hash = util.crypto
+        .createHmac("sha512", process.env.PAYSTACK_KEY)
+        .update(JSON.stringify(req.body))
+        .digest("hex");
 
-    if (hash == req.headers["x-paystack-signature"]) {
-      var event = req.body;
-      var reference = event.data.reference;
-      var validateTransaction = await util.helpers.checkUserTransaction(
-        reference
-      );
+      if (hash == req.headers["x-paystack-signature"]) {
+        var event = req.body;
+        var reference = event.data.reference;
+        var validateTransaction = await util.helpers.checkUserTransaction(
+          reference
+        );
 
-      let shipment = await db.dbs.ShippingItems.findOne({
-        where: { reference: reference },
-      });
+        let shipment = await db.dbs.ShippingItems.findOne({
+          where: { reference: reference },
+        });
 
-      let route = await db.dbs.ShipmentRoutes.findOne({
-        where: { destination_name: shipment.destination },
-      });
+        let route = await db.dbs.ShipmentRoutes.findOne({
+          where: { destination_name: shipment.destination },
+        });
 
-      if (validateTransaction) {
-        return res.sendStatus(200);
-      } else {
-        if (event.data.status == "success") {
-          var amount = event.data.amount / 100;
-          let checker = await db.dbs.Transactions.findOne({
-            where: { reference: reference },
-          });
-
-          if (checker) {
-            return res.sendStatus(200);
-          }
-
-          var user = await db.Users.findOne({
-            where: { email: event.data.customer.email },
-          });
-
-          await db.dbs.Transactions.create({
-            uuid: util.uuid(),
-            user_id: user.id,
-            amount: amount * parseFloat(route.dailyExchangeRate),
-            reference: reference,
-            departure: shipment.pickup_location,
-            arrival: shipment.destination,
-            booked_by: shipment.shipperName,
-            cargo_id: shipment.cargo_id,
-            departure_date: shipment.depature_date,
-            arrival_date: shipment.arrival_date,
-            shipment_no: shipment.shipment_num,
-            company_name: user.company_name,
-            weight:
-              parseFloat(shipment.volumetric_weight) >
-              parseFloat(shipment.weight)
-                ? shipment.volumetric_weight
-                : shipment.weight,
-            reciever_organisation: shipment.reciever_organisation,
-            pricePerkeg: shipment.ratePerKg,
-            no_of_bags: shipment.no_of_bags,
-            type: "credit",
-            method: "paystack webhook",
-            description: `Payment for shipment with no ${shipment.shipment_num} via paystack webhook`,
-            status: "success",
-          });
-
-          await db.dbs.ShippingItems.update(
-            { payment_status: "SUCCESS" },
-            {
-              where: {
-                reference: reference,
-              },
-            }
-          );
-
+        if (validateTransaction) {
           return res.sendStatus(200);
         } else {
-          await db.dbs.ShippingItems.update(
-            { payment_status: "FAILED" },
-            {
-              where: {
-                reference: reference,
-              },
+          if (event.data.status == "success") {
+            var amount = event.data.amount / 100;
+            let checker = await db.dbs.Transactions.findOne({
+              where: { reference: reference },
+            });
+
+            if (checker) {
+              return res.sendStatus(200);
             }
-          );
+
+            var user = await db.Users.findOne({
+              where: { email: event.data.customer.email },
+            });
+
+            await db.dbs.Transactions.create({
+              uuid: util.uuid(),
+              user_id: user.id,
+              amount: amount * parseFloat(route.dailyExchangeRate),
+              reference: reference,
+              departure: shipment.pickup_location,
+              arrival: shipment.destination,
+              booked_by: shipment.shipperName,
+              cargo_id: shipment.cargo_id,
+              departure_date: shipment.depature_date,
+              arrival_date: shipment.arrival_date,
+              shipment_no: shipment.shipment_num,
+              company_name: user.company_name,
+              weight:
+                parseFloat(shipment.volumetric_weight) >
+                parseFloat(shipment.weight)
+                  ? shipment.volumetric_weight
+                  : shipment.weight,
+              reciever_organisation: shipment.reciever_organisation,
+              pricePerkeg: shipment.ratePerKg,
+              no_of_bags: shipment.no_of_bags,
+              type: "credit",
+              method: "paystack webhook",
+              description: `Payment for shipment with no ${shipment.shipment_num} via paystack webhook`,
+              status: "success",
+            });
+
+            await db.dbs.ShippingItems.update(
+              { payment_status: "SUCCESS" },
+              {
+                where: {
+                  reference: reference,
+                },
+              }
+            );
+
+            return res.sendStatus(200);
+          } else {
+            await db.dbs.ShippingItems.update(
+              { payment_status: "FAILED" },
+              {
+                where: {
+                  reference: reference,
+                },
+              }
+            );
+          }
         }
+        return res.sendStatus(200);
       }
-      return res.sendStatus(200);
+      return res.sendStatus(400);
+    } catch (err: any) {
+      console.log({ err, message: err.response.data });
+      await db.dbs.PaystackError.create({
+        uuid: util.uuid(),
+        data: JSON.stringify(err.response.data),
+      });
     }
-    return res.sendStatus(400);
   },
 };
