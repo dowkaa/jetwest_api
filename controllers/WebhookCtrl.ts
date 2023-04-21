@@ -111,10 +111,10 @@ module.exports = {
       }
       return res.sendStatus(400);
     } catch (err: any) {
-      console.log({ err, message: err.response.data });
+      console.log({ err, message: err.response });
       await db.dbs.PaystackError.create({
         uuid: util.uuid(),
-        data: JSON.stringify(err.response.data),
+        data: JSON.stringify(err),
       });
     }
   },
