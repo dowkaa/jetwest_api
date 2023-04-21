@@ -47,7 +47,6 @@ const addJob = async (data: any) => {
       item.status = "In progress";
       await item.save();
     }
-
     return;
   } else {
     for (let i = 0; i < arr.length; i++) {
@@ -57,7 +56,6 @@ const addJob = async (data: any) => {
     }
     item.departure_date = JSON.stringify(arr2);
     await item.save();
-
     return;
   }
 };

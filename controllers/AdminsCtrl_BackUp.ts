@@ -815,6 +815,7 @@ module.exports = {
       available_capacity: parseFloat(scheduled_payload),
       arrival_date: arrival_date.split("/").reverse().join("-"),
       departure_date: JSON.stringify(arr),
+      all_schedules: JSON.stringify(arr),
       departure_day: dayName,
       destination_station,
       groundHandler: data.groundHandler,

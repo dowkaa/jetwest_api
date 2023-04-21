@@ -12,6 +12,7 @@ var ScheduleFlights = (sequelize: any, type: any) => {
     user_id: Sequelize.STRING,
     departure_station: Sequelize.STRING,
     departure_date: Sequelize.STRING,
+    all_schedules: Sequelize.STRING,
     destination_station: Sequelize.STRING,
     flight_reg: Sequelize.STRING,
     arrival_date: Sequelize.STRING,
