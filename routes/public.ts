@@ -51,6 +51,8 @@ router.get("/all-cargo-types", HomeCtrl.getAllCargoTypes);
 router.get("/all-pending-flights", HomeCtrl.allPendingShipments);
 
 router.get("/check-flight-availability", HomeCtrl.checkFlightAvailability);
+router.get("/clear-cache", HomeCtrl.clearAllCache);
+router.get("/cache-stats", HomeCtrl.cacheStats);
 
 router.get("/test", HomeCtrl.test);
 

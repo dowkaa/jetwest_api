@@ -1,5 +1,6 @@
 const utilz = require("../utils/packages");
 import { Request, Response, NextFunction } from "express";
+import { resolve } from "path";
 const db = require("../database/mysql");
 const { Op, QueryTypes } = require("sequelize");
 
@@ -706,5 +707,24 @@ module.exports = {
           "Kindly check your email for API documentation. Thanks."
         )
       );
+  },
+
+  clearAllCache: async (
+    req: any,
+    res: Response,
+    next: NextFunction
+  ): Promise<Response> => {
+    utilz.appCache.flushAll();
+    return res
+      .status(200)
+      .json(utilz.helpers.sendSuccess("Cache cleared successfully."));
+  },
+  cacheStats: async (
+    req: any,
+    res: Response,
+    next: NextFunction
+  ): Promise<Response> => {
+    let stats = utilz.appCache.getStats();
+    return res.status(200).json({ stats });
   },
 };

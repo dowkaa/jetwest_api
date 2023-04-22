@@ -645,7 +645,7 @@ module.exports = {
       } else {
         users = await db.dbs.Users.findAll({
           attributes: {
-            exclude: ["id", "password", "otp", "locked", "activated"],
+            exclude: ["password", "otp", "locked", "activated"],
           },
           include: [
             {
@@ -659,13 +659,13 @@ module.exports = {
                   as: "agents",
                   distinct: true,
                   attributes: {
-                    exclude: ["id", "password", "otp", "locked", "activated"],
+                    exclude: ["password", "otp", "locked", "activated"],
                   },
                 },
               ],
             },
           ],
-          order: [["createdAt", "DESC"]],
+          // order: [["createdAt", "DESC"]],
         });
         util.appCache.set(req.url + item.id, users);
       }
