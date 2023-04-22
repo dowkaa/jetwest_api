@@ -674,9 +674,7 @@ module.exports = {
     }
     return res
       .status(400)
-      .json(
-        util.helpers.sendError(`Schedule flight flight on ${date} not found`)
-      );
+      .json(util.helpers.sendError(`Schedule flight on ${date} not found`));
   },
 
   getData: async (
