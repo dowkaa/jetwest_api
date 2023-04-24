@@ -5,6 +5,10 @@ require("./database/mysql");
 const utils = require("./utils/packages");
 const port = process.env.PORT;
 
+setInterval(() => {
+  utils.appCache.flushAll();
+}, 20000);
+
 // https://stackoverflow.com/questions/41194368/how-to-get-all-sundays-mondays-tuesdays-between-two-dates
 
 // const publicRoute = require('./routes/public')

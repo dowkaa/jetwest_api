@@ -843,6 +843,7 @@ module.exports = {
 `,
       data: JSON.stringify(req.body),
     });
+    utill.appCache.flushAll();
 
     return res
       .status(200)
@@ -887,6 +888,7 @@ module.exports = {
 `,
       data: JSON.stringify(checker),
     });
+    utill.appCache.flushAll();
 
     return res
       .status(200)
@@ -1585,6 +1587,7 @@ module.exports = {
 `,
       data: JSON.stringify(req.body),
     });
+    utill.appCache.flushAll();
 
     return res
       .status(200)
@@ -1807,6 +1810,7 @@ module.exports = {
       email: req.user.email,
       message: "This is to inform you that you have been assigned to ",
     };
+    utill.appCache.flushAll();
 
     return res
       .status(200)
@@ -2040,6 +2044,7 @@ module.exports = {
 
     user.notes = about_note;
     await user.save();
+    utill.appCache.flushAll();
 
     return res
       .status(200)
@@ -2173,6 +2178,7 @@ module.exports = {
       description: `Admin ${req.user.first_name} ${req.user.last_name} created a role with name ${name}`,
       data: JSON.stringify(req.body),
     });
+    utill.appCache.flushAll();
 
     return res
       .status(200)
@@ -2568,6 +2574,7 @@ with note ${note}`,
     cargo.driveLink = driveLink;
     cargo.noteTwo = noteTwo;
     await cargo.save();
+    utill.appCache.flushAll();
 
     return res
       .status(200)
@@ -4962,6 +4969,8 @@ with note ${note}`,
         });
         utill.appCache.set(allLogistics[0].destination_station);
       }
+
+      console.log({ departure, destination });
       if (status) {
         if (scan_type === "load") {
           if (parseInt(v.load_count) === parseInt(v.no_of_bags)) {
@@ -5181,6 +5190,7 @@ with note ${note}`,
         //   });
         // }
       }
+      utill.appCache.flushAll();
       return res
         .status(200)
         .json(
