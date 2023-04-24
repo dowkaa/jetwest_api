@@ -7,7 +7,7 @@ const port = process.env.PORT;
 
 setInterval(() => {
   utils.appCache.flushAll();
-}, 20000);
+}, 2000);
 
 // https://stackoverflow.com/questions/41194368/how-to-get-all-sundays-mondays-tuesdays-between-two-dates
 
