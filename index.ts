@@ -18,7 +18,5 @@ const http = require("http").Server(app);
 
 module.exports = http.listen(port || 2023, () => {
   console.log(`Server started on port ${port}`);
-
-  console.log({ caches: utils.appCache.get("chats") });
   // let date = utils.moment().add(1, "hour").format("YYYY-MM-DD HH:mm:ss");
 });
