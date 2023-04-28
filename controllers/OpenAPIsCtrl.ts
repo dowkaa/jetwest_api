@@ -24,6 +24,7 @@ module.exports = {
         stod: util.Joi.string().required(),
         total_amount: util.Joi.number().required(),
         agreement: util.Joi.boolean().required(),
+        schedule_type: util.Joi.string().required(),
         agent_id: util.Joi.string().allow(""),
         reciever_firstname: util.Joi.string().required(),
         reciever_lastname: util.Joi.string().required(),
@@ -86,6 +87,7 @@ module.exports = {
       reciever_organisation,
       reciever_primaryMobile,
       reciever_secMobile,
+      schedule_type,
     } = req.body;
 
     if (!agreement) {
@@ -234,6 +236,14 @@ module.exports = {
       }
     }
 
+    let route = await db.dbs.ShipmentRoutes.findOne({
+      where: { destination_name: destination, type: schedule_type },
+    });
+
+    if (!route) {
+      return res.status(400).json(util.helpers.sendError("Route not found"));
+    }
+
     for (const item of items) {
       let price;
       let insurance;
@@ -252,14 +262,6 @@ module.exports = {
         value,
         content,
       } = item;
-
-      let route = await db.dbs.ShipmentRoutes.findOne({
-        where: { destination_name: destination },
-      });
-
-      if (!route) {
-        return res.status(400).json(util.helpers.sendError("Route not found"));
-      }
 
       let chargeable_weight;
       let volumetric_weight =
@@ -298,7 +300,11 @@ module.exports = {
         }
         v.available_capacity =
           parseFloat(v.available_capacity) - parseFloat(weight);
-        v.totalAmount = parseFloat(v.totalAmount) + price;
+        v.totalAmount =
+          parseFloat(v.totalAmount) +
+          (price * parseFloat(route.dailyExchangeRate) +
+            parseFloat(route.air_wayBill_rate) *
+              parseFloat(route.dailyExchangeRate));
         v.taw = parseFloat(v.taw) + parseFloat(weight);
         await v.save();
       } else {
@@ -314,11 +320,18 @@ module.exports = {
         v.available_capacity =
           parseFloat(v.available_capacity) - parseFloat(weight);
         v.taw = parseFloat(v.taw) + parseFloat(weight);
-        v.totalAmount = parseFloat(v.totalAmount) + price;
+        v.totalAmount =
+          parseFloat(v.totalAmount) +
+          (price * parseFloat(route.dailyExchangeRate) +
+            parseFloat(route.air_wayBill_rate) *
+              parseFloat(route.dailyExchangeRate));
         await v.save();
       }
 
-      price = price * parseFloat(route.dailyExchangeRate);
+      price =
+        price * parseFloat(route.dailyExchangeRate) +
+        parseFloat(route.air_wayBill_rate) *
+          parseFloat(route.dailyExchangeRate);
 
       let checkBalance = await db.dbs.Wallets.findOne({
         where: { user_id: userChecker.id },
@@ -416,6 +429,9 @@ module.exports = {
           length: length,
           address: req.user?.company_address,
           country: req.user?.country,
+          air_wayBill_rate:
+            parseFloat(route.air_wayBill_rate) *
+            parseFloat(route.dailyExchangeRate),
           height,
           insurance,
           sur_charge: price * (parseFloat(route.sur_charge) / 100),
@@ -435,6 +451,7 @@ module.exports = {
           payment_status: "pending",
           price: price,
           category,
+          shipment_model: schedule_type,
           ba_code_url,
           promo_code: promo_code ? promo_code : null,
           shipperName: req.user.first_name + " " + req.user.last_name,
@@ -469,7 +486,11 @@ module.exports = {
           insurance,
           address: req.user?.company_address,
           country: req.user?.country,
+          shipment_model: schedule_type,
           cargo_index: cargo_type,
+          air_wayBill_rate:
+            parseFloat(route.air_wayBill_rate) *
+            parseFloat(route.dailyExchangeRate),
           sur_charge: price * (parseFloat(route.sur_charge) / 100),
           taxes: price * (parseFloat(route.tax) / 100),
           book_type: "Personal",

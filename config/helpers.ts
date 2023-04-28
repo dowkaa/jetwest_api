@@ -1278,6 +1278,7 @@ const addShipmentAndCreditUser = async (
     agent_id,
     payment_ref,
     reciever_email,
+    schedule_type,
     total_amount,
     reciever_firstname,
     reciever_lastname,
@@ -1397,6 +1398,18 @@ const addShipmentAndCreditUser = async (
     }
   }
 
+  let route = await db.dbs.ShipmentRoutes.findOne({
+    where: { destination_name: destination, type: schedule_type },
+  });
+
+  if (!route) {
+    let resp = {
+      status: 400,
+      message: "Route not found",
+    };
+    return resp;
+  }
+
   for (const index of item) {
     let price;
     let insurance;
@@ -1415,18 +1428,6 @@ const addShipmentAndCreditUser = async (
       value,
       content,
     } = index;
-
-    let route = await db.dbs.ShipmentRoutes.findOne({
-      where: { destination_name: destination },
-    });
-
-    if (!route) {
-      let resp = {
-        status: 400,
-        message: "Route not found",
-      };
-      return resp;
-    }
 
     let chargeable_weight;
     let volumetric_weight =
@@ -1464,7 +1465,10 @@ const addShipmentAndCreditUser = async (
       v.available_capacity =
         parseFloat(v.available_capacity) - parseFloat(weight);
       v.totalAmount =
-        parseFloat(v.totalAmount) + price * parseFloat(route.dailyExchangeRate);
+        parseFloat(v.totalAmount) +
+        (price * parseFloat(route.dailyExchangeRate) +
+          parseFloat(route.air_wayBill_rate) *
+            parseFloat(route.dailyExchangeRate));
       v.taw = parseFloat(v.taw) + parseFloat(weight);
       await v.save();
     } else {
@@ -1479,11 +1483,16 @@ const addShipmentAndCreditUser = async (
         parseFloat(v.available_capacity) - volumetric_weight;
       v.taw = parseFloat(v.taw) + volumetric_weight;
       v.totalAmount =
-        parseFloat(v.totalAmount) + price * parseFloat(route.dailyExchangeRate);
+        parseFloat(v.totalAmount) +
+        (price * parseFloat(route.dailyExchangeRate) +
+          parseFloat(route.air_wayBill_rate) *
+            parseFloat(route.dailyExchangeRate));
       await v.save();
     }
 
-    price = price * parseFloat(route.dailyExchangeRate);
+    price =
+      price * parseFloat(route.dailyExchangeRate) +
+      parseFloat(route.air_wayBill_rate) * parseFloat(route.dailyExchangeRate);
 
     if (agent_id) {
       let agent = await db.dbs.Users.findOne({
@@ -1516,6 +1525,9 @@ const addShipmentAndCreditUser = async (
         scan_code,
         weight,
         ratePerKg: route.ratePerKg,
+        air_wayBill_rate:
+          parseFloat(route.air_wayBill_rate) *
+          parseFloat(route.dailyExchangeRate),
         address: req.user?.company_address,
         country: req.user?.country,
         logo_url: v.logo_url,
@@ -1560,6 +1572,9 @@ const addShipmentAndCreditUser = async (
         cargo_index: cargo_type,
         length: length,
         height,
+        air_wayBill_rate:
+          parseFloat(route.air_wayBill_rate) *
+          parseFloat(route.dailyExchangeRate),
         insurance,
         sur_charge: price * (parseFloat(route.sur_charge) / 100),
         taxes: price * (parseFloat(route.tax) / 100),
@@ -1676,6 +1691,7 @@ const logPendingShipment = async (req: any, res: Response, item: any) => {
     reciever_lastname,
     reciever_organisation,
     reciever_primaryMobile,
+    schedule_type,
     reciever_secMobile,
   } = req.body;
   let shipment_num = utilities.helpers.generateReftId(10);
@@ -1791,6 +1807,18 @@ const logPendingShipment = async (req: any, res: Response, item: any) => {
     }
   }
 
+  let route = await db.dbs.ShipmentRoutes.findOne({
+    where: { destination_name: destination, type: schedule_type },
+  });
+
+  if (!route) {
+    let resp = {
+      status: 400,
+      message: "Route not found",
+    };
+    return resp;
+  }
+
   for (const index of item) {
     let price;
     let insurance;
@@ -1809,18 +1837,6 @@ const logPendingShipment = async (req: any, res: Response, item: any) => {
       value,
       content,
     } = index;
-
-    let route = await db.dbs.ShipmentRoutes.findOne({
-      where: { destination_name: destination },
-    });
-
-    if (!route) {
-      let resp = {
-        status: 400,
-        message: "Route not found",
-      };
-      return resp;
-    }
 
     let chargeable_weight;
     let volumetric_weight =
@@ -1858,7 +1874,10 @@ const logPendingShipment = async (req: any, res: Response, item: any) => {
       v.available_capacity =
         parseFloat(v.available_capacity) - parseFloat(weight);
       v.totalAmount =
-        parseFloat(v.totalAmount) + price * parseFloat(route.dailyExchangeRate);
+        parseFloat(v.totalAmount) +
+        (price * parseFloat(route.dailyExchangeRate) +
+          parseFloat(route.air_wayBill_rate) *
+            parseFloat(route.dailyExchangeRate));
       v.taw = parseFloat(v.taw) + parseFloat(weight);
       await v.save();
     } else {
@@ -1873,11 +1892,16 @@ const logPendingShipment = async (req: any, res: Response, item: any) => {
         parseFloat(v.available_capacity) - volumetric_weight;
       v.taw = parseFloat(v.taw) + volumetric_weight;
       v.totalAmount =
-        parseFloat(v.totalAmount) + price * parseFloat(route.dailyExchangeRate);
+        parseFloat(v.totalAmount) +
+        (price * parseFloat(route.dailyExchangeRate) +
+          parseFloat(route.air_wayBill_rate) *
+            parseFloat(route.dailyExchangeRate));
       await v.save();
     }
 
-    price = price * parseFloat(route.dailyExchangeRate);
+    price =
+      price * parseFloat(route.dailyExchangeRate) +
+      parseFloat(route.air_wayBill_rate) * parseFloat(route.dailyExchangeRate);
 
     if (agent_id) {
       let agent = await db.dbs.Users.findOne({
@@ -1902,6 +1926,9 @@ const logPendingShipment = async (req: any, res: Response, item: any) => {
         length: length,
         address: req.user?.company_address,
         country: req.user?.country,
+        air_wayBill_rate:
+          parseFloat(route.air_wayBill_rate) *
+          parseFloat(route.dailyExchangeRate),
         height,
         insurance,
         sur_charge: price * (parseFloat(route.sur_charge) / 100),
@@ -1953,6 +1980,9 @@ const logPendingShipment = async (req: any, res: Response, item: any) => {
         destination,
         depature_date: depature_date.split("/").reverse().join("-"),
         width,
+        air_wayBill_rate:
+          parseFloat(route.air_wayBill_rate) *
+          parseFloat(route.dailyExchangeRate),
         length: length,
         height,
         insurance,

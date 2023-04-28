@@ -211,4 +211,14 @@ dbs.Transactions.hasMany(dbs.PaymentProofs, {
   as: "payment_proof",
 });
 
+dbs.AirWayBill.belongsTo(dbs.Users, {
+  foreignKey: "user_id",
+  as: "airway_bill",
+});
+
+dbs.Users.hasOne(dbs.AirWayBill, {
+  foreignKey: "user_id",
+  as: "airway_bill",
+});
+
 exports.dbs = dbs;

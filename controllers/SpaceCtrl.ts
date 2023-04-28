@@ -277,6 +277,14 @@ module.exports = {
       }
     }
 
+    let route = await db.dbs.ShipmentRoutes.findOne({
+      where: { destination_name: destination, type: "space" },
+    });
+
+    if (!route) {
+      return res.status(400).json(util.helpers.sendError("Route not found"));
+    }
+
     for (const item of items) {
       let price;
       let insurance;
@@ -295,14 +303,6 @@ module.exports = {
         value,
         content,
       } = item;
-
-      let route = await db.dbs.ShipmentRoutes.findOne({
-        where: { destination_name: destination },
-      });
-
-      if (!route) {
-        return res.status(400).json(util.helpers.sendError("Route not found"));
-      }
 
       let chargeable_weight;
       let volumetric_weight =
@@ -343,7 +343,9 @@ module.exports = {
           parseFloat(v.available_capacity) - parseFloat(weight);
         v.totalAmount =
           parseFloat(v.totalAmount) +
-          price * parseFloat(route.dailyExchangeRate);
+          (price * parseFloat(route.dailyExchangeRate) +
+            parseFloat(route.air_wayBill_rate) *
+              parseFloat(route.dailyExchangeRate));
         v.taw = parseFloat(v.taw) + parseFloat(weight);
         await v.save();
       } else {
@@ -362,11 +364,16 @@ module.exports = {
         v.taw = parseFloat(v.taw) + parseFloat(weight);
         v.totalAmount =
           parseFloat(v.totalAmount) +
-          price * parseFloat(route.dailyExchangeRate);
+          (price * parseFloat(route.dailyExchangeRate) +
+            parseFloat(route.air_wayBill_rate) *
+              parseFloat(route.dailyExchangeRate));
         await v.save();
       }
 
-      price = price * parseFloat(route.dailyExchangeRate);
+      price =
+        price * parseFloat(route.dailyExchangeRate) +
+        parseFloat(route.air_wayBill_rate) *
+          parseFloat(route.dailyExchangeRate);
 
       if (agent_id) {
         let agent = await db.dbs.Users.findOne({ where: { uuid: agent_id } });
@@ -394,6 +401,9 @@ module.exports = {
           status: "pending",
           shipment_routeId: route.id,
           cargo_index: cargo_type,
+          air_wayBill_rate:
+            parseFloat(route.air_wayBill_rate) *
+            parseFloat(route.dailyExchangeRate),
           scan_code,
           weight,
           ratePerKg: route.ratePerKg,
@@ -436,6 +446,9 @@ module.exports = {
           address: req.user?.company_address,
           country: req.user?.country,
           chargeable_weight,
+          air_wayBill_rate:
+            parseFloat(route.air_wayBill_rate) *
+            parseFloat(route.dailyExchangeRate),
           cargo_index: cargo_type,
           cargo_id: cargo.id,
           stod: items[0].depature_date + " " + stod,

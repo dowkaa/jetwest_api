@@ -291,6 +291,14 @@ module.exports = {
       }
     }
 
+    let route = await db.dbs.ShipmentRoutes.findOne({
+      where: { destination_name: destination, type: "direct" },
+    });
+
+    if (!route) {
+      return res.status(400).json(util.helpers.sendError("Route not found"));
+    }
+
     for (const item of items) {
       let price;
       let insurance;
@@ -310,14 +318,6 @@ module.exports = {
         invoice_url,
       } = item;
 
-      let route = await db.dbs.ShipmentRoutes.findOne({
-        where: { destination_name: destination },
-      });
-
-      if (!route) {
-        return res.status(400).json(util.helpers.sendError("Route not found"));
-      }
-
       let chargeable_weight;
       let volumetric_weight =
         (parseInt(width) * parseInt(height) * parseInt(length)) / 5000;
@@ -328,7 +328,9 @@ module.exports = {
           : parseInt(weight);
 
       if (category === "fragile") {
-        price = chargeable_weight * parseFloat(route.ratePerKg);
+        price =
+          chargeable_weight * parseFloat(route.ratePerKg) +
+          parseFloat(route.agent_rate);
         let price1 = price * (parseFloat(route.sur_charge) / 100);
         let price2 = price * (parseFloat(route.tax) / 100);
         let price3 = value * (parseFloat(route.insurance) / 100);
@@ -357,7 +359,9 @@ module.exports = {
           parseFloat(v.available_capacity) - parseFloat(weight);
         v.totalAmount =
           parseFloat(v.totalAmount) +
-          price * parseFloat(route.dailyExchangeRate);
+          (price * parseFloat(route.dailyExchangeRate) +
+            parseFloat(route.air_wayBill_rate) *
+              parseFloat(route.dailyExchangeRate));
         v.taw = parseFloat(v.taw) + parseFloat(weight);
         await v.save();
       } else {
@@ -376,11 +380,16 @@ module.exports = {
         v.taw = parseFloat(v.taw) + parseFloat(weight);
         v.totalAmount =
           parseFloat(v.totalAmount) +
-          price * parseFloat(route.dailyExchangeRate);
+          (price * parseFloat(route.dailyExchangeRate) +
+            parseFloat(route.air_wayBill_rate) *
+              parseFloat(route.dailyExchangeRate));
         await v.save();
       }
 
-      price = price * parseFloat(route.dailyExchangeRate);
+      price =
+        price * parseFloat(route.dailyExchangeRate) +
+        parseFloat(route.air_wayBill_rate) *
+          parseFloat(route.dailyExchangeRate);
 
       if (agent_id) {
         let agent = await db.dbs.Users.findOne({ where: { uuid: agent_id } });
@@ -417,7 +426,10 @@ module.exports = {
           volumetric_weight,
           company_name: user.company_name,
           payment_status: "pending",
-          shipment_model: "select",
+          shipment_model: "direct",
+          air_wayBill_rate:
+            parseFloat(route.air_wayBill_rate) *
+            parseFloat(route.dailyExchangeRate),
           address,
           country,
           price: price,
@@ -478,6 +490,9 @@ module.exports = {
           status: "pending",
           shipment_routeId: route.id,
           scan_code,
+          air_wayBill_rate:
+            parseFloat(route.air_wayBill_rate) *
+            parseFloat(route.dailyExchangeRate),
           weight,
           ratePerKg: route.ratePerKg,
           logo_url: v.logo_url,
@@ -486,7 +501,7 @@ module.exports = {
           volumetric_weight,
           company_name: user.company_name,
           payment_status: "pending",
-          shipment_model: "select",
+          shipment_model: "direct",
           price: price,
           category,
           ba_code_url,

@@ -1443,7 +1443,10 @@ module.exports = {
 
     if (shipment) {
       let route = await db.dbs.ShipmentRoutes.findOne({
-        where: { destination_name: shipment.destination },
+        where: {
+          destination_name: shipment.destination,
+          type: shipment.shipment_model,
+        },
       });
       let user = await db.dbs.Users.findOne({
         where: { id: shipment.user_id },
@@ -1696,7 +1699,10 @@ module.exports = {
         destination: utill.Joi.string().required(), // this is a destination e.g Port Harcourt
         dollarPerKg: utill.Joi.number().required(),
         dailyExchangeRate: utill.Joi.number().required(),
+        agent_rate: utill.Joi.number().allow(""),
+        type: utill.Joi.string().required(),
         value: utill.Joi.number().required(),
+        air_wayBill_rate: utill.Joi.number().required(),
         tax: utill.Joi.number().required(),
         insurance: utill.Joi.number().required(),
         surcharge: utill.Joi.number().required(),
@@ -1741,10 +1747,21 @@ module.exports = {
       dollarPerKg,
       dailyExchangeRate,
       value,
+      agent_rate,
+      type,
+      air_wayBill_rate,
       tax,
       insurance,
       surcharge,
     } = req.body;
+
+    if (type === "direct" && !agent_rate) {
+      return res
+        .status(400)
+        .json(
+          utill.helpers.sendError("Agent rates is required for this route type")
+        );
+    }
 
     // chec if departure exists on destination tables
     let departureCheck = await db.dbs.Destinations.findOne({
@@ -1768,7 +1785,7 @@ module.exports = {
     }
 
     let checker = await db.dbs.ShipmentRoutes.findOne({
-      where: { departure: departure, destination_name: destination },
+      where: { departure: departure, destination_name: destination, type: type },
     });
 
     if (checker) {
@@ -1787,6 +1804,9 @@ module.exports = {
       departure,
       destination,
       dailyExchangeRate,
+      agent_rate,
+      type,
+      air_WayBill: air_wayBill_rate,
       value,
       insurance,
       groundHandler: destinationCheck.groundHandler,
@@ -1830,6 +1850,9 @@ module.exports = {
         dailyExchangeRate: utill.Joi.number().required(),
         value: utill.Joi.number().required(),
         tax: utill.Joi.number().required(),
+        agent_rate: utill.Joi.number().allow(""),
+        type: utill.Joi.string().required(),
+        air_WayBill: utill.Joi.number().required(),
         insurance: utill.Joi.number().required(),
         surcharge: utill.Joi.number().required(),
       })
@@ -1875,6 +1898,9 @@ module.exports = {
       dailyExchangeRate,
       value,
       tax,
+      agent_rate,
+      air_WayBill,
+      type,
       insurance,
       surcharge,
     } = req.body;
@@ -1887,14 +1913,19 @@ module.exports = {
       return res.status(400).json(utill.helpers.sendError("Route not found"));
     }
 
+    if (agent_rate) {
+      route.agent_rate = parseFloat(agent_rate);
+    }
     // await db.dbs.ShipmentRoutes.create({
     route.route = departure + " to " + destination;
-    route.ratePerKg = dollarPerKg;
+    route.ratePerKg = parseFloat(dollarPerKg);
+    route.type = type;
+    route.air_WayBill = air_WayBill;
     route.sur_charge = surcharge;
     route.tax = tax;
     route.departure = departure;
     route.dailyExchangeRate = dailyExchangeRate;
-    route.value = value;
+    route.value = parseFloat(dollarPerKg) * parseFloat(dailyExchangeRate);
     route.insurance = insurance;
     route.destination_name = destination;
     await route.save();

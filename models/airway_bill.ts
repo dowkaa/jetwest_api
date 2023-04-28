@@ -16,6 +16,7 @@ var AirWayBill = (sequelize: any, type: any) => {
     shipper_id: Sequelize.STRING,
     flight_reg: Sequelize.STRING,
     shipment_num: Sequelize.STRING,
+    shipment_id: Sequelize.STRING,
     agent_id: Sequelize.STRING,
   });
 };

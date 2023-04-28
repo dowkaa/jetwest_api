@@ -43,7 +43,7 @@ module.exports = {
       },
       agent_id: {
         allowNull: true,
-        type: Sequelize.BOOLEAN,
+        type: Sequelize.STRING,
       },
       createdAt: {
         type: "TIMESTAMP",

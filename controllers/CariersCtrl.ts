@@ -664,6 +664,11 @@ module.exports = {
                 },
               ],
             },
+            {
+              model: db.dbs.AirWayBill,
+              where: { flight_reg: item.flight_reg },
+              as: "airway_bill",
+            },
           ],
           // order: [["createdAt", "DESC"]],
         });
@@ -693,23 +698,6 @@ module.exports = {
       )
       .then((objs: any) => {
         objs.forEach((obj: any) => {
-          // var id = obj.id;
-          // var flight_reg = obj.flight_reg;
-          // var destination_airport = obj.destination_airport;
-          // var takeoff_airport = obj.takeoff_airport;
-          // var schedule_flights_uuid = obj.schedule_flights_uuid;
-          // var departure_date = obj.departure_date;
-          // var departure_station = obj.departure_station;
-          // var destination_station = obj.destination_station;
-          // var stoa = obj.stoa;
-          // var load_count = obj.load_count;
-          // var offload_count = obj.offload_count;
-          // var stod = obj.stod;
-          // var taw = obj.taw;
-          // var no_of_bags = obj.no_of_bags;
-          // var status = obj.status;
-          // var schedule_flights_createdAt = obj.schedule_flights_createdAt;
-
           allLogistics.push(obj);
         });
       });
@@ -817,6 +805,7 @@ module.exports = {
         doc_id: doc_id,
         doc_url: doc_url,
         shipper_id: shipment.user_id,
+        shipment_id: shipment.id,
         flight_reg: cargo.flight_reg,
         shipment_num: shipment_num,
         agent_id: shipment.agent_id,
