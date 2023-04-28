@@ -561,7 +561,7 @@ module.exports = {
     }
 
     let route = await db.dbs.ShipmentRoutes.findOne({
-      where: { destination_name: destination, type: "select" },
+      where: { destination_name: destination, type: "express" },
     });
 
     if (!route) {
@@ -587,8 +587,6 @@ module.exports = {
         content,
         invoice_url,
       } = item;
-
-      
 
       let chargeable_weight;
       let volumetric_weight =
@@ -700,7 +698,7 @@ module.exports = {
           volumetric_weight,
           company_name: req.user.company_name,
           payment_status: "pending",
-          shipment_model: "select",
+          shipment_model: "express",
           price: price,
           category,
           ba_code_url,
@@ -769,7 +767,7 @@ module.exports = {
           volumetric_weight,
           company_name: req.user.company_name,
           payment_status: "pending",
-          shipment_model: "select",
+          shipment_model: "express",
           price: price,
           category,
           ba_code_url,
