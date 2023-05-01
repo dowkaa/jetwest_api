@@ -388,7 +388,7 @@ module.exports = {
         price * parseFloat(route.dailyExchangeRate) +
         parseFloat(route.air_wayBill_rate) *
           parseFloat(route.dailyExchangeRate) +
-        parseFloat(route.agent_rate);
+        parseFloat(route.agent_rate) * parseFloat(route.dailyExchangeRate);
 
       if (agent_id) {
         let agent = await db.dbs.Users.findOne({ where: { uuid: agent_id } });
