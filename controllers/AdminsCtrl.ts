@@ -1785,7 +1785,11 @@ module.exports = {
     }
 
     let checker = await db.dbs.ShipmentRoutes.findOne({
-      where: { departure: departure, destination_name: destination, type: type },
+      where: {
+        departure: departure,
+        destination_name: destination,
+        type: type,
+      },
     });
 
     if (checker) {
@@ -1806,7 +1810,7 @@ module.exports = {
       dailyExchangeRate,
       agent_rate,
       type,
-      air_WayBill: air_wayBill_rate,
+      air_wayBill_rate: air_wayBill_rate,
       value,
       insurance,
       groundHandler: destinationCheck.groundHandler,
@@ -1920,7 +1924,7 @@ module.exports = {
     route.route = departure + " to " + destination;
     route.ratePerKg = parseFloat(dollarPerKg);
     route.type = type;
-    route.air_WayBill = air_WayBill;
+    route.air_wayBill_rate = parseFloat(air_WayBill);
     route.sur_charge = surcharge;
     route.tax = tax;
     route.departure = departure;

@@ -328,9 +328,7 @@ module.exports = {
           : parseInt(weight);
 
       if (category === "fragile") {
-        price =
-          chargeable_weight * parseFloat(route.ratePerKg) +
-          parseFloat(route.agent_rate);
+        price = chargeable_weight * parseFloat(route.ratePerKg);
         let price1 = price * (parseFloat(route.sur_charge) / 100);
         let price2 = price * (parseFloat(route.tax) / 100);
         let price3 = value * (parseFloat(route.insurance) / 100);
@@ -389,7 +387,8 @@ module.exports = {
       price =
         price * parseFloat(route.dailyExchangeRate) +
         parseFloat(route.air_wayBill_rate) *
-          parseFloat(route.dailyExchangeRate);
+          parseFloat(route.dailyExchangeRate) +
+        parseFloat(route.agent_rate);
 
       if (agent_id) {
         let agent = await db.dbs.Users.findOne({ where: { uuid: agent_id } });
