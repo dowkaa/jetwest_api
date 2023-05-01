@@ -397,22 +397,6 @@ module.exports = {
     let data = await db.dbs.ShippingItems.findOne({
       where: { booking_reference: refId },
     });
-
-    // if (!data) {
-    //   let data2 = await db.dbs.ShippingItems.findOne({
-    //     where: { shipment_num: refId },
-    //   });
-
-    //   if (data2) {
-    //     return res.status(200).json(utilz.helpers.sendSuccess({ data: data2 }));
-    //   }
-
-    //   return res
-    //     .status(400)
-    //     .json(
-    //       utilz.helpers.sendError("Booking data with reference id not found")
-    //     );
-    // }
     return res.status(200).json(utilz.helpers.sendSuccess({ data }));
   },
 
@@ -468,8 +452,8 @@ module.exports = {
     res: Response,
     next: NextFunction
   ) => {
-    const { pickup_location, destination } = req.query;
-    if (!(pickup_location && destination)) {
+    const { pickup_location, destination, product_type } = req.query;
+    if (!(pickup_location && destination && product_type)) {
       return res
         .status(400)
         .json(
@@ -492,7 +476,22 @@ module.exports = {
       ],
     });
 
-    return res.status(200).json({ data: checker });
+    let arr = [];
+    for (const item of checker) {
+      let checkers = await db.dbs.ShipmentRoutes.findOne({
+        where: {
+          departure: item.departure_station,
+          destination: item.destination_station,
+          type: product_type,
+        },
+      });
+
+      if (checkers) {
+        arr.push(item);
+      }
+    }
+
+    return res.status(200).json({ data: arr });
   },
 
   checkFlightAvailability: async (
