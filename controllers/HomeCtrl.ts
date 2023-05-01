@@ -553,6 +553,11 @@ module.exports = {
         );
     }
 
+    if (parseFloat(total_weight) < 1) {
+      return res
+        .status(400)
+        .json(utilz.helpers.sendError("total weight caanot be negative"));
+    }
     if (parseFloat(v.available_capacity) - parseFloat(total_weight) < 0) {
       return res
         .status(400)
