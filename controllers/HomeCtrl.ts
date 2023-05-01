@@ -553,7 +553,7 @@ module.exports = {
         );
     }
 
-    if (v.available_capacity < parseInt(total_weight)) {
+    if (parseFloat(v.available_capacity) - parseFloat(total_weight) < 0) {
       return res
         .status(400)
         .json(
