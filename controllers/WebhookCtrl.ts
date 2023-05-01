@@ -14,7 +14,7 @@ if (process.env.ENV === "test") {
 module.exports = {
   paystackWebhook: async (req: any, res: Response, next: NextFunction) => {
     try {
-      await db.Webhook.create({
+      await db.dbs.Webhook.create({
         ip: req.clientIp,
         type: "paystack",
         body: JSON.stringify(req.body),
