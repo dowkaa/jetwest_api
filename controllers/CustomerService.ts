@@ -899,9 +899,9 @@ module.exports = {
       user_id: user.id,
       reference: "nil",
       rate: parseFloat(route.dailyExchangeRate),
-      amount_in_dollars: amount * parseFloat(route.dailyExchangeRate),
-      amount_in_local_currency: amount,
-      amount_deducted: amount + parseFloat(route.air_wayBill_rate),
+      amount_in_dollars: amount,
+      amount_in_local_currency: amount * parseFloat(route.dailyExchangeRate),
+      amount_deducted: amount,
       departure: item.pickup_location,
       arrival: item.destination,
       cargo_id: item.cargo_id,
@@ -920,7 +920,7 @@ module.exports = {
         "Payment for shipment booked on your behalf by the dowkaa system support.",
       status: "pending",
       airwaybill_cost: parseFloat(route.air_wayBill_rate),
-      total_cost: parseFloat(route.air_wayBill_rate) + parseFloat(amount),
+      total_cost: amount,
     });
 
     updateShipmentStatus(items);
