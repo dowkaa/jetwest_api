@@ -681,7 +681,9 @@ const paymentForShipmentBookingByReceipt = async (option: any) => {
       "Payment for shipment booked on your behalf by the dowkaa system support.",
     status: "pending_verification",
     airwaybill_cost: parseFloat(route.air_wayBill_rate),
-    total_cost: parseFloat(route.air_wayBill_rate) + amount,
+    total_cost:
+      parseFloat(route.air_wayBill_rate) +
+      amount / parseFloat(route.dailyExchangeRate),
   });
 
   await db.dbs.PaymentProofs.create({
@@ -903,7 +905,9 @@ const validateTransaction = async (data: any, type: string) => {
               departure_date: shipment.depature_date,
               arrival_date: shipment.arrival_date,
               booked_by: shipment.shipperName,
-              amount_deducted: amount + parseFloat(route.air_wayBill_rate),
+              amount_deducted:
+                amount / parseFloat(route.dailyExchangeRate) +
+                parseFloat(route.air_wayBill_rate),
               company_name: data.company_name,
               shipment_no: data.shipment_num,
               weight:
@@ -919,7 +923,7 @@ const validateTransaction = async (data: any, type: string) => {
               description: `Payment for shipment with no ${shipment.shipment_num}`,
               status: "success",
               airwaybill_cost: parseFloat(route.air_wayBill_rate),
-              total_cost: parseFloat(route.air_wayBill_rate) + amount,
+              total_cost: parseFloat(route.air_wayBill_rate) + amount / parseFloat(route.dailyExchangeRate),
             });
 
             await db.dbs.CustomerAuditLog.create({
@@ -1024,7 +1028,9 @@ const validateTransaction = async (data: any, type: string) => {
               departure: shipment.pickup_location,
               arrival: shipment.destination,
               rate: parseFloat(route.dailyExchangeRate),
-              amount_deducted: amount + parseFloat(route.air_wayBill_rate),
+              amount_deducted:
+                amount / parseFloat(route.dailyExchangeRate) +
+                parseFloat(route.air_wayBill_rate),
               departure_date: shipment.depature_date,
               company_name: data.company_name,
               arrival_date: shipment.arrival_date,
@@ -1043,7 +1049,9 @@ const validateTransaction = async (data: any, type: string) => {
               description: `Payment for shipment with no ${shipment.shipment_num}`,
               status: "failed",
               airwaybill_cost: parseFloat(route.air_wayBill_rate),
-              total_cost: parseFloat(route.air_wayBill_rate) + amount,
+              total_cost:
+                parseFloat(route.air_wayBill_rate) +
+                amount / parseFloat(route.dailyExchangeRate),
             });
 
             let user = await db.dbs.Users.findOne({ where: { id: data.id } });
@@ -1168,7 +1176,9 @@ const validateTransaction = async (data: any, type: string) => {
               rate: parseFloat(route.dailyExchangeRate),
               cargo_id: shipment.cargo_id,
               departure_date: shipment.depature_date,
-              amount_deducted: amount + parseFloat(route.air_wayBill_rate),
+              amount_deducted:
+                amount / parseFloat(route.dailyExchangeRate) +
+                parseFloat(route.air_wayBill_rate),
               arrival_date: shipment.arrival_date,
               booked_by: shipment.shipperName,
               company_name: data.company_name,
@@ -1186,7 +1196,9 @@ const validateTransaction = async (data: any, type: string) => {
               description: `Payment for shipment with no ${shipment.shipment_num}`,
               status: "success",
               airwaybill_cost: parseFloat(route.air_wayBill_rate),
-              total_cost: parseFloat(route.air_wayBill_rate) + amount,
+              total_cost:
+                parseFloat(route.air_wayBill_rate) +
+                amount / parseFloat(route.dailyExchangeRate),
             });
 
             console.log("2222222222222222222222222222");
@@ -1308,6 +1320,9 @@ const validateTransaction = async (data: any, type: string) => {
               departure: shipment.pickup_location,
               arrival: shipment.destination,
               departure_date: shipment.depature_date,
+              amount_deducted:
+                amount / parseFloat(route.dailyExchangeRate) +
+                parseFloat(route.air_wayBill_rate),
               company_name: data.company_name,
               arrival_date: shipment.arrival_date,
               booked_by: shipment.shipperName,
@@ -1325,7 +1340,9 @@ const validateTransaction = async (data: any, type: string) => {
               description: `Payment for shipment with no ${shipment.shipment_num}`,
               status: "failed",
               airwaybill_cost: parseFloat(route.air_wayBill_rate),
-              total_cost: parseFloat(route.air_wayBill_rate) + amount,
+              total_cost:
+                parseFloat(route.air_wayBill_rate) +
+                amount / parseFloat(route.dailyExchangeRate),
             });
 
             let user = await db.dbs.Users.findOne({
@@ -1457,6 +1474,9 @@ const validateTransaction = async (data: any, type: string) => {
             departure_date: shipment.depature_date,
             arrival_date: shipment.arrival_date,
             booked_by: shipment.shipperName,
+            amount_deducted:
+              amount / parseFloat(route.dailyExchangeRate) +
+              parseFloat(route.air_wayBill_rate),
             company_name: data.company_name,
             shipment_no: data.shipment_num,
             weight:
@@ -1472,7 +1492,9 @@ const validateTransaction = async (data: any, type: string) => {
             description: `Payment for shipment with no ${shipment.shipment_num}`,
             status: "success",
             airwaybill_cost: parseFloat(route.air_wayBill_rate),
-            total_cost: parseFloat(route.air_wayBill_rate) + amount,
+            total_cost:
+              parseFloat(route.air_wayBill_rate) +
+              amount / parseFloat(route.dailyExchangeRate),
           });
 
           await db.dbs.CustomerAuditLog.create({

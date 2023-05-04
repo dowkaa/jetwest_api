@@ -897,10 +897,9 @@ module.exports = {
     await db.dbs.Transactions.create({
       uuid: util.uuid(),
       user_id: user.id,
-      amount: amount,
       reference: "nil",
       rate: parseFloat(route.dailyExchangeRate),
-      amount_in_dollars: amount / parseFloat(route.dailyExchangeRate),
+      amount_in_dollars: amount * parseFloat(route.dailyExchangeRate),
       amount_in_local_currency: amount,
       amount_deducted: amount + parseFloat(route.air_wayBill_rate),
       departure: item.pickup_location,

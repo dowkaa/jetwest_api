@@ -68,6 +68,9 @@ module.exports = {
               departure: shipment.pickup_location,
               arrival: shipment.destination,
               booked_by: shipment.shipperName,
+              amount_deducted:
+                amount / parseFloat(route.dailyExchangeRate) +
+                parseFloat(route.air_wayBill_rate),
               cargo_id: shipment.cargo_id,
               rate: parseFloat(route.dailyExchangeRate),
               departure_date: shipment.depature_date,
@@ -87,7 +90,9 @@ module.exports = {
               description: `Payment for shipment with no ${shipment.shipment_num} via paystack webhook`,
               status: "success",
               airwaybill_cost: parseFloat(route.air_wayBill_rate),
-              total_cost: parseFloat(route.air_wayBill_rate) + amount,
+              total_cost:
+                parseFloat(route.air_wayBill_rate) +
+                amount / parseFloat(route.dailyExchangeRate),
             });
 
             await db.dbs.ShippingItems.update(
