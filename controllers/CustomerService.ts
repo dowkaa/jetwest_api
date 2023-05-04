@@ -694,6 +694,14 @@ module.exports = {
       }
     }
 
+    let route = await db.dbs.ShipmentRoutes.findOne({
+      where: { destination_name: destination },
+    });
+
+    if (!route) {
+      return res.status(400).json(util.helpers.sendError("Route not found"));
+    }
+
     for (const item of items) {
       let price;
       let insurance;
@@ -713,12 +721,19 @@ module.exports = {
         content,
       } = item;
 
-      let route = await db.dbs.ShipmentRoutes.findOne({
-        where: { destination_name: destination },
-      });
-
-      if (!route) {
-        return res.status(400).json(util.helpers.sendError("Route not found"));
+      if (
+        parseFloat(width) < 0 ||
+        parseFloat(height) < 0 ||
+        parseFloat(length) < 0 ||
+        parseFloat(weight) < 0
+      ) {
+        return res
+          .status(400)
+          .json(
+            util.helpers.sendError(
+              `width, height, weight, and length must be greater than zero`
+            )
+          );
       }
 
       let chargeable_weight;
@@ -758,9 +773,7 @@ module.exports = {
         }
         v.available_capacity =
           parseFloat(v.available_capacity) - parseFloat(weight);
-        v.totalAmount =
-          parseFloat(v.totalAmount) +
-          price * parseFloat(route.dailyExchangeRate);
+        v.totalAmount = parseFloat(v.totalAmount) + price;
         v.taw = parseFloat(v.taw) + parseFloat(weight);
         await v.save();
       } else {
@@ -776,67 +789,82 @@ module.exports = {
         v.available_capacity =
           parseFloat(v.available_capacity) - parseFloat(weight);
         v.taw = parseFloat(v.taw) + parseFloat(weight);
-        v.totalAmount =
-          parseFloat(v.totalAmount) +
-          price * parseFloat(route.dailyExchangeRate);
+        v.totalAmount = parseFloat(v.totalAmount) + price;
         await v.save();
       }
 
-      price = price * parseFloat(route.dailyExchangeRate);
+      let shipment_model = "assisted booking";
 
-      let status = await db.dbs.ShippingItems.create({
-        uuid: util.uuid(),
-        flight_id: v.id,
-        type,
-        user_id: user.id,
-        agent_id: agent_id,
-        shipment_num,
-        reference: payment_ref,
-        value,
-        pickup_location,
-        chargeable_weight,
-        cargo_index: cargo_type,
-        cargo_id: cargo.id,
-        destination,
-        depature_date: depature_date.split("/").reverse().join("-"),
-        width,
-        length: length,
-        height,
+      util.helpers.addShipment(
+        req,
+        price,
+        item,
+        v,
+        route,
         insurance,
-        sur_charge: price * (parseFloat(route.sur_charge) / 100),
-        taxes: price * (parseFloat(route.tax) / 100),
-        status: "pending",
-        shipment_routeId: route.id,
+        chargeable_weight,
+        shipment_num,
+        cargo,
         scan_code,
-        book_type: "Admin",
-        weight,
-        ratePerKg: route.ratePerKg,
-        logo_url: v.logo_url,
-        arrival_date: v.arrival_date,
-        booking_reference: shipment_ref,
         volumetric_weight,
-        payment_status: "pending",
-        price: price,
-        stod: items[0].depature_date + " " + stod,
-        category,
-        company_name: user.company_name,
-        ba_code_url,
-        promo_code: promo_code ? promo_code : null,
-        shipperName: user.first_name + " " + user.last_name,
-        organisation: user.organisation,
-        address: user?.company_address,
-        country: user?.country,
-        shipperNum: user.customer_id,
-        no_of_bags: items.length,
-        content,
-        reciever_firstname,
-        reciever_lastname,
-        reciever_email,
-        reciever_organisation,
-        reciever_primaryMobile,
-        reciever_secMobile,
-      });
+        shipment_model
+      );
+
+      // let status = await db.dbs.ShippingItems.create({
+      //   uuid: util.uuid(),
+      //   flight_id: v.id,
+      //   type,
+      //   user_id: user.id,
+      //   agent_id: agent_id,
+      //   route_id: route.id,
+      //   shipment_num,
+      //   reference: payment_ref,
+      //   value,
+      //   pickup_location,
+      //   chargeable_weight,
+      //   cargo_index: cargo_type,
+      //   cargo_id: cargo.id,
+      //   destination,
+      //   depature_date: depature_date.split("/").reverse().join("-"),
+      //   width,
+      //   length: length,
+      //   height,
+      //   insurance,
+      //   sur_charge: price * (parseFloat(route.sur_charge) / 100),
+      //   taxes: price * (parseFloat(route.tax) / 100),
+      //   status: "pending",
+      //   shipment_routeId: route.id,
+      //   scan_code,
+      //   book_type: "Admin",
+      //   weight,
+      //   ratePerKg: route.ratePerKg,
+      //   logo_url: v.logo_url,
+      //   arrival_date: v.arrival_date,
+      //   booking_reference: shipment_ref,
+      //   volumetric_weight,
+      //   payment_status: "pending",
+      //   price: price,
+      //   stod: items[0].depature_date + " " + stod,
+      //   category,
+      //   company_name: user.company_name,
+      //   ba_code_url,
+      //   promo_code: promo_code ? promo_code : null,
+      //   shipperName: user.first_name + " " + user.last_name,
+      //   organisation: user.organisation,
+      //   address: user?.company_address,
+      //   country: user?.country,
+      //   shipperNum: user.customer_id,
+      //   no_of_bags: items.length,
+      //   content,
+      //   reciever_firstname,
+      //   reciever_lastname,
+      //   reciever_email,
+      //   reciever_organisation,
+      //   reciever_primaryMobile,
+      //   reciever_secMobile,
+      // });
     }
+    util.helpers.updateScheduleTotal(v.uuid, route.uuid, shipment_num);
     v.no_of_bags = parseInt(v.no_of_bags) + items.length;
     await v.save();
 
@@ -871,9 +899,10 @@ module.exports = {
       user_id: user.id,
       amount: amount,
       reference: "nil",
-      // previous_balance: checkBalance.amount,
-      // new_balance: parseFloat(checkBalance.amount) - amount,
-      amount_deducted: amount,
+      rate: parseFloat(route.dailyExchangeRate),
+      amount_in_dollars: amount / parseFloat(route.dailyExchangeRate),
+      amount_in_local_currency: amount,
+      amount_deducted: amount + parseFloat(route.air_wayBill_rate),
       departure: item.pickup_location,
       arrival: item.destination,
       cargo_id: item.cargo_id,
@@ -891,6 +920,8 @@ module.exports = {
       description:
         "Payment for shipment booked on your behalf by the dowkaa system support.",
       status: "pending",
+      airwaybill_cost: parseFloat(route.air_wayBill_rate),
+      total_cost: parseFloat(route.air_wayBill_rate) + parseFloat(amount),
     });
 
     updateShipmentStatus(items);

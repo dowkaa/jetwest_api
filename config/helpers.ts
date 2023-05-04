@@ -20,6 +20,355 @@ if (process.env.ENV === "test") {
   paystack_key = process.env.PAYSTACK_LIVE_SECRET_KEY;
 }
 
+const addShipment = async (
+  req: any,
+  price: any,
+  item: any,
+  v: any,
+  route: any,
+  insurance: any,
+  chargeable_weight: any,
+  shipment_num: any,
+  cargo: any,
+  scan_code: any,
+  volumetric_weight: any,
+  shipment_model: string,
+  user: any,
+  address: any,
+  country: any,
+  sender_organisation: any
+) => {
+  const {
+    items,
+    pickup_location,
+    destination,
+    stod,
+    total_weight,
+    agent_id,
+    payment_ref,
+    reciever_email,
+    reciever_firstname,
+    reciever_lastname,
+    reciever_organisation,
+    reciever_primaryMobile,
+    reciever_secMobile,
+    payment_type,
+    amount,
+    payment_doc_url,
+  } = req.body;
+
+  const {
+    type,
+    width,
+    height,
+    weight,
+    cargo_type,
+    length,
+    shipment_ref,
+    category,
+    ba_code_url,
+    promo_code,
+    depature_date,
+    value,
+    content,
+    invoice_url,
+  } = item;
+  if (shipment_model === "direct") {
+    if (agent_id) {
+      let agent = await db.dbs.Users.findOne({ where: { uuid: agent_id } });
+      let status = await db.dbs.ShippingItems.create({
+        uuid: utilities.uuid(),
+        flight_id: v.id,
+        type: null,
+        user_id: user.id,
+        agent_id: agent.id,
+        route_id: route.id,
+        shipment_num,
+        reference: payment_ref,
+        value,
+        pickup_location,
+        chargeable_weight,
+        cargo_id: cargo.id,
+        stod: items[0].depature_date + " " + stod,
+        destination,
+        depature_date: depature_date.split("/").reverse().join("-"),
+        width,
+        length: length,
+        height,
+        insurance,
+        sur_charge: price * (parseFloat(route.sur_charge) / 100),
+        taxes: price * (parseFloat(route.tax) / 100),
+        booking_type: "Personal",
+        status: "pending",
+        shipment_routeId: route.id,
+        scan_code,
+        weight,
+        ratePerKg: route.ratePerKg,
+        logo_url: v.logo_url,
+        arrival_date: v.arrival_date,
+        booking_reference: shipment_ref,
+        volumetric_weight,
+        company_name: user.company_name,
+        payment_status: "pending",
+        shipment_model: "direct",
+        address,
+        country,
+        price: price,
+        reciever_organisation: reciever_organisation,
+        sender_organisation: sender_organisation,
+        category,
+        cargo_index: cargo_type,
+        ba_code_url,
+        promo_code: promo_code ? promo_code : null,
+        shipperName: user.first_name + " " + user.last_name,
+        organisation: user.organisation,
+        shipperNum: user.customer_id,
+        no_of_bags: items.length,
+        content,
+        reciever_firstname,
+        reciever_lastname,
+        reciever_email,
+        reciever_primaryMobile,
+      });
+
+      if (invoice_url) {
+        if (agent_id && invoice_url.length > 0) {
+          await db.dbs.ShipmentInvoives.create({
+            uuid: utilities.uuid(),
+            user_id: user.id,
+            invoice_url: JSON.stringify(invoice_url),
+            shipment_id: status.id,
+          });
+        }
+      }
+    } else {
+      let status = await db.dbs.ShippingItems.create({
+        uuid: utilities.uuid(),
+        flight_id: v.id,
+        type: null,
+        user_id: user.id,
+        route_id: route.id,
+        shipment_num,
+        reference: payment_ref,
+        cargo_index: cargo_type,
+        value,
+        address,
+        country,
+        pickup_location,
+        chargeable_weight,
+        stod: items[0].depature_date + " " + stod,
+        cargo_id: cargo.id,
+        destination,
+        reciever_organisation: reciever_organisation,
+        sender_organisation: sender_organisation,
+        depature_date: depature_date.split("/").reverse().join("-"),
+        width,
+        length: length,
+        height,
+        insurance,
+        sur_charge: price * (parseFloat(route.sur_charge) / 100),
+        taxes: price * (parseFloat(route.tax) / 100),
+        book_type: "Personal",
+        status: "pending",
+        shipment_routeId: route.id,
+        scan_code,
+        weight,
+        ratePerKg: route.ratePerKg,
+        logo_url: v.logo_url,
+        arrival_date: v.arrival_date,
+        booking_reference: shipment_ref,
+        volumetric_weight,
+        company_name: user.company_name,
+        payment_status: "pending",
+        shipment_model: "direct",
+        price: price,
+        category,
+        ba_code_url,
+        promo_code: promo_code ? promo_code : null,
+        shipperName: user.first_name + " " + user.last_name,
+        organisation: user.organisation,
+        shipperNum: user.customer_id,
+        no_of_bags: items.length,
+        content,
+        reciever_firstname,
+        reciever_lastname,
+        reciever_email,
+        reciever_primaryMobile,
+      });
+      if (invoice_url) {
+        if (agent_id && invoice_url.length > 0) {
+          await db.dbs.ShipmentInvoives.create({
+            uuid: utilities.uuid(),
+            user_id: user.id,
+            invoice_url: JSON.stringify(invoice_url),
+            shipment_id: status.id,
+          });
+        }
+      }
+    }
+  } else {
+    if (agent_id) {
+      let agent = await db.dbs.Users.findOne({ where: { uuid: agent_id } });
+      let status = await db.dbs.ShippingItems.create({
+        uuid: utilities.uuid(),
+        flight_id: v.id,
+        type,
+        user_id: req.user.id,
+        route_id: route.id,
+        agent_id: agent.id,
+        shipment_num,
+        reference: payment_ref,
+        value,
+        stod: depature_date + " " + stod,
+        pickup_location,
+        cargo_index: cargo_type,
+        chargeable_weight,
+        cargo_id: cargo.id,
+        destination,
+        depature_date: depature_date.split("/").reverse().join("-"),
+        width,
+        length: length,
+        height,
+        insurance,
+        sur_charge: price * (parseFloat(route.sur_charge) / 100),
+        taxes: price * (parseFloat(route.tax) / 100),
+        booking_type: "Personal",
+        status: "pending",
+        shipment_routeId: route.id,
+        scan_code,
+        weight,
+        ratePerKg: route.ratePerKg,
+        logo_url: v.logo_url,
+        arrival_date: v.arrival_date,
+        booking_reference: shipment_ref,
+        volumetric_weight,
+        company_name: req.user.company_name,
+        payment_status: "pending",
+        shipment_model: shipment_model,
+        price: price,
+        category,
+        ba_code_url,
+        address: req.user?.company_address,
+        country: req.user?.country,
+        promo_code: promo_code ? promo_code : null,
+        shipperName: req.user.first_name + " " + req.user.last_name,
+        organisation: req.user.organisation,
+        shipperNum: req.user.customer_id,
+        no_of_bags: items.length,
+        content,
+        reciever_firstname,
+        reciever_lastname,
+        reciever_email,
+        reciever_organisation,
+        reciever_primaryMobile,
+        reciever_secMobile,
+      });
+      if (invoice_url) {
+        if (agent_id && invoice_url.length > 0) {
+          await db.dbs.ShipmentInvoives.create({
+            uuid: utilities.uuid(),
+            user_id: req.user.id,
+            invoice_url: JSON.stringify(invoice_url),
+            company_name: req.user.company_name,
+            shipment_id: status.id,
+          });
+        }
+      }
+    } else {
+      let status = await db.dbs.ShippingItems.create({
+        uuid: utilities.uuid(),
+        flight_id: v.id,
+        type,
+        user_id: req.user.id,
+        shipment_num,
+        route_id: route.id,
+        reference: payment_ref,
+        value,
+        pickup_location,
+        stod: depature_date + " " + stod,
+        chargeable_weight,
+        address: req.user?.company_address,
+        country: req.user?.country,
+        cargo_id: cargo.id,
+        destination,
+        depature_date: depature_date.split("/").reverse().join("-"),
+        width,
+        cargo_index: cargo_type,
+        length: length,
+        height,
+        insurance,
+        sur_charge: price * (parseFloat(route.sur_charge) / 100),
+        taxes: price * (parseFloat(route.tax) / 100),
+        booking_type: "Personal",
+        status: "pending",
+        shipment_routeId: route.id,
+        scan_code,
+        weight,
+        ratePerKg: route.ratePerKg,
+        logo_url: v.logo_url,
+        arrival_date: v.arrival_date,
+        booking_reference: shipment_ref,
+        volumetric_weight,
+        company_name: req.user.company_name,
+        payment_status: "pending",
+        shipment_model: "express",
+        price: price,
+        category,
+        ba_code_url,
+        promo_code: promo_code ? promo_code : null,
+        shipperName: req.user.first_name + " " + req.user.last_name,
+        organisation: req.user.organisation,
+        shipperNum: req.user.customer_id,
+        no_of_bags: items.length,
+        content,
+        reciever_firstname,
+        reciever_lastname,
+        reciever_email,
+        reciever_organisation,
+        reciever_primaryMobile,
+        reciever_secMobile,
+      });
+
+      if (invoice_url) {
+        if (agent_id && invoice_url.length > 0) {
+          await db.dbs.ShipmentInvoives.create({
+            uuid: utilities.uuid(),
+            invoice_url: JSON.stringify(invoice_url),
+            user_id: req.user.id,
+            company_name: req.user.company_name,
+            shipment_id: status.id,
+          });
+        }
+      }
+    }
+
+    await db.dbs.AirWayBillRate.create({
+      uuid: utilities.uuid(),
+      shipment_num: shipment_num,
+      amount: parseFloat(route.air_wayBill_rate),
+    });
+  }
+};
+
+const updateScheduleTotal = async (
+  schedule_uuid: string,
+  route_id: string,
+  shipment_num: string
+) => {
+  let route = await db.dbs.ShipmentRoutes.findOne({
+    where: { uuid: route_id },
+  });
+
+  let v = await db.dbs.ScheduleFlights.findOne({
+    where: {
+      uuid: schedule_uuid,
+    },
+  });
+
+  v.totalAmount =
+    parseFloat(v.totalAmount) + parseFloat(route.air_wayBill_rate);
+  await v.save();
+};
 const parkingListMail = async (shipment_num: string) => {
   let shipments = await db.dbs.ShippingItems.findAll({
     where: { shipment_num: shipment_num },
@@ -180,7 +529,6 @@ const getMonthlyDate = async (option: any) => {
   let m = monthDiff(option.startDate, option.end_date);
   let startYear = utilities.moment(option.startDate).format("YYYY");
   let startMonth = utilities.moment(option.startDate).format("MM");
-  let endMonth = utilities.moment(option.end_date).format("MM");
   let endYear = utilities.moment(option.end_date).format("YYYY");
 
   let count = 0;
@@ -297,15 +645,25 @@ const paymentForShipmentBookingByReceipt = async (option: any) => {
     where: { shipment_num: option.shipment_num },
   });
 
+  let route = await db.dbs.ShipmentRoutes.findOne({
+    where: { id: shipment.route_id },
+  });
+
+  let amount = parseFloat(option.amount);
+
   let payment = await db.dbs.Transactions.create({
     uuid: utilities.uuid(),
     user_id: option.user.id,
-    amount: option.amount,
+    rate: parseFloat(route.dailyExchangeRate),
+    amount_in_dollars: amount / parseFloat(route.dailyExchangeRate),
+    amount_in_local_currency: amount,
     reference: "nil",
     booked_by: shipment.shipperName,
     // previous_balance: checkBalance.amount,
     // new_balance: parseFloat(checkBalance.amount) - amount,
-    amount_deducted: option.amount,
+    amount_deducted:
+      amount / parseFloat(route.dailyExchangeRate) +
+      parseFloat(route.air_wayBill_rate),
     departure: shipment.pickup_location,
     arrival: shipment.destination,
     cargo_id: shipment.cargo_id,
@@ -322,6 +680,8 @@ const paymentForShipmentBookingByReceipt = async (option: any) => {
     description:
       "Payment for shipment booked on your behalf by the dowkaa system support.",
     status: "pending_verification",
+    airwaybill_cost: parseFloat(route.air_wayBill_rate),
+    total_cost: parseFloat(route.air_wayBill_rate) + amount,
   });
 
   await db.dbs.PaymentProofs.create({
@@ -332,7 +692,7 @@ const paymentForShipmentBookingByReceipt = async (option: any) => {
     user_company: option.user.company_name,
     transaction_id: payment.id,
     status: "pending",
-    amount: parseFloat(option.amount),
+    amount: amount / parseFloat(route.dailyExchangeRate),
   });
 
   let admin = await db.dbs.Users.findAll({
@@ -411,26 +771,41 @@ const logApiTransaction = async (
     where: { customer_id: customer_id },
   });
 
-  let checkBalance = await db.dbs.Wallets.findOne({
-    where: { user_id: user.id },
-  });
-
-  checkBalance.amount = parseFloat(checkBalance.amount) - amount;
-  checkBalance.amount_deducted = amount;
-  await checkBalance.save();
-
   let item = await db.dbs.ShippingItems.findOne({
     where: { shipment_num: shipment_num },
   });
 
+  let route = await db.dbs.ShipmentRoutes.findOne({
+    where: { id: item.route_id },
+  });
+
+  amount = amount / parseFloat(route.dailyExchangeRate);
+
+  let checkBalance = await db.dbs.Wallets.findOne({
+    where: { user_id: user.id },
+  });
+
+  let airwaybill = await db.dbs.AirWayBillRate.findOne({
+    shipment_num: shipment_num,
+  });
+
+  checkBalance.amount =
+    parseFloat(checkBalance.amount) - (amount + parseFloat(airwaybill.amount));
+  checkBalance.amount_deducted = amount + parseFloat(airwaybill.amount);
+  await checkBalance.save();
+
   await db.dbs.Transactions.create({
     uuid: utilities.uuid(),
     user_id: user.id,
-    amount: amount,
+    amount_in_dollars: amount,
+    amount_in_local_currency: amount * parseFloat(route.dailyExchangeRate),
     reference: "nil",
+    rate: parseFloat(route.dailyExchangeRate),
     previous_balance: checkBalance.amount,
-    new_balance: parseFloat(checkBalance.amount) - amount,
-    amount_deducted: amount,
+    new_balance:
+      parseFloat(checkBalance.amount) -
+      (amount + parseFloat(airwaybill.amount)),
+    amount_deducted: amount + parseFloat(airwaybill.amount),
     departure: item.pickup_location,
     arrival: item.destination,
     cargo_id: item.cargo_id,
@@ -446,6 +821,8 @@ const logApiTransaction = async (
     type: "credit",
     method: "wallet",
     description: message,
+    airwaybill_cost: airwaybill.amount,
+    total_cost: parseFloat(airwaybill.amount) + amount,
     status: "success",
   });
 };
@@ -459,6 +836,10 @@ const checkUserTransaction = async (reference: string) => {
 };
 
 const validateTransaction = async (data: any, type: string) => {
+  let route = await db.dbs.ShipmentRoutes.findOne({
+    where: { uuid: data.route_id },
+  });
+
   if (type === "payment") {
     var validateTransaction = await utilities.helpers.checkUserTransaction(
       data.reference
@@ -515,14 +896,17 @@ const validateTransaction = async (data: any, type: string) => {
             let t = await db.dbs.Transactions.create({
               uuid: utilities.uuid(),
               user_id: data.id,
-              amount: amount,
+              amount_in_dollars: amount / parseFloat(route.dailyExchangeRate),
+              amount_in_local_currency: amount,
               reference: data.reference,
+              rate: parseFloat(route.dailyExchangeRate),
               departure: shipment.pickup_location,
               arrival: shipment.destination,
               cargo_id: shipment.cargo_id,
               departure_date: shipment.depature_date,
               arrival_date: shipment.arrival_date,
               booked_by: shipment.shipperName,
+              amount_deducted: amount + parseFloat(route.air_wayBill_rate),
               company_name: data.company_name,
               shipment_no: data.shipment_num,
               weight:
@@ -537,6 +921,8 @@ const validateTransaction = async (data: any, type: string) => {
               method: "paystack",
               description: `Payment for shipment with no ${shipment.shipment_num}`,
               status: "success",
+              airwaybill_cost: parseFloat(route.air_wayBill_rate),
+              total_cost: parseFloat(route.air_wayBill_rate) + amount,
             });
 
             await db.dbs.CustomerAuditLog.create({
@@ -608,9 +994,11 @@ const validateTransaction = async (data: any, type: string) => {
           utilities.helpers.parkingListMail(data.shipment_num);
           return "Transaction successful";
         } catch (error: any) {
+          console.log({ error });
           await db.dbs.PaystackError.create({
             uuid: utilities.uuid(),
-            data: JSON.stringify(error.response.data),
+            reference: data.reference,
+            data: JSON.stringify(error.response),
           });
 
           return error.response.data.message;
@@ -633,10 +1021,13 @@ const validateTransaction = async (data: any, type: string) => {
             let t = await db.dbs.Transactions.create({
               uuid: utilities.uuid(),
               user_id: data.id,
-              amount: amount,
+              amount_in_dollars: amount / parseFloat(route.dailyExchangeRate),
+              amount_in_local_currency: amount,
               reference: data.reference,
               departure: shipment.pickup_location,
               arrival: shipment.destination,
+              rate: parseFloat(route.dailyExchangeRate),
+              amount_deducted: amount + parseFloat(route.air_wayBill_rate),
               departure_date: shipment.depature_date,
               company_name: data.company_name,
               arrival_date: shipment.arrival_date,
@@ -654,6 +1045,8 @@ const validateTransaction = async (data: any, type: string) => {
               method: "paystack",
               description: `Payment for shipment with no ${shipment.shipment_num}`,
               status: "failed",
+              airwaybill_cost: parseFloat(route.air_wayBill_rate),
+              total_cost: parseFloat(route.air_wayBill_rate) + amount,
             });
 
             let user = await db.dbs.Users.findOne({ where: { id: data.id } });
@@ -688,6 +1081,7 @@ const validateTransaction = async (data: any, type: string) => {
           console.log({ error2: error });
           await db.dbs.PaystackError.create({
             uuid: utilities.uuid(),
+            reference: data.reference,
             data: JSON.stringify(error.response.data),
           });
 
@@ -695,9 +1089,10 @@ const validateTransaction = async (data: any, type: string) => {
         }
       }
     } catch (err: any) {
-      console.log({ err, message: err.response.data });
+      console.log({ err, message: err.response });
       await db.dbs.PaystackError.create({
         uuid: utilities.uuid(),
+        reference: data.reference,
         data: JSON.stringify(err.response.data),
       });
 
@@ -707,6 +1102,8 @@ const validateTransaction = async (data: any, type: string) => {
     var validateTransaction = await utilities.helpers.checkUserTransaction(
       data.reference
     );
+
+    console.log({ validateTransaction });
 
     if (validateTransaction) {
       return "Transaction already exists";
@@ -766,12 +1163,15 @@ const validateTransaction = async (data: any, type: string) => {
             let t = await db.dbs.Transactions.create({
               uuid: utilities.uuid(),
               user_id: data.id,
-              amount: amount,
+              amount_in_dollars: amount / parseFloat(route.dailyExchangeRate),
+              amount_in_local_currency: amount,
               reference: data.reference,
               departure: shipment.pickup_location,
               arrival: shipment.destination,
+              rate: parseFloat(route.dailyExchangeRate),
               cargo_id: shipment.cargo_id,
               departure_date: shipment.depature_date,
+              amount_deducted: amount + parseFloat(route.air_wayBill_rate),
               arrival_date: shipment.arrival_date,
               booked_by: shipment.shipperName,
               company_name: data.company_name,
@@ -788,6 +1188,8 @@ const validateTransaction = async (data: any, type: string) => {
               method: "paystack",
               description: `Payment for shipment with no ${shipment.shipment_num}`,
               status: "success",
+              airwaybill_cost: parseFloat(route.air_wayBill_rate),
+              total_cost: parseFloat(route.air_wayBill_rate) + amount,
             });
 
             console.log("2222222222222222222222222222");
@@ -878,6 +1280,7 @@ const validateTransaction = async (data: any, type: string) => {
           console.log({ error1: error });
           await db.dbs.PaystackError.create({
             uuid: utilities.uuid(),
+            reference: data.reference,
             data: JSON.stringify(error.response.data),
           });
 
@@ -901,8 +1304,10 @@ const validateTransaction = async (data: any, type: string) => {
             let t = await db.dbs.Transactions.create({
               uuid: utilities.uuid(),
               user_id: data.id,
-              amount: amount,
+              amount_in_dollars: amount / parseFloat(route.dailyExchangeRate),
+              amount_in_local_currency: amount,
               reference: data.reference,
+              rate: parseFloat(route.dailyExchangeRate),
               departure: shipment.pickup_location,
               arrival: shipment.destination,
               departure_date: shipment.depature_date,
@@ -922,6 +1327,8 @@ const validateTransaction = async (data: any, type: string) => {
               method: "paystack",
               description: `Payment for shipment with no ${shipment.shipment_num}`,
               status: "failed",
+              airwaybill_cost: parseFloat(route.air_wayBill_rate),
+              total_cost: parseFloat(route.air_wayBill_rate) + amount,
             });
 
             let user = await db.dbs.Users.findOne({
@@ -931,7 +1338,11 @@ const validateTransaction = async (data: any, type: string) => {
             await db.dbs.CustomerAuditLog.create({
               uuid: utilities.uuid(),
               user_id: user.id,
-              description: `A user with name ${user.first_name} ${user.last_name} payment of the sum of ${amount} using the paystack checkout failed`,
+              description: `A user with name ${user.first_name} ${
+                user.last_name
+              } payment of the sum of ${
+                amount / route.dailyExchangeRate
+              } using the paystack checkout failed`,
               data: JSON.stringify(t),
             });
 
@@ -958,6 +1369,7 @@ const validateTransaction = async (data: any, type: string) => {
           console.log({ error2: error });
           await db.dbs.PaystackError.create({
             uuid: utilities.uuid(),
+            reference: data.reference,
             data: JSON.stringify(error.response.data),
           });
 
@@ -965,8 +1377,10 @@ const validateTransaction = async (data: any, type: string) => {
         }
       }
     } catch (err: any) {
+      console.log({ err, data: err.response.data });
       await db.dbs.PaystackError.create({
         uuid: utilities.uuid(),
+        reference: data.reference,
         data: JSON.stringify(err.response.data),
       });
 
@@ -1036,11 +1450,13 @@ const validateTransaction = async (data: any, type: string) => {
           let t = await db.dbs.Transactions.create({
             uuid: utilities.uuid(),
             user_id: data.id,
-            amount: amount,
+            amount_in_dollars: amount / parseFloat(route.dailyExchangeRate),
+            amount_in_local_currency: amount,
             reference: data.reference,
             departure: shipment.pickup_location,
             arrival: shipment.destination,
             cargo_id: shipment.cargo_id,
+            rate: parseFloat(route.dailyExchangeRate),
             departure_date: shipment.depature_date,
             arrival_date: shipment.arrival_date,
             booked_by: shipment.shipperName,
@@ -1058,20 +1474,20 @@ const validateTransaction = async (data: any, type: string) => {
             method: "paystack",
             description: `Payment for shipment with no ${shipment.shipment_num}`,
             status: "success",
+            airwaybill_cost: parseFloat(route.air_wayBill_rate),
+            total_cost: parseFloat(route.air_wayBill_rate) + amount,
           });
-
-          console.log("2222222222222222222222222222");
 
           await db.dbs.CustomerAuditLog.create({
             uuid: utilities.uuid(),
             user_id: user.id,
-            description: `A user with name ${user.first_name} ${user.last_name} payment of the sum of ${amount} using the paystack checkout was successful`,
+            description: `A user with name ${user.first_name} ${
+              user.last_name
+            } payment of the sum of ${
+              amount / parseFloat(route.dailyExchangeRate)
+            } using the paystack checkout was successful`,
             data: JSON.stringify(t),
           });
-
-          console.log({ data });
-
-          console.log("333333333333333333333333");
 
           let checker = await db.dbs.PaystackStarter.findOne({
             where: { reference: data.reference },
@@ -1134,7 +1550,7 @@ const validateTransaction = async (data: any, type: string) => {
         const opts3 = {
           email: user.email,
           name: user.first_name + " " + user.last_name,
-          amount: amount,
+          amount: amount / parseFloat(route.dailyExchangeRate),
           shipment_ref: shipment.booking_reference,
         };
         console.log("00000000000000000000000000000");
@@ -1161,6 +1577,7 @@ const validateTransaction = async (data: any, type: string) => {
         } catch (error: any) {
           await db.dbs.PaystackError.create({
             uuid: utilities.uuid(),
+            reference: data.reference,
             data: JSON.stringify(error.response.data),
           });
 
@@ -1171,6 +1588,7 @@ const validateTransaction = async (data: any, type: string) => {
       console.log({ err });
       await db.dbs.PaystackError.create({
         uuid: utilities.uuid(),
+        reference: data.reference,
         data: JSON.stringify(err.response.data),
       });
 
@@ -1178,90 +1596,6 @@ const validateTransaction = async (data: any, type: string) => {
     }
   }
 };
-
-// const check = async (req: any, userChecker: any, res: Response) => {
-//   let checkBalance = await db.dbs.Wallets.findOne({
-//     where: { user_id: userChecker.id },
-//   });
-
-//   if (parseFloat(checkBalance.amount) < price) {
-//     let checkTransactionTotal = await db.dbs.Transactions.sum("amount", {
-//       where: { user_id: req.user.id },
-//     });
-
-//     if (checkTransactionTotal < 1000000) {
-//       let resp = await utilities.helpers.logPendingShipment(
-//         req.body,
-//         res,
-//         item
-//       );
-
-//       const option = {
-//         email: req.user.email,
-//         name: req.user.first_name + " " + req.user.last_name,
-//       };
-
-//       util.shipperAPI.sendMail(option);
-
-//       console.log({ resp1: resp });
-//     } else {
-//       let userWallet = await db.dbs.Wallets.findOne({
-//         where: { user_id: req.user.id },
-//       });
-
-//       if (parseFloat(userWallet.amount_owed) < 10) {
-//         let resp = await util.helpers.addShipmentAndCreditUser(
-//           req.body,
-//           res,
-//           req.user.id,
-//           item
-//         );
-
-//         const option = {
-//           email: req.user.email,
-//           name: req.user.first_name + " " + req.user.last_name,
-//         };
-
-//         util.SuperShipperAPIMail.sendMail(option);
-
-//         console.log({ resp2: resp });
-//       } else {
-//         let resp = await util.helpers.logPendingShipment(req.body, res, item);
-
-//         console.log({ resp3: resp });
-//       }
-//     }
-//   }
-
-//   await db.dbs.Transactions.create({
-//     uuid: util.uuid(),
-//     user_id: req.user.id,
-//     amount: price,
-//     reference: "nil",
-//     previous_balance: checkBalance.amount,
-//     new_balance: parseFloat(checkBalance.amount) - price,
-//     amount_deducted: price,
-//     departure: pickup_location,
-//     arrival: destination,
-//     cargo_id: cargo.cargo_id,
-//     departure_date: depature_date.split("/").reverse().join("-"),
-//     arrival_date: v.arrival_date,
-//     shipment_no: shipment_num,
-//     company_name: req.user.company_name,
-//     weight: volumetric_weight > parseFloat(weight) ? volumetric_weight : weight,
-//     reciever_organisation: reciever_organisation,
-//     pricePerkeg: route.ratePerKg,
-//     no_of_bags: items.length,
-//     type: "credit",
-//     method: "wallet",
-//     description: `Payment for shipment with no ${shipment_num}`,
-//     status: "success",
-//   });
-
-//   checkBalance.amount = parseFloat(checkBalance.amount) - price;
-//   checkBalance.amount_deducted = price;
-//   await checkBalance.save();
-// };
 
 const addShipmentAndCreditUser = async (
   req: any,
@@ -1286,6 +1620,13 @@ const addShipmentAndCreditUser = async (
     reciever_primaryMobile,
     reciever_secMobile,
   } = req.body;
+
+  if (total_amount && parseFloat(total_amount) < 0) {
+    return res
+      .status(400)
+      .json(utilities.helpers.sendError("Amount cannot be negative"));
+  }
+
   let shipment_num = utilities.helpers.generateReftId(10);
   let scan_code = utilities.helpers.generateReftId(10);
 
@@ -1429,6 +1770,21 @@ const addShipmentAndCreditUser = async (
       content,
     } = index;
 
+    if (
+      parseFloat(width) < 0 ||
+      parseFloat(height) < 0 ||
+      parseFloat(length) < 0 ||
+      parseFloat(weight) < 0
+    ) {
+      return res
+        .status(400)
+        .json(
+          utilities.helpers.sendError(
+            `width, height, weight, and length must be greater than zero`
+          )
+        );
+    }
+
     let chargeable_weight;
     let volumetric_weight =
       (parseInt(width) * parseInt(height) * parseInt(length)) / 5000;
@@ -1464,11 +1820,7 @@ const addShipmentAndCreditUser = async (
       }
       v.available_capacity =
         parseFloat(v.available_capacity) - parseFloat(weight);
-      v.totalAmount =
-        parseFloat(v.totalAmount) +
-        (price * parseFloat(route.dailyExchangeRate) +
-          parseFloat(route.air_wayBill_rate) *
-            parseFloat(route.dailyExchangeRate));
+      v.totalAmount = parseFloat(v.totalAmount) + price;
       v.taw = parseFloat(v.taw) + parseFloat(weight);
       await v.save();
     } else {
@@ -1482,17 +1834,9 @@ const addShipmentAndCreditUser = async (
       v.available_capacity =
         parseFloat(v.available_capacity) - volumetric_weight;
       v.taw = parseFloat(v.taw) + volumetric_weight;
-      v.totalAmount =
-        parseFloat(v.totalAmount) +
-        (price * parseFloat(route.dailyExchangeRate) +
-          parseFloat(route.air_wayBill_rate) *
-            parseFloat(route.dailyExchangeRate));
+      v.totalAmount = parseFloat(v.totalAmount) + price;
       await v.save();
     }
-
-    price =
-      price * parseFloat(route.dailyExchangeRate) +
-      parseFloat(route.air_wayBill_rate) * parseFloat(route.dailyExchangeRate);
 
     if (agent_id) {
       let agent = await db.dbs.Users.findOne({
@@ -1525,9 +1869,6 @@ const addShipmentAndCreditUser = async (
         scan_code,
         weight,
         ratePerKg: route.ratePerKg,
-        air_wayBill_rate:
-          parseFloat(route.air_wayBill_rate) *
-          parseFloat(route.dailyExchangeRate),
         address: req.user?.company_address,
         country: req.user?.country,
         logo_url: v.logo_url,
@@ -1572,9 +1913,6 @@ const addShipmentAndCreditUser = async (
         cargo_index: cargo_type,
         length: length,
         height,
-        air_wayBill_rate:
-          parseFloat(route.air_wayBill_rate) *
-          parseFloat(route.dailyExchangeRate),
         insurance,
         sur_charge: price * (parseFloat(route.sur_charge) / 100),
         taxes: price * (parseFloat(route.tax) / 100),
@@ -1643,8 +1981,8 @@ const addShipmentAndCreditUser = async (
     //   status: "success",
     // });
   }
+  utilities.helpers.updateScheduleTotal(v.uuid, route.uuid);
   let amount = total_amount;
-  console.log({ customer111: req.user.customer_id });
 
   utilities.helpers.parkingListMail(shipment_num);
   utilities.helpers.logApiTransaction(
@@ -1838,6 +2176,21 @@ const logPendingShipment = async (req: any, res: Response, item: any) => {
       content,
     } = index;
 
+    if (
+      parseFloat(width) < 0 ||
+      parseFloat(height) < 0 ||
+      parseFloat(length) < 0 ||
+      parseFloat(weight) < 0
+    ) {
+      return res
+        .status(400)
+        .json(
+          utilities.helpers.sendError(
+            `width, height, weight, and length must be greater than zero`
+          )
+        );
+    }
+
     let chargeable_weight;
     let volumetric_weight =
       (parseInt(width) * parseInt(height) * parseInt(length)) / 5000;
@@ -1873,11 +2226,7 @@ const logPendingShipment = async (req: any, res: Response, item: any) => {
       }
       v.available_capacity =
         parseFloat(v.available_capacity) - parseFloat(weight);
-      v.totalAmount =
-        parseFloat(v.totalAmount) +
-        (price * parseFloat(route.dailyExchangeRate) +
-          parseFloat(route.air_wayBill_rate) *
-            parseFloat(route.dailyExchangeRate));
+      v.totalAmount = parseFloat(v.totalAmount) + price;
       v.taw = parseFloat(v.taw) + parseFloat(weight);
       await v.save();
     } else {
@@ -1891,17 +2240,9 @@ const logPendingShipment = async (req: any, res: Response, item: any) => {
       v.available_capacity =
         parseFloat(v.available_capacity) - volumetric_weight;
       v.taw = parseFloat(v.taw) + volumetric_weight;
-      v.totalAmount =
-        parseFloat(v.totalAmount) +
-        (price * parseFloat(route.dailyExchangeRate) +
-          parseFloat(route.air_wayBill_rate) *
-            parseFloat(route.dailyExchangeRate));
+      v.totalAmount = parseFloat(v.totalAmount) + price;
       await v.save();
     }
-
-    price =
-      price * parseFloat(route.dailyExchangeRate) +
-      parseFloat(route.air_wayBill_rate) * parseFloat(route.dailyExchangeRate);
 
     if (agent_id) {
       let agent = await db.dbs.Users.findOne({
@@ -1912,6 +2253,7 @@ const logPendingShipment = async (req: any, res: Response, item: any) => {
         flight_id: v.id,
         type,
         user_id: req.user.id,
+        route_id: route.id,
         cargo_index: cargo_type,
         agent_id: agent.id,
         shipment_num,
@@ -1926,9 +2268,6 @@ const logPendingShipment = async (req: any, res: Response, item: any) => {
         length: length,
         address: req.user?.company_address,
         country: req.user?.country,
-        air_wayBill_rate:
-          parseFloat(route.air_wayBill_rate) *
-          parseFloat(route.dailyExchangeRate),
         height,
         insurance,
         sur_charge: price * (parseFloat(route.sur_charge) / 100),
@@ -1969,6 +2308,7 @@ const logPendingShipment = async (req: any, res: Response, item: any) => {
         flight_id: v.id,
         type,
         user_id: req.user.id,
+        route_id: route.id,
         shipment_num,
         reference: payment_ref,
         value,
@@ -1980,9 +2320,6 @@ const logPendingShipment = async (req: any, res: Response, item: any) => {
         destination,
         depature_date: depature_date.split("/").reverse().join("-"),
         width,
-        air_wayBill_rate:
-          parseFloat(route.air_wayBill_rate) *
-          parseFloat(route.dailyExchangeRate),
         length: length,
         height,
         insurance,
@@ -2019,6 +2356,7 @@ const logPendingShipment = async (req: any, res: Response, item: any) => {
         reciever_secMobile,
       });
 
+      utilities.helpers.updateScheduleTotal(v.uuid, route.uuid);
       utilities.helpers.removeShipment(status.uuid);
     }
   }
@@ -2234,6 +2572,8 @@ module.exports = {
   logApiTransaction,
   getDatesOnDaysOfWeek,
   parkingListMail,
+  addShipment,
+  updateScheduleTotal,
   getMonthlyDate,
   getYearlyDate,
   checkPromo,

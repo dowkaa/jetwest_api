@@ -82,6 +82,10 @@ dbs.Cargo = require("../models/cargo")(sequelize, Sequelizes);
 dbs.PaystackError = require("../models/paystack_error")(sequelize, Sequelizes);
 dbs.ContactUs = require("../models/contactUs")(sequelize, Sequelizes);
 dbs.LoadedBags = require("../models/loaded_bags")(sequelize, Sequelizes);
+dbs.AirWayBillRate = require("../models/air_waybillrate")(
+  sequelize,
+  Sequelizes
+);
 dbs.OffLoadedBags = require("../models/offloaded_bags")(sequelize, Sequelizes);
 dbs.Mailing = require("../models/mailing")(sequelize, Sequelizes);
 dbs.ShippingAgent = require("../models/shipping_agent")(sequelize, Sequelizes);

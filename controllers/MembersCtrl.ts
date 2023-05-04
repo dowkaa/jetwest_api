@@ -318,6 +318,21 @@ module.exports = {
         invoice_url,
       } = item;
 
+      if (
+        parseFloat(width) < 0 ||
+        parseFloat(height) < 0 ||
+        parseFloat(length) < 0 ||
+        parseFloat(weight) < 0
+      ) {
+        return res
+          .status(400)
+          .json(
+            util.helpers.sendError(
+              `width, height, weight, and length must be greater than zero`
+            )
+          );
+      }
+
       let chargeable_weight;
       let volumetric_weight =
         (parseInt(width) * parseInt(height) * parseInt(length)) / 5000;
@@ -326,6 +341,8 @@ module.exports = {
         volumetric_weight > parseInt(weight)
           ? volumetric_weight
           : parseInt(weight);
+
+      chargeable_weight = chargeable_weight + parseFloat(route.agent_rate);
 
       if (category === "fragile") {
         price = chargeable_weight * parseFloat(route.ratePerKg);
@@ -355,11 +372,7 @@ module.exports = {
         }
         v.available_capacity =
           parseFloat(v.available_capacity) - parseFloat(weight);
-        v.totalAmount =
-          parseFloat(v.totalAmount) +
-          (price * parseFloat(route.dailyExchangeRate) +
-            parseFloat(route.air_wayBill_rate) *
-              parseFloat(route.dailyExchangeRate));
+        v.totalAmount = parseFloat(v.totalAmount) + price;
         v.taw = parseFloat(v.taw) + parseFloat(weight);
         await v.save();
       } else {
@@ -376,157 +389,165 @@ module.exports = {
         v.available_capacity =
           parseFloat(v.available_capacity) - parseFloat(weight);
         v.taw = parseFloat(v.taw) + parseFloat(weight);
-        v.totalAmount =
-          parseFloat(v.totalAmount) +
-          (price * parseFloat(route.dailyExchangeRate) +
-            parseFloat(route.air_wayBill_rate) *
-              parseFloat(route.dailyExchangeRate));
+        v.totalAmount = parseFloat(v.totalAmount) + price;
         await v.save();
       }
 
-      price =
-        price * parseFloat(route.dailyExchangeRate) +
-        parseFloat(route.air_wayBill_rate) *
-          parseFloat(route.dailyExchangeRate) +
-        parseFloat(route.agent_rate) * parseFloat(route.dailyExchangeRate);
+      let shipment_model = "direct";
 
-      if (agent_id) {
-        let agent = await db.dbs.Users.findOne({ where: { uuid: agent_id } });
-        let status = await db.dbs.ShippingItems.create({
-          uuid: util.uuid(),
-          flight_id: v.id,
-          type: null,
-          user_id: user.id,
-          agent_id: agent.id,
-          shipment_num,
-          reference: payment_ref,
-          value,
-          pickup_location,
-          chargeable_weight,
-          cargo_id: cargo.id,
-          stod: items[0].depature_date + " " + stod,
-          destination,
-          depature_date: depature_date.split("/").reverse().join("-"),
-          width,
-          length: length,
-          height,
-          insurance,
-          sur_charge: price * (parseFloat(route.sur_charge) / 100),
-          taxes: price * (parseFloat(route.tax) / 100),
-          booking_type: "Personal",
-          status: "pending",
-          shipment_routeId: route.id,
-          scan_code,
-          weight,
-          ratePerKg: route.ratePerKg,
-          logo_url: v.logo_url,
-          arrival_date: v.arrival_date,
-          booking_reference: shipment_ref,
-          volumetric_weight,
-          company_name: user.company_name,
-          payment_status: "pending",
-          shipment_model: "direct",
-          air_wayBill_rate:
-            parseFloat(route.air_wayBill_rate) *
-            parseFloat(route.dailyExchangeRate),
-          address,
-          country,
-          price: price,
-          reciever_organisation: reciever_organisation,
-          sender_organisation: sender_organisation,
-          category,
-          cargo_index: cargo_type,
-          ba_code_url,
-          promo_code: promo_code ? promo_code : null,
-          shipperName: user.first_name + " " + user.last_name,
-          organisation: user.organisation,
-          shipperNum: user.customer_id,
-          no_of_bags: items.length,
-          content,
-          reciever_firstname,
-          reciever_lastname,
-          reciever_email,
-          reciever_primaryMobile,
-        });
+      util.helpers.addShipment(
+        req,
+        price,
+        item,
+        v,
+        route,
+        insurance,
+        chargeable_weight,
+        shipment_num,
+        cargo,
+        scan_code,
+        volumetric_weight,
+        shipment_model,
+        user,
+        address,
+        country,
+        sender_organisation
+      );
 
-        if (invoice_url) {
-          if (agent_id && invoice_url.length > 0) {
-            await db.dbs.ShipmentInvoives.create({
-              uuid: util.uuid(),
-              user_id: user.id,
-              invoice_url: JSON.stringify(invoice_url),
-              shipment_id: status.id,
-            });
-          }
-        }
-      } else {
-        let status = await db.dbs.ShippingItems.create({
-          uuid: util.uuid(),
-          flight_id: v.id,
-          type: null,
-          user_id: user.id,
-          shipment_num,
-          reference: payment_ref,
-          cargo_index: cargo_type,
-          value,
-          address,
-          country,
-          pickup_location,
-          chargeable_weight,
-          stod: items[0].depature_date + " " + stod,
-          cargo_id: cargo.id,
-          destination,
-          reciever_organisation: reciever_organisation,
-          sender_organisation: sender_organisation,
-          depature_date: depature_date.split("/").reverse().join("-"),
-          width,
-          length: length,
-          height,
-          insurance,
-          sur_charge: price * (parseFloat(route.sur_charge) / 100),
-          taxes: price * (parseFloat(route.tax) / 100),
-          book_type: "Personal",
-          status: "pending",
-          shipment_routeId: route.id,
-          scan_code,
-          air_wayBill_rate:
-            parseFloat(route.air_wayBill_rate) *
-            parseFloat(route.dailyExchangeRate),
-          weight,
-          ratePerKg: route.ratePerKg,
-          logo_url: v.logo_url,
-          arrival_date: v.arrival_date,
-          booking_reference: shipment_ref,
-          volumetric_weight,
-          company_name: user.company_name,
-          payment_status: "pending",
-          shipment_model: "direct",
-          price: price,
-          category,
-          ba_code_url,
-          promo_code: promo_code ? promo_code : null,
-          shipperName: user.first_name + " " + user.last_name,
-          organisation: user.organisation,
-          shipperNum: user.customer_id,
-          no_of_bags: items.length,
-          content,
-          reciever_firstname,
-          reciever_lastname,
-          reciever_email,
-          reciever_primaryMobile,
-        });
-        if (invoice_url) {
-          if (agent_id && invoice_url.length > 0) {
-            await db.dbs.ShipmentInvoives.create({
-              uuid: util.uuid(),
-              user_id: user.id,
-              invoice_url: JSON.stringify(invoice_url),
-              shipment_id: status.id,
-            });
-          }
-        }
-      }
+      // if (agent_id) {
+      //   let agent = await db.dbs.Users.findOne({ where: { uuid: agent_id } });
+      //   let status = await db.dbs.ShippingItems.create({
+      //     uuid: util.uuid(),
+      //     flight_id: v.id,
+      //     type: null,
+      //     user_id: user.id,
+      //     agent_id: agent.id,
+      //     route_id: route.id,
+      //     shipment_num,
+      //     reference: payment_ref,
+      //     value,
+      //     pickup_location,
+      //     chargeable_weight,
+      //     cargo_id: cargo.id,
+      //     stod: items[0].depature_date + " " + stod,
+      //     destination,
+      //     depature_date: depature_date.split("/").reverse().join("-"),
+      //     width,
+      //     length: length,
+      //     height,
+      //     insurance,
+      //     sur_charge: price * (parseFloat(route.sur_charge) / 100),
+      //     taxes: price * (parseFloat(route.tax) / 100),
+      //     booking_type: "Personal",
+      //     status: "pending",
+      //     shipment_routeId: route.id,
+      //     scan_code,
+      //     weight,
+      //     ratePerKg: route.ratePerKg,
+      //     logo_url: v.logo_url,
+      //     arrival_date: v.arrival_date,
+      //     booking_reference: shipment_ref,
+      //     volumetric_weight,
+      //     company_name: user.company_name,
+      //     payment_status: "pending",
+      //     shipment_model: "direct",
+      //     address,
+      //     country,
+      //     price: price,
+      //     reciever_organisation: reciever_organisation,
+      //     sender_organisation: sender_organisation,
+      //     category,
+      //     cargo_index: cargo_type,
+      //     ba_code_url,
+      //     promo_code: promo_code ? promo_code : null,
+      //     shipperName: user.first_name + " " + user.last_name,
+      //     organisation: user.organisation,
+      //     shipperNum: user.customer_id,
+      //     no_of_bags: items.length,
+      //     content,
+      //     reciever_firstname,
+      //     reciever_lastname,
+      //     reciever_email,
+      //     reciever_primaryMobile,
+      //   });
+
+      //   if (invoice_url) {
+      //     if (agent_id && invoice_url.length > 0) {
+      //       await db.dbs.ShipmentInvoives.create({
+      //         uuid: util.uuid(),
+      //         user_id: user.id,
+      //         invoice_url: JSON.stringify(invoice_url),
+      //         shipment_id: status.id,
+      //       });
+      //     }
+      //   }
+      // } else {
+      //   let status = await db.dbs.ShippingItems.create({
+      //     uuid: util.uuid(),
+      //     flight_id: v.id,
+      //     type: null,
+      //     user_id: user.id,
+      //     route_id: route.id,
+      //     shipment_num,
+      //     reference: payment_ref,
+      //     cargo_index: cargo_type,
+      //     value,
+      //     address,
+      //     country,
+      //     pickup_location,
+      //     chargeable_weight,
+      //     stod: items[0].depature_date + " " + stod,
+      //     cargo_id: cargo.id,
+      //     destination,
+      //     reciever_organisation: reciever_organisation,
+      //     sender_organisation: sender_organisation,
+      //     depature_date: depature_date.split("/").reverse().join("-"),
+      //     width,
+      //     length: length,
+      //     height,
+      //     insurance,
+      //     sur_charge: price * (parseFloat(route.sur_charge) / 100),
+      //     taxes: price * (parseFloat(route.tax) / 100),
+      //     book_type: "Personal",
+      //     status: "pending",
+      //     shipment_routeId: route.id,
+      //     scan_code,
+      //     weight,
+      //     ratePerKg: route.ratePerKg,
+      //     logo_url: v.logo_url,
+      //     arrival_date: v.arrival_date,
+      //     booking_reference: shipment_ref,
+      //     volumetric_weight,
+      //     company_name: user.company_name,
+      //     payment_status: "pending",
+      //     shipment_model: "direct",
+      //     price: price,
+      //     category,
+      //     ba_code_url,
+      //     promo_code: promo_code ? promo_code : null,
+      //     shipperName: user.first_name + " " + user.last_name,
+      //     organisation: user.organisation,
+      //     shipperNum: user.customer_id,
+      //     no_of_bags: items.length,
+      //     content,
+      //     reciever_firstname,
+      //     reciever_lastname,
+      //     reciever_email,
+      //     reciever_primaryMobile,
+      //   });
+      //   if (invoice_url) {
+      //     if (agent_id && invoice_url.length > 0) {
+      //       await db.dbs.ShipmentInvoives.create({
+      //         uuid: util.uuid(),
+      //         user_id: user.id,
+      //         invoice_url: JSON.stringify(invoice_url),
+      //         shipment_id: status.id,
+      //       });
+      //     }
+      //   }
+      // }
     }
+    util.helpers.updateScheduleTotal(v.uuid, route.uuid, shipment_num);
 
     v.no_of_bags = parseInt(v.no_of_bags) + items.length;
     await v.save();
@@ -594,6 +615,14 @@ module.exports = {
       },
     });
 
+    let shipment = await db.dbs.ShippingItems.findOne({
+      where: { shipment_num: shipment_num },
+    });
+
+    let route = await db.dbs.ShipmentRoutes.findOne({
+      where: { id: shipment.route_id },
+    });
+
     if (!user) {
       return res
         .status(400)
@@ -609,11 +638,8 @@ module.exports = {
       payment_doc_url,
       user: user,
       customer_id: user.customer_id,
+      route_id: route.uuid,
     };
-
-    let shipment = await db.dbs.ShippingItems.findOne({
-      where: { shipment_num: shipment_num },
-    });
 
     if (!shipment) {
       return res
@@ -649,25 +675,29 @@ module.exports = {
       let tracker = util.helpers.generateReftId(5);
       const expiredAt = new Date();
 
-      await db.dbs.ShipmentTracker.create({
-        uuid: util.uuid(),
-        shipment_id: shipment.id,
-        track_num: tracker,
-        expiredAt: new Date(
-          expiredAt.setTime(expiredAt.getTime() + 15 * 60 * 1000)
-        ).toUTCString(),
-      });
+      console.log("33333333333333333333333");
 
-      const opt = {
-        email: user.email,
-        name: first_name + " " + last_name,
-        shipment_num: shipment_num,
-        message: `Dear esteemed customer, kindly use the id ${tracker} to to confirm receipt of your shipment`,
-        tracking_id: tracker,
-      };
+      // await db.dbs.ShipmentTracker.create({
+      //   // uuid: util.uuid(),
+      //   shipment_id: shipment.id,
+      //   track_num: tracker,
+      //   expiredAt: new Date(
+      //     expiredAt.setTime(expiredAt.getTime() + 15 * 60 * 1000)
+      //   ).toUTCString(),
+      // });
 
-      util.tag.sendMail(opt);
-      sms.send(shipment.reciever_primaryMobile, opt.message);
+      console.log("44444444444444444444444444");
+
+      // const opt = {
+      //   email: user.email,
+      //   name: first_name + " " + last_name,
+      //   shipment_num: shipment_num,
+      //   message: `Dear esteemed customer, kindly use the id ${tracker} to to confirm receipt of your shipment`,
+      //   tracking_id: tracker,
+      // };
+
+      // util.tag.sendMail(opt);
+      // sms.send(shipment.reciever_primaryMobile, opt.message);
 
       return res
         .status(200)

@@ -179,7 +179,10 @@ module.exports = {
             },
             attributes: [
               [
-                utill.sequelize.fn("sum", utill.sequelize.col("amount")),
+                utill.sequelize.fn(
+                  "sum",
+                  utill.sequelize.col("amount_in_dollars")
+                ),
                 "total_amount",
               ],
             ],

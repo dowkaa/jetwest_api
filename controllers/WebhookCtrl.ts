@@ -39,7 +39,7 @@ module.exports = {
         });
 
         let route = await db.dbs.ShipmentRoutes.findOne({
-          where: { destination_name: shipment.destination },
+          where: { id: shipment.route_id },
         });
 
         if (validateTransaction) {
@@ -62,12 +62,14 @@ module.exports = {
             await db.dbs.Transactions.create({
               uuid: util.uuid(),
               user_id: user.id,
-              amount: amount * parseFloat(route.dailyExchangeRate),
+              amount_in_dollars: amount / parseFloat(route.dailyExchangeRate),
+              amount_in_local_currency: amount,
               reference: reference,
               departure: shipment.pickup_location,
               arrival: shipment.destination,
               booked_by: shipment.shipperName,
               cargo_id: shipment.cargo_id,
+              rate: parseFloat(route.dailyExchangeRate),
               departure_date: shipment.depature_date,
               arrival_date: shipment.arrival_date,
               shipment_no: shipment.shipment_num,
@@ -84,6 +86,8 @@ module.exports = {
               method: "paystack webhook",
               description: `Payment for shipment with no ${shipment.shipment_num} via paystack webhook`,
               status: "success",
+              airwaybill_cost: parseFloat(route.air_wayBill_rate),
+              total_cost: parseFloat(route.air_wayBill_rate) + amount,
             });
 
             await db.dbs.ShippingItems.update(
@@ -114,7 +118,8 @@ module.exports = {
       console.log({ err, message: err.response });
       await db.dbs.PaystackError.create({
         uuid: util.uuid(),
-        data: JSON.stringify(err),
+        reference: reference,
+        data: JSON.stringify(err.response.data),
       });
     }
   },

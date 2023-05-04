@@ -204,7 +204,10 @@ module.exports = {
             },
             attributes: [
               [
-                util.sequelize.fn("sum", util.sequelize.col("amount")),
+                util.sequelize.fn(
+                  "sum",
+                  util.sequelize.col("amount_in_dollars")
+                ),
                 "total_amount",
               ],
             ],

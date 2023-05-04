@@ -10,8 +10,10 @@ var Transactions = (sequelize: any, type: any) => {
     },
     uuid: Sequelize.STRING,
     user_id: Sequelize.STRING,
-    amount: Sequelize.STRING,
+    amount_in_dollars: Sequelize.DECIMAL(12, 2),
+    amount_in_local_currency: Sequelize.DECIMAL(12, 2),
     previous_balance: Sequelize.DECIMAL(12, 2),
+    rate: Sequelize.DECIMAL(12, 2),
     new_balance: Sequelize.DECIMAL(12, 2),
     amount_deducted: Sequelize.DECIMAL(12, 2),
     reference: Sequelize.STRING,
@@ -31,6 +33,8 @@ var Transactions = (sequelize: any, type: any) => {
     no_of_bags: Sequelize.STRING,
     company_name: Sequelize.STRING,
     description: Sequelize.STRING,
+    airwaybill_cost: Sequelize.DECIMAL(12, 2),
+    total_cost: Sequelize.DECIMAL(12, 2),
   });
 };
 
