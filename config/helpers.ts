@@ -341,12 +341,6 @@ const addShipment = async (
         }
       }
     }
-
-    await db.dbs.AirWayBillRate.create({
-      uuid: utilities.uuid(),
-      shipment_num: shipment_num,
-      amount: parseFloat(route.air_wayBill_rate),
-    });
   }
 };
 
@@ -368,6 +362,12 @@ const updateScheduleTotal = async (
   v.totalAmount =
     parseFloat(v.totalAmount) + parseFloat(route.air_wayBill_rate);
   await v.save();
+
+  await db.dbs.AirWayBillRate.create({
+    uuid: utilities.uuid(),
+    shipment_num: shipment_num,
+    amount: parseFloat(route.air_wayBill_rate),
+  });
 };
 const parkingListMail = async (shipment_num: string) => {
   let shipments = await db.dbs.ShippingItems.findAll({
@@ -785,13 +785,10 @@ const logApiTransaction = async (
     where: { user_id: user.id },
   });
 
-  let airwaybill = await db.dbs.AirWayBillRate.findOne({
-    shipment_num: shipment_num,
-  });
-
   checkBalance.amount =
-    parseFloat(checkBalance.amount) - (amount + parseFloat(airwaybill.amount));
-  checkBalance.amount_deducted = amount + parseFloat(airwaybill.amount);
+    parseFloat(checkBalance.amount) -
+    (amount + parseFloat(route.air_wayBill_rate));
+  checkBalance.amount_deducted = amount + parseFloat(route.air_wayBill_rate);
   await checkBalance.save();
 
   await db.dbs.Transactions.create({
@@ -804,8 +801,8 @@ const logApiTransaction = async (
     previous_balance: checkBalance.amount,
     new_balance:
       parseFloat(checkBalance.amount) -
-      (amount + parseFloat(airwaybill.amount)),
-    amount_deducted: amount + parseFloat(airwaybill.amount),
+      (amount + parseFloat(route.air_wayBill_rate)),
+    amount_deducted: amount + parseFloat(route.air_wayBill_rate),
     departure: item.pickup_location,
     arrival: item.destination,
     cargo_id: item.cargo_id,
@@ -821,8 +818,8 @@ const logApiTransaction = async (
     type: "credit",
     method: "wallet",
     description: message,
-    airwaybill_cost: airwaybill.amount,
-    total_cost: parseFloat(airwaybill.amount) + amount,
+    airwaybill_cost: parseFloat(route.air_wayBill_rate),
+    total_cost: parseFloat(route.air_wayBill_rate) + amount,
     status: "success",
   });
 };
