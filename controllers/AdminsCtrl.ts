@@ -1808,7 +1808,7 @@ module.exports = {
       departure,
       destination,
       dailyExchangeRate,
-      agent_rate,
+      agent_rate: agent_rate,
       type,
       air_wayBill_rate: air_wayBill_rate,
       value,
