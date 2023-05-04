@@ -34,9 +34,18 @@ module.exports = {
           reference
         );
 
+        console.log({ event });
+
         let shipment = await db.dbs.ShippingItems.findOne({
           where: { reference: reference },
         });
+
+        if (!shipment) {
+          console.log(
+            `*************************************** no shipment with reference ${reference} found`
+          );
+          return res.sendStatus(200);
+        }
 
         let route = await db.dbs.ShipmentRoutes.findOne({
           where: { id: shipment.route_id },
