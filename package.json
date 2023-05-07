@@ -8,7 +8,7 @@
     "migrate": "npx sequelize-cli db:migrate",
     "seed": "npx sequelize db:seed:all",
     "dev": "nodemon --exec ts-node index.ts",
-    "build": "sudo tsc",
+    "build": "tsc",
     "test": "jest",
     "git deploy": "npm run git add . && npm run git commit -am \"update\" && git push",
     "update": "sudo git pull && sudo npm run build && pm2 stop jetwest_live && pm2 start jetwest_live"
