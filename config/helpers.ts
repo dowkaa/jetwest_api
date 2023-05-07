@@ -1098,8 +1098,6 @@ const validateTransaction = async (data: any, type: string) => {
       data.reference
     );
 
-    console.log({ validateTransaction });
-
     if (validateTransaction) {
       return "Transaction already exists";
     }

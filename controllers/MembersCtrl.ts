@@ -669,7 +669,9 @@ module.exports = {
         }
       );
 
-      util.helpers.validateTransaction(option, "members");
+      let response = await util.helpers.validateTransaction(option, "members");
+
+      console.log({ response });
       util.helpers.checkBaggageConfirmation(option);
 
       let tracker = util.helpers.generateReftId(5);
@@ -677,24 +679,22 @@ module.exports = {
 
       console.log("33333333333333333333333");
 
-      // await db.dbs.ShipmentTracker.create({
-      //   // uuid: util.uuid(),
-      //   shipment_id: shipment.id,
-      //   track_num: tracker,
-      //   expiredAt: new Date(
-      //     expiredAt.setTime(expiredAt.getTime() + 15 * 60 * 1000)
-      //   ).toUTCString(),
-      // });
+      await db.dbs.ShipmentTracker.create({
+        uuid: util.uuid(),
+        shipment_id: shipment.id,
+        track_num: tracker,
+        expiredAt: new Date(
+          expiredAt.setTime(expiredAt.getTime() + 15 * 60 * 1000)
+        ).toUTCString(),
+      });
 
-      console.log("44444444444444444444444444");
-
-      // const opt = {
-      //   email: user.email,
-      //   name: first_name + " " + last_name,
-      //   shipment_num: shipment_num,
-      //   message: `Dear esteemed customer, kindly use the id ${tracker} to to confirm receipt of your shipment`,
-      //   tracking_id: tracker,
-      // };
+      const opt = {
+        email: user.email,
+        name: first_name + " " + last_name,
+        shipment_num: shipment_num,
+        message: `Dear esteemed customer, kindly use the id ${tracker} to to confirm receipt of your shipment`,
+        tracking_id: tracker,
+      };
 
       // util.tag.sendMail(opt);
       // sms.send(shipment.reciever_primaryMobile, opt.message);

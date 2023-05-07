@@ -24,7 +24,7 @@ module.exports = {
       amount: {
         allowNull: false,
         defaultValue: 0.0,
-        type: Sequelize.DOUBLE,
+        type: Sequelize.DECIMAL(12, 2),
       },
       shipment_num: {
         allowNull: true,

@@ -9,11 +9,11 @@ module.exports = {
       }),
       queryInterface.addColumn("shipment_route", "dailyExchangeRate", {
         allowNull: true,
-        type: Sequelize.STRING,
+        type: Sequelize.DECIMAL(12, 2),
       }),
       queryInterface.addColumn("shipment_route", "value", {
         allowNull: true,
-        type: Sequelize.STRING,
+        type: Sequelize.DECIMAL(12, 2),
       }),
     ]);
   },

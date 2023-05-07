@@ -9,11 +9,11 @@ module.exports = {
       }),
       queryInterface.addColumn("transactions", "new_balance", {
         allowNull: true,
-        type: Sequelize.TEXT,
+        type: Sequelize.DECIMAL(12, 2),
       }),
       queryInterface.addColumn("transactions", "amount_deducted", {
         allowNull: true,
-        type: Sequelize.TEXT,
+        type: Sequelize.DECIMAL(12, 2),
       }),
       queryInterface.addColumn("transactions", "company_name", {
         allowNull: true,
