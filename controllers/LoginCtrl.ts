@@ -126,6 +126,7 @@ module.exports = {
         utill.introduction.sendMail(opt);
       }
       user.login_count = parseInt(user.login_count) + 1;
+      user.last_login_time = utill.moment().format("YYYY-MM-DD HH:mm:ss");
       await user.save();
 
       let random = utill.uuid();
@@ -172,7 +173,9 @@ module.exports = {
           await db.dbs.Transactions.findAll({
             where: {
               [Op.or]: {
-                user_id: { [Op.or]: [user.customer_id, user.id] },
+                user_id: {
+                  [Op.or]: [user.customer_id, user.id],
+                },
                 company_name: user.company_name,
               },
               status: "success",
