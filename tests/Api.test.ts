@@ -13,7 +13,6 @@ const utils = require("util");
 // } catch (error) {
 
 // }
-let a = Math.floor(Math.random() * 1000000) + "test";
 
 // const app = servers;
 describe("API tests", () => {

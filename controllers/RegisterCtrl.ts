@@ -109,6 +109,7 @@ module.exports = {
       uuid: utillz.uuid(),
       mobile_number: mobile,
       first_name,
+      status: "Active",
       last_name,
       team_id: "Admin",
       reg_status: "step-1",
@@ -190,7 +191,6 @@ module.exports = {
     user.reg_status = "step-2";
     user.activated = 1;
     await user.save();
-
 
     let random = utillz.uuid();
 

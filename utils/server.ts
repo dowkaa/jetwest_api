@@ -2,12 +2,23 @@ const packages = require("./packages");
 require("dotenv").config();
 function createServer() {
   const app = packages.express();
+  app.set("trust proxy", true);
 
   // cross origin middleware
   app.use(packages.cors());
 
   // set security HTTP headers
   app.use(packages.helmet());
+
+  const apiLimiter = packages.rateLimit({
+    windowMs: 1000, // 15 minutes
+    max: 3, // Limit each IP to 100 requests per `window` (here, per 15 minutes)
+    message: "Api call error, too many requests",
+    standardHeaders: true, // Return rate limit info in the `RateLimit-*` headers
+    legacyHeaders: false, // Disable the `X-RateLimit-*` headers
+  });
+
+  app.use(apiLimiter);
 
   // session
   app.use(packages.cookieParser());
@@ -50,10 +61,6 @@ function createServer() {
   //card-queue
   app.use("/admin/queues", router);
 
-  // setTimeout(() => {
-  //   const option = {};
-  //   // packages.initialize.processJob(option);
-  // }, 2000);
   if (process.env.STATE === "prod") {
     setInterval(() => {
       const option = {};
@@ -63,11 +70,6 @@ function createServer() {
 
   app.use(packages.bodyParser.urlencoded({ extended: true }));
   app.use(packages.bodyParser.json());
-
-  // app.use(
-  //   "/files",
-  //   packages.express.static(packages.path.join(__dirname, "public/files"))
-  // );
 
   app.use("/api/jetwest/public/", packages.publicRoute);
   app.use("/api/jetwest/password/", packages.password);

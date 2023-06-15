@@ -10,6 +10,7 @@ exports.cookieParser = require("cookie-parser");
 exports.bodyParser = require("body-parser");
 exports.passport = require("passport");
 exports.passportJWT = require("passport-jwt");
+exports.rateLimit = require("express-rate-limit");
 exports.Joi = require("joi");
 exports.cryptoJS = require("crypto-js");
 exports.helmet = require("helmet");
