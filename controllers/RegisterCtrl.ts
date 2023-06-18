@@ -140,7 +140,6 @@ module.exports = {
       return res.status(200).json({
         success: {
           status: "SUCCESS",
-          otp: code,
           message: `Kindly verify your email with the code sent to your ${
             notification_type === "email" ? "email address" : "mobile number"
           } `,
