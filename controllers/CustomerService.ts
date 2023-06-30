@@ -81,7 +81,7 @@ module.exports = {
         },
       });
 
-      let totalAmount = await db.dbs.Transactions.sum("amount", {
+      let totalAmount = await db.dbs.Transactions.sum("amount_in_dollars", {
         where: { user_id: item.customer_id, status: "success" },
       });
 
