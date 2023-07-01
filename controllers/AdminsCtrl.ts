@@ -762,6 +762,26 @@ module.exports = {
         );
     }
 
+    let checker0 = await db.dbs.ScheduleFlights.findOne({
+      where: {
+        departure_station: departure_station,
+        destination_station: destination_station,
+        flight_reg,
+        stod: total,
+      },
+    });
+
+    if (checker0) {
+      return res
+        .status(400)
+        .json(
+          utill.helpers.sendError(
+            "Flight with departure station, destination station and stod already exists, kindly add another stod with atleast more than one hour from the previous flight scheduled"
+          )
+        );
+    }
+
+
     let checker1 = await db.dbs.ScheduleFlights.findOne({
       where: {
         departure_station: departure_station,
