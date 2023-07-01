@@ -586,17 +586,9 @@ module.exports = {
         );
     }
 
-    let checker = util.appCache.has("get-user-from-schedule" + uuid);
-    let user;
-
-    if (checker) {
-      user = util.appCache.get("get-user-from-schedule" + uuid);
-    } else {
-      user = await db.dbs.Users.findOne({
-        where: { uuid: req.user.uuid, verification_status: "completed" },
-      });
-      util.appCache.set("get-user-from-schedule" + uuid, user);
-    }
+    let user = await db.dbs.Users.findOne({
+      where: { uuid: req.user.uuid, verification_status: "completed" },
+    });
 
     if (user.type !== "Carrier") {
       return res
@@ -624,15 +616,7 @@ module.exports = {
         .json(util.helpers.sendError("Kindly add a valid scheduled flight id"));
     }
 
-    let itemChecker = util.appCache.has("get-item-from-schedule" + uuid);
-    let item;
-
-    if (itemChecker) {
-      item = util.appCache.get("get-item-from-schedule" + uuid);
-    } else {
-      item = await db.dbs.ScheduleFlights.findOne({ where: { uuid: uuid } });
-      util.appCache.set("get-item-from-schedule" + uuid, item);
-    }
+    let item = await db.dbs.ScheduleFlights.findOne({ where: { uuid: uuid } });
 
     if (!item) {
       return res
@@ -641,42 +625,37 @@ module.exports = {
     }
 
     if (JSON.parse(item.departure_date.includes(date))) {
-      let checker = util.appCache.has(req.url + item.id);
-      let users;
-      if (checker) {
-        users = util.appCache.get(req.url + item.id);
-      } else {
-        users = await db.dbs.Users.findAll({
-          attributes: {
-            exclude: ["password", "otp", "locked", "activated"],
-          },
-          include: [
-            {
-              model: db.dbs.ShippingItems,
-              where: { flight_id: item.id, depature_date: date },
-              as: "shipments_booked_on_flight",
-              required: true,
-              include: [
-                {
-                  model: db.dbs.Users,
-                  as: "agents",
-                  distinct: true,
-                  attributes: {
-                    exclude: ["password", "otp", "locked", "activated"],
-                  },
+      let users = await db.dbs.Users.findAll({
+        attributes: {
+          exclude: ["password", "otp", "locked", "activated"],
+        },
+        include: [
+          {
+            model: db.dbs.ShippingItems,
+            where: { flight_id: item.id, depature_date: date },
+            as: "shipments_booked_on_flight",
+            required: true,
+            include: [
+              {
+                model: db.dbs.Users,
+                as: "agents",
+                required: false,
+                distinct: true,
+                attributes: {
+                  exclude: ["password", "otp", "locked", "activated"],
                 },
-              ],
-            },
-            {
-              model: db.dbs.AirWayBill,
-              where: { flight_reg: item.flight_reg },
-              as: "airway_bill",
-            },
-          ],
-          // order: [["createdAt", "DESC"]],
-        });
-        util.appCache.set(req.url + item.id, users);
-      }
+              },
+            ],
+          },
+          {
+            model: db.dbs.AirWayBill,
+            where: { flight_reg: item.flight_reg },
+            required: false,
+            as: "airway_bill",
+          },
+        ],
+        // order: [["createdAt", "DESC"]],
+      });
 
       return res.status(200).json({ users });
     }
