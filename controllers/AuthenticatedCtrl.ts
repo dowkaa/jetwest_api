@@ -1993,7 +1993,7 @@ module.exports = {
     const itemSchema = util.Joi.object()
       .keys({
         proof_url: util.Joi.string().required(),
-        amount: util.Joi.number().required(),
+        // amount: util.Joi.number().required(),
         shipment_num: util.Joi.string().required(),
       })
       .unknown();
@@ -2041,7 +2041,7 @@ module.exports = {
       user_company: req.user.company_name,
       transaction_id: checker.id,
       status: "pending",
-      amount: parseFloat(amount),
+      // amount: parseFloat(amount),
     });
 
     checker.status = "pending_verification";

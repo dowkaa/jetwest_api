@@ -578,6 +578,16 @@ module.exports = {
       reciever_secMobile,
     } = req.body;
 
+    // if (req.user.admin_type !== ("Customer Service" || "Super Admin")) {
+    //   return res
+    //     .status(400)
+    //     .json(
+    //       util.helpers.sendError(
+    //         "Only Super Admin or Customer Services are allowed"
+    //       )
+    //     );
+    // }
+
     let user = await db.dbs.Users.findOne({ where: { uuid: user_id } });
 
     if (!user) {
