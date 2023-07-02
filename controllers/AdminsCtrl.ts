@@ -4535,7 +4535,7 @@ with note ${note}`,
         "all-users-almost-completed-shipments-pageNum=" + pageNum
       );
     } else {
-      almostCompletedShipments = await db.dbs.ScheduleFlights.findAndCountAll({
+      almostCompletedShipments = await db.dbs.FlightsOngoing.findAndCountAll({
         offset: offset,
         limit: limit,
         where: { status: "Almost completed" },
