@@ -119,6 +119,12 @@ module.exports = {
       payment_doc_url,
     } = req.body;
 
+    let user = await db.dbs.Users.findOne({ where: { uuid: req.user.uuid } });
+
+    if (!user) {
+      return res.status(400).json(util.helpers.sendError("User not found"));
+    }
+
     if (amount && parseFloat(amount) < 0) {
       return res
         .status(400)
@@ -396,7 +402,11 @@ module.exports = {
         cargo,
         scan_code,
         volumetric_weight,
-        shipment_model
+        shipment_model,
+        user,
+        null,
+        null,
+        null
       );
 
       // if (agent_id) {

@@ -817,7 +817,11 @@ module.exports = {
         cargo,
         scan_code,
         volumetric_weight,
-        shipment_model
+        shipment_model,
+        user,
+        null,
+        null,
+        null
       );
 
       // let status = await db.dbs.ShippingItems.create({
@@ -1086,7 +1090,7 @@ module.exports = {
           name: user.first_name + " " + user.last_name,
           email: user.email,
           message: message,
-          subect: "Payment Approved"
+          subect: "Payment Approved",
           // message: `This is to inform you that your shipments with shipment number ${shipment_num} has been approved successfully`,
         };
 

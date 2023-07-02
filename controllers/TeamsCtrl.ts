@@ -545,6 +545,14 @@ module.exports = {
       reciever_secMobile,
     } = req.body;
 
+    let user = await db.dbs.Users.findOne({
+      where: { uuid: req.user.uuid },
+    });
+
+    if (!user) {
+      return res.status(400).json(utill.helpers.sendError("User not found"));
+    }
+
     let shipment_num = utill.helpers.generateReftId(10);
     let scan_code = utill.helpers.generateReftId(10);
 
@@ -781,7 +789,11 @@ module.exports = {
         cargo,
         scan_code,
         volumetric_weight,
-        shipment_model
+        shipment_model,
+        user,
+        null,
+        null,
+        null
       );
 
       // if (agent_id) {

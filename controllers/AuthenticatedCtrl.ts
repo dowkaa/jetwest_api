@@ -396,6 +396,12 @@ module.exports = {
       return res.status(400).json(util.helpers.sendError(errorMessage));
     }
 
+    let user = await db.dbs.Users.findOne({ where: { uuid: req.user.uuid } });
+    
+     if (!user) {
+       return res.status(400).json(util.helpers.sendError("User not found"));
+     }
+
     const {
       items,
       pickup_location,
@@ -680,7 +686,11 @@ module.exports = {
         cargo,
         scan_code,
         volumetric_weight,
-        shipment_model
+        shipment_model,
+        user,
+        null,
+        null,
+        null
       );
 
       // if (agent_id) {
