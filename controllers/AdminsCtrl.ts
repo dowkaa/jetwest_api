@@ -1236,7 +1236,8 @@ module.exports = {
       flights = await db.dbs.FlightsOngoing.findAndCountAll({
         offset: offset,
         limit: limit,
-        where: { status: "In progress" },
+        where: { status: { [Op.or]: ["In progress", "enroute"] } },
+        //  where: { user_id: { [Op.or]: [user.uuid, user.id] } },
         order: [["id", "DESC"]],
       });
       if (flights.rows.length > 0) {
