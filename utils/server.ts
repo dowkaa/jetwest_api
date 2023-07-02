@@ -61,12 +61,12 @@ function createServer() {
   //card-queue
   app.use("/admin/queues", router);
 
-  // if (process.env.STATE === "prod") {
-  setInterval(() => {
-    const option = {};
-    packages.scheduleItem.processJob(option);
-  }, 60000);
-  // }
+  if (process.env.STATE === "prod") {
+    setInterval(() => {
+      const option = {};
+      packages.scheduleItem.processJob(option);
+    }, 60000);
+  }
 
   app.use(packages.bodyParser.urlencoded({ extended: true }));
   app.use(packages.bodyParser.json());
