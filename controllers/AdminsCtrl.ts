@@ -4937,17 +4937,17 @@ with note ${note}`,
         .json(utill.helpers.sendError("Shipment not found"));
     }
 
-    // let v = await db.dbs.ScheduleFlights.findOne({
-    //   where: { [Op.or]: { uuid: status.flight_id, id: status.flight_id } },
-    // });
-
-    let v = await db.dbs.FlightsOngoing.findOne({
+    let v = await db.dbs.ScheduleFlights.findOne({
       where: { [Op.or]: { uuid: status.flight_id, id: status.flight_id } },
     });
 
     if (!v) {
       return res.status(400).json(utill.helpers.sendError("flight not found"));
     }
+
+    let flight_ongoing = await db.dbs.FlightsOngoing.findOne({
+      where: { [Op.or]: { scheduleFlight_id: status.id } },
+    });
 
     if (v.status === "Almost completed") {
       return res
@@ -5051,8 +5051,11 @@ with note ${note}`,
 
           status.progress = "loaded";
           status.status = "enroute";
+          flight_ongoing.status = "enroute";
+          flight_ongoing.progress = "loaded";
           v.load_count = parseInt(v.load_count) + 1;
           await v.save();
+          await flight_ongoing.save();
           await status.save();
 
           await db.dbs.LoadedBags.create({
@@ -5109,8 +5112,10 @@ with note ${note}`,
           }
 
           status.progress = "landed";
+          flight_ongoing.progress = "landed";
           v.offload_count = parseInt(v.offload_count) + 1;
           await v.save();
+          flight_ongoing.save();
           await status.save();
 
           await db.dbs.OffLoadedBags.create({
