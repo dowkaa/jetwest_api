@@ -33,6 +33,7 @@ const processJob = async (data: any) => {
 const addJob = async (data: any) => {
   let item = await db.dbs.ScheduleFlights.findOne({
     where: { uuid: data.uuid },
+    order: [["id", "DESC"]],
   });
 
   let date = utils.moment().format("YYYY-MM-DD") + " " + item.stod;
@@ -48,6 +49,7 @@ const addJob = async (data: any) => {
     date,
     queue: "queue",
     item: item.stod,
+
     dateCom,
     minus: Date.parse(arr[0] + " " + item.stod) - Date.now(),
   });
