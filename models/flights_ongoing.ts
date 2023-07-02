@@ -23,6 +23,7 @@ var FlightsOngoing = (sequelize: any, type: any) => {
     aircraft_id: Sequelize.STRING,
     status: Sequelize.STRING,
     destination_airport: Sequelize.STRING,
+    progress: Sequelize.STRING,
     day: Sequelize.STRING,
     takeoff_airport: Sequelize.STRING,
     departure_day: Sequelize.STRING,

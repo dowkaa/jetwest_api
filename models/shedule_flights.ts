@@ -32,6 +32,7 @@ var ScheduleFlights = (sequelize: any, type: any) => {
     taw: Sequelize.DOUBLE,
     totalAmount: Sequelize.DOUBLE,
     tat: Sequelize.STRING,
+    progress: Sequelize.STRING,
     // schedule_type: Sequelize.STRING,
     duration: Sequelize.STRING,
     groundHandler: Sequelize.STRING,
