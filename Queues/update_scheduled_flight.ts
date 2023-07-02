@@ -35,7 +35,9 @@ const addJob = async (data: any) => {
     where: { uuid: data.uuid },
   });
 
-  let date = utils.moment().add(1, "hour").format("YYYY-MM-DD");
+  let date = utils.moment().format("YYYY-MM-DD") + " " + item.stod;
+
+  console.log({ date, queue: "queue" });
 
   let arr = JSON.parse(item.departure_date);
   let arr2 = [];
