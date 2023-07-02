@@ -35,27 +35,11 @@ const addJob = async (data: any) => {
     where: { uuid: data.uuid },
   });
 
-  let date = utils.moment().format("YYYY-MM-DD") + " " + item.stod;
-
-  console.log({ date, queue: "queue" });
-
   let arr = JSON.parse(item.departure_date);
   let arr2 = [];
-  let value;
-  // let arr2 = [];
-
-  // if (arr.length === 1) {
-  //   if (Date.parse(arr[0]) - Date.parse(date) <= 7200000) {
-  //     item.status = "In progress";
-  //     await item.save();
-  //   }
-  //   return;
-  // } else {
   if (arr.length > 0) {
     for (let i = 0; i < arr.length; i++) {
-      if (Date.parse(arr[i]) - Date.parse(date) >= 7200000) {
-        arr2.push(arr[i]);
-      } else {
+      if (Date.parse(arr[i] + " " + item.stod) - Date.now() <= -7200000) {
         let checker = await db.dbs.FlightsOngoing.findOne({
           where: {
             stod: item.stod,
@@ -97,6 +81,8 @@ const addJob = async (data: any) => {
             phone_number: item.phone_number,
           });
         }
+      } else {
+        arr2.push(arr[i]);
       }
     }
   }
