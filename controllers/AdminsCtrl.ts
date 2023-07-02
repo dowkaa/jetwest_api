@@ -1428,7 +1428,7 @@ module.exports = {
       return res.status(400).json(utill.helpers.sendError("Flight not found"));
     }
 
-    if (flight.status !== "In progress") {
+    if (flight.status !== "In progress" || flight.status !== "enroute") {
       return res.status(400).json(utill.helpers.sendError("Not allowed"));
     }
 
