@@ -55,12 +55,14 @@ const addJob = async (data: any) => {
         arr2.push(arr[i]);
       } else {
         let checker = await db.dbs.FlightsOngoing.findOne({
-          stod: item.stod,
-          departure_station: item.departure_station,
-          destination_station: item.destination_station,
-          flight_reg: item.flight_reg,
-          stoa: item.stoa,
-          departure_date: arr[i],
+          where: {
+            stod: item.stod,
+            departure_station: item.departure_station,
+            destination_station: item.destination_station,
+            flight_reg: item.flight_reg,
+            stoa: item.stoa,
+            departure_date: arr[i],
+          },
         });
 
         if (!checker) {
