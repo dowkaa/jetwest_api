@@ -44,18 +44,18 @@ const addJob = async (data: any) => {
   //   if (Date.parse(arr[0]) - Date.parse(date) <= 7200000) {
   //     item.status = "In progress";
 
-  console.log({
-    talk: Date.parse(arr[0] + " " + item.stod) - Date.now(),
-    arr: arr[0],
-    stod: item.stod,
-  });
+  // console.log({
+  //   talk: Date.parse(arr[0] + " " + item.stod) - Date.now(),
+  //   arr: arr[0],
+  //   stod: item.stod,
+  // });
   //     await item.save();
   //   }
   //   return;
   // } else {
   if (arr.length > 0) {
     for (let i = 0; i < arr.length; i++) {
-      if (Date.parse(arr[i] + " " + item.stod) - Date.now() <= 7200000) {
+      if (Date.parse(arr[i] + " " + item.stod) - Date.now() <= 10800000) {
         let checker = await db.dbs.FlightsOngoing.findOne({
           where: {
             stod: item.stod,
