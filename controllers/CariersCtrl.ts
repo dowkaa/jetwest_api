@@ -649,7 +649,7 @@ module.exports = {
           },
           {
             model: db.dbs.AirWayBill,
-            where: { flight_reg: item.flight_reg },
+            where: { flight_reg: item.flight_reg, schedule_id: item.id },
             required: false,
             as: "airway_bill",
           },
@@ -789,6 +789,7 @@ module.exports = {
         user_id: shipment.user_id,
         carrier_id: req.user.id,
         doc_id: doc_id,
+        schedule_id: v.id,
         doc_url: doc_url,
         shipper_id: shipment.user_id,
         shipment_id: shipment.id,

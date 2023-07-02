@@ -10,6 +10,7 @@ var AirWayBill = (sequelize: any, type: any) => {
     },
     uuid: Sequelize.STRING,
     user_id: Sequelize.STRING,
+    schedule_id: Sequelize.INTEGER,
     carrier_id: Sequelize.STRING,
     doc_id: Sequelize.STRING,
     doc_url: Sequelize.STRING,
