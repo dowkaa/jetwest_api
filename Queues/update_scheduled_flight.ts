@@ -55,7 +55,7 @@ const addJob = async (data: any) => {
   // } else {
   if (arr.length > 0) {
     for (let i = 0; i < arr.length; i++) {
-      if (Date.parse(arr[i] + " " + item.stod) - Date.now() <= 10800000) {
+      if (Date.parse(arr[i] + " " + item.stod) - Date.now() <= 7200000) {
         let checker = await db.dbs.FlightsOngoing.findOne({
           where: {
             stod: item.stod,
