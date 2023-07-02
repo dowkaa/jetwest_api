@@ -4946,7 +4946,7 @@ with note ${note}`,
     }
 
     let flight_ongoing = await db.dbs.FlightsOngoing.findOne({
-      where: { [Op.or]: { scheduleFlight_id: status.id } },
+      where: { [Op.or]: { scheduleFlight_id: v.id } },
     });
 
     if (v.status === "Almost completed") {
@@ -5027,7 +5027,7 @@ with note ${note}`,
         where: { state: allLogistics[0].destination_station },
       });
 
-      console.log({ departure, destination });
+      //  console.log({ departure, destination });
       if (status) {
         if (scan_type === "load") {
           if (parseInt(v.load_count) === parseInt(v.no_of_bags)) {
