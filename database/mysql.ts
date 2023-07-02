@@ -230,12 +230,12 @@ dbs.Transactions.hasMany(dbs.PaymentProofs, {
 });
 
 dbs.AirWayBill.belongsTo(dbs.Users, {
-  foreignKey: "user_id",
+  foreignKey: "shipper_id",
   as: "airway_bill",
 });
 
 dbs.Users.hasOne(dbs.AirWayBill, {
-  foreignKey: "user_id",
+  foreignKey: "shipper_id",
   as: "airway_bill",
 });
 

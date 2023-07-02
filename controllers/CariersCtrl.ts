@@ -786,7 +786,7 @@ module.exports = {
     if (!AirWayBillChecker) {
       await db.dbs.AirWayBill.create({
         uuid: util.uuid(),
-        user_id: req.user.id,
+        user_id: shipment.user_id,
         carrier_id: req.user.id,
         doc_id: doc_id,
         doc_url: doc_url,
