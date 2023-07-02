@@ -4946,7 +4946,7 @@ with note ${note}`,
     }
 
     let flight_ongoing = await db.dbs.FlightsOngoing.findOne({
-      where: { [Op.or]: { scheduleFlight_id: v.id } },
+      where: { scheduleFlight_id: v.id },
     });
 
     if (v.status === "Almost completed") {
