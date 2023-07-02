@@ -38,7 +38,6 @@ const addJob = async (data: any) => {
 
   let arr = JSON.parse(item.departure_date);
   let arr2 = [];
-  let value;
   // let arr2 = [];
 
   // if (arr.length === 1) {
