@@ -4925,7 +4925,7 @@ with note ${note}`,
     //   },
     // });
 
-    let status = await db.dbs.FlightsOngoing.findOne({
+    let status = await db.dbs.ShippingItems.findOne({
       where: {
         booking_reference: refId,
       },
