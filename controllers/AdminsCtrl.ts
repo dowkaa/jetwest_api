@@ -4691,7 +4691,7 @@ with note ${note}`,
 
     var completed = await db.dbs.sequelize
       .query(
-        "SELECT schedule_flights.id, schedule_flights.flight_reg, schedule_flights.createdAt as schedule_flights_createdAt, schedule_flights.uuid AS schedule_flights_uuid, schedule_flights.departure_date, schedule_flights.load_count, schedule_flights.offload_count, schedule_flights.destination_airport, schedule_flights.takeoff_airport, schedule_flights.status, schedule_flights.departure_station, schedule_flights.destination_station,schedule_flights.stoa, schedule_flights.stod, schedule_flights.taw, schedule_flights.no_of_bags FROM `schedule_flights` WHERE schedule_flights.takeoff_airport=:airport  ORDER BY `schedule_flights`.`createdAt` DESC limit :limit offset :offset;",
+        "SELECT schedule_flights.id, schedule_flights.flight_reg, schedule_flights.createdAt as schedule_flights_createdAt, schedule_flights.uuid AS schedule_flights_uuid, schedule_flights.departure_date, schedule_flights.load_count, schedule_flights.all_schedules, schedule_flights.offload_count, schedule_flights.destination_airport, schedule_flights.takeoff_airport, schedule_flights.status, schedule_flights.departure_station, schedule_flights.destination_station,schedule_flights.stoa, schedule_flights.stod, schedule_flights.taw, schedule_flights.no_of_bags FROM `schedule_flights` WHERE schedule_flights.takeoff_airport=:airport  ORDER BY `schedule_flights`.`createdAt` DESC limit :limit offset :offset;",
         {
           replacements: {
             limit: limit,
@@ -4714,6 +4714,7 @@ with note ${note}`,
           var stoa = obj.stoa;
           var load_count = obj.load_count;
           var offload_count = obj.offload_count;
+          var all_schedules = obj.all_schedules;
           var stod = obj.stod;
           var taw = obj.taw;
           var no_of_bags = obj.no_of_bags;
@@ -4724,7 +4725,7 @@ with note ${note}`,
             id,
             flight_reg,
             schedule_flights_uuid,
-            departure_date,
+            departure_date: all_schedules,
             load_count,
             offload_count,
             takeoff_airport,
@@ -4817,7 +4818,7 @@ with note ${note}`,
 
     var completed = await db.dbs.sequelize
       .query(
-        "SELECT schedule_flights.id, schedule_flights.flight_reg, schedule_flights.createdAt as schedule_flights_createdAt, schedule_flights.uuid AS schedule_flights_uuid, schedule_flights.departure_date, schedule_flights.load_count, schedule_flights.offload_count, schedule_flights.destination_airport, schedule_flights.takeoff_airport, schedule_flights.status, schedule_flights.departure_station, schedule_flights.destination_station,schedule_flights.stoa, schedule_flights.stod, schedule_flights.taw, schedule_flights.no_of_bags FROM `schedule_flights` WHERE schedule_flights.destination_airport=:airport  ORDER BY `schedule_flights`.`createdAt` DESC limit :limit offset :offset;",
+        "SELECT schedule_flights.id, schedule_flights.flight_reg, schedule_flights.createdAt as schedule_flights_createdAt, schedule_flights.uuid AS schedule_flights_uuid, schedule_flights.departure_date, schedule_flights.load_count, schedule_flights.all_schedules, schedule_flights.offload_count, schedule_flights.destination_airport, schedule_flights.takeoff_airport, schedule_flights.status, schedule_flights.departure_station, schedule_flights.destination_station,schedule_flights.stoa, schedule_flights.stod, schedule_flights.taw, schedule_flights.no_of_bags FROM `schedule_flights` WHERE schedule_flights.destination_airport=:airport  ORDER BY `schedule_flights`.`createdAt` DESC limit :limit offset :offset;",
         {
           replacements: {
             limit: limit,
@@ -4834,6 +4835,7 @@ with note ${note}`,
           var destination_airport = obj.destination_airport;
           var takeoff_airport = obj.takeoff_airport;
           var schedule_flights_uuid = obj.schedule_flights_uuid;
+          var all_schedules = obj.all_schedules;
           var departure_date = obj.departure_date;
           var departure_station = obj.departure_station;
           var destination_station = obj.destination_station;
@@ -4850,7 +4852,7 @@ with note ${note}`,
             id,
             flight_reg,
             schedule_flights_uuid,
-            departure_date,
+            departure_date: all_schedules,
             load_count,
             offload_count,
             takeoff_airport,
