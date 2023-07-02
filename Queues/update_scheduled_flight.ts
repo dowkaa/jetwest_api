@@ -36,23 +36,10 @@ const addJob = async (data: any) => {
     order: [["id", "DESC"]],
   });
 
-  let date = utils.moment().format("YYYY-MM-DD") + " " + item.stod;
-
-  let dateCom = utils.moment().format("YYYY-MM-DD HH:mm:ss");
-
   let arr = JSON.parse(item.departure_date);
   let arr2 = [];
   let value;
   // let arr2 = [];
-
-  console.log({
-    date,
-    queue: "queue",
-    item: item.stod,
-
-    dateCom,
-    minus: Date.parse(arr[0] + " " + item.stod) - Date.now(),
-  });
 
   // if (arr.length === 1) {
   //   if (Date.parse(arr[0]) - Date.parse(date) <= 7200000) {
