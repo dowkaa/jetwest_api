@@ -781,7 +781,6 @@ module.exports = {
         );
     }
 
-
     let checker1 = await db.dbs.ScheduleFlights.findOne({
       where: {
         departure_station: departure_station,
@@ -893,6 +892,29 @@ module.exports = {
       return res
         .status(400)
         .json(utill.helpers.sendError("flight with uuid not found"));
+    }
+
+    if (checker.status !== "pending") {
+      return res
+        .status(400)
+        .json(
+          utill.helpers.sendError(
+            "Schedule flight cannot be deleted at this moment as it is in transit"
+          )
+        );
+    }
+
+    if (
+      parseFloat(checker.scheduled_payload) !==
+      parseFloat(checker.available_capacity)
+    ) {
+      return res
+        .status(400)
+        .json(
+          utill.helpers.sendError(
+            "Schedule flight cannot be deleted at this moment as it has been booked for shipment"
+          )
+        );
     }
 
     await checker.destroy();
@@ -1211,7 +1233,7 @@ module.exports = {
     if (checker) {
       flights = utill.appCache.get("Flights-in-progress-pageNum=" + pageNum);
     } else {
-      flights = await db.dbs.ScheduleFlights.findAndCountAll({
+      flights = await db.dbs.FlightsOngoing.findAndCountAll({
         offset: offset,
         limit: limit,
         where: { status: "In progress" },
@@ -1272,7 +1294,7 @@ module.exports = {
     if (checker) {
       flights = utill.appCache.get("completed-flights-pageNum=" + pageNum);
     } else {
-      flights = await db.dbs.ScheduleFlights.findAndCountAll({
+      flights = await db.dbs.FlightsOngoing.findAndCountAll({
         offset: offset,
         limit: limit,
         where: { status: "completed" },
@@ -1393,7 +1415,11 @@ module.exports = {
 
     const { flight_id, atd } = req.body;
 
-    let flight = await db.dbs.ScheduleFlights.findOne({
+    // let flight = await db.dbs.ScheduleFlights.findOne({
+    //   where: { uuid: flight_id },
+    // });
+
+    let flight = await db.dbs.FlightsOngoing.findOne({
       where: { uuid: flight_id },
     });
 
@@ -1440,7 +1466,7 @@ module.exports = {
 
     const { flight_id, block_time, tat } = req.body;
 
-    let flight = await db.dbs.ScheduleFlights.findOne({
+    let flight = await db.dbs.FlightsOngoing.findOne({
       where: { uuid: flight_id },
     });
 
@@ -1511,6 +1537,13 @@ module.exports = {
     if (!checker) {
       flights = await db.dbs.ScheduleFlights.findOne({
         where: { uuid: uuid },
+        include: [
+          {
+            model: db.dbs.FlightsOngoing,
+            required: false,
+            as: "flight_ongoing",
+          },
+        ],
       });
       utill.appCache.set("single-flight" + uuid, flights);
     } else {
@@ -1606,8 +1639,7 @@ module.exports = {
     await db.dbs.AuditLogs.create({
       uuid: utill.uuid(),
       user_id: req.user.uuid,
-      description: `Admin ${req.user.first_name} ${req.user.last_name} created a destination with uuid ${data.uuid}
-`,
+      description: `Admin ${req.user.first_name} ${req.user.last_name} created a destination with uuid ${data.uuid}`,
       data: JSON.stringify(req.body),
     });
     utill.appCache.flushAll();
@@ -1663,7 +1695,6 @@ module.exports = {
       "all-destinations-count-pageNum=" + pageNum
     );
     let destinations;
-
     if (checker) {
       destinations = utill.appCache.get(
         "all-destinations-count-pageNum=" + pageNum
@@ -4887,25 +4918,17 @@ with note ${note}`,
         );
     }
 
-    let statusChecker = utill.appCache.has(
-      req.url + refId + flight_id + scan_type + date
-    );
-    let status;
-    if (statusChecker) {
-      status = utill.appCache.get(
-        req.url + refId + flight_id + scan_type + date
-      );
-    } else {
-      status = await db.dbs.ShippingItems.findOne({
-        where: {
-          booking_reference: refId,
-        },
-      });
-      utill.appCache.set(
-        req.url + refId + flight_id + scan_type + date,
-        status
-      );
-    }
+    // let status = await db.dbs.ShippingItems.findOne({
+    //   where: {
+    //     booking_reference: refId,
+    //   },
+    // });
+
+    let status = await db.dbs.FlightsOngoing.findOne({
+      where: {
+        booking_reference: refId,
+      },
+    });
 
     if (!status) {
       return res
@@ -4913,18 +4936,13 @@ with note ${note}`,
         .json(utill.helpers.sendError("Shipment not found"));
     }
 
-    let vChecker = utill.appCache.has(
-      "v" + status.flight_id + status.flight_id
-    );
-    let v;
-    if (vChecker) {
-      v = utill.appCache.get("v" + status.flight_id + status.flight_id);
-    } else {
-      v = await db.dbs.ScheduleFlights.findOne({
-        where: { [Op.or]: { uuid: status.flight_id, id: status.flight_id } },
-      });
-      utill.appCache.set("v" + status.flight_id + status.flight_id, v);
-    }
+    // let v = await db.dbs.ScheduleFlights.findOne({
+    //   where: { [Op.or]: { uuid: status.flight_id, id: status.flight_id } },
+    // });
+
+    let v = await db.dbs.FlightsOngoing.findOne({
+      where: { [Op.or]: { uuid: status.flight_id, id: status.flight_id } },
+    });
 
     if (!v) {
       return res.status(400).json(utill.helpers.sendError("flight not found"));
@@ -4938,7 +4956,7 @@ with note ${note}`,
         );
     }
 
-    if (!JSON.parse(v.departure_date).includes(date)) {
+    if (v.departure_date === date) {
       return res
         .status(400)
         .json(utill.helpers.sendError("Departure date not found on schedule"));
@@ -5000,30 +5018,13 @@ with note ${note}`,
       });
 
     if (allLogistics.length > 0) {
-      let departureChecker = utill.appCache.has(
-        allLogistics[0].departure_station
-      );
-      let destinationChecker = utill.appCache.has(
-        allLogistics[0].destination_station
-      );
-      let departure, destination;
-      if (departureChecker) {
-        departure = utill.appCache.get(allLogistics[0].departure_station);
-      } else {
-        departure = await db.dbs.Destinations.findOne({
-          where: { state: allLogistics[0].departure_station },
-        });
-        utill.appCache.set(allLogistics[0].departure_station);
-      }
+      let departure = await db.dbs.Destinations.findOne({
+        where: { state: allLogistics[0].departure_station },
+      });
 
-      if (destinationChecker) {
-        destination = utill.appCache.get(allLogistics[0].destination_station);
-      } else {
-        destination = await db.dbs.Destinations.findOne({
-          where: { state: allLogistics[0].destination_station },
-        });
-        utill.appCache.set(allLogistics[0].destination_station);
-      }
+      let destination = await db.dbs.Destinations.findOne({
+        where: { state: allLogistics[0].destination_station },
+      });
 
       console.log({ departure, destination });
       if (status) {

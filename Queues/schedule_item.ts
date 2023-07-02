@@ -31,7 +31,6 @@ const processJob = async (data: any) => {
 };
 
 const addJob = async (data: any) => {
-
   let payload = await db.dbs.ScheduleFlights.findAll({
     where: { status: "pending" },
   });

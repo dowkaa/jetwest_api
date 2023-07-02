@@ -713,6 +713,10 @@ module.exports = {
       where: { uuid: req.user.uuid, verification_status: "completed" },
     });
 
+    if (!user) {
+      return res.status(400).json(util.helpers.sendError("User not found"));
+    }
+
     if (user.type !== "Carrier") {
       return res
         .status(400)

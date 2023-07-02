@@ -49,6 +49,10 @@ dbs.AircraftAuditLog = require("../models/aircraftAudit")(
   sequelize,
   Sequelizes
 );
+dbs.FlightsOngoing = require("../models/flights_ongoing")(
+  sequelize,
+  Sequelizes
+);
 dbs.PaymentProofs = require("../models/payment_proofs")(sequelize, Sequelizes);
 dbs.ApiKeys = require("../models/api_keys")(sequelize, Sequelizes);
 dbs.Rates = require("../models/rates")(sequelize, Sequelizes);
@@ -198,6 +202,16 @@ dbs.ShipmentInvoives.belongsTo(dbs.ShippingItems, {
 dbs.ShippingItems.hasMany(dbs.ShipmentInvoives, {
   foreignKey: "shipment_id",
   as: "shipment_invoive",
+});
+
+dbs.FlightsOngoing.belongsTo(dbs.ShippingItems, {
+  foreignKey: "scheduleFlight_id",
+  as: "flight_ongoing",
+});
+
+dbs.ShippingItems.hasMany(dbs.FlightsOngoing, {
+  foreignKey: "scheduleFlight_id",
+  as: "flight_ongoing",
 });
 
 dbs.ApiKeys.belongsTo(dbs.Users, {
