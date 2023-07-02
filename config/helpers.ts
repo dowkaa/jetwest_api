@@ -602,7 +602,7 @@ const bookingExpiry = async (option: any) => {
     let shipment = await db.dbs.ShippingItems.findOne({
       where: { shipment_num: option.shipment_num },
     });
-    if (shipment.payment_status !== "SUCCESS") {
+    if (shipment.payment_status !== "success") {
       let total_amount = await db.dbs.ShippingItems.sum("price", {
         where: { shipment_num: option.shipment_num },
       });
@@ -937,7 +937,7 @@ const validateTransaction = async (data: any, type: string) => {
             }
 
             await db.dbs.ShippingItems.update(
-              { payment_status: "SUCCESS" },
+              { payment_status: "success" },
               {
                 where: {
                   reference: data.reference,
@@ -1212,7 +1212,7 @@ const validateTransaction = async (data: any, type: string) => {
             console.log("55555555555555555555555");
 
             await db.dbs.ShippingItems.update(
-              { payment_status: "SUCCESS" },
+              { payment_status: "success" },
               {
                 where: {
                   reference: data.reference,
@@ -1498,7 +1498,7 @@ const validateTransaction = async (data: any, type: string) => {
           console.log("55555555555555555555555");
 
           await db.dbs.ShippingItems.update(
-            { payment_status: "SUCCESS" },
+            { payment_status: "success" },
             {
               where: {
                 reference: data.reference,

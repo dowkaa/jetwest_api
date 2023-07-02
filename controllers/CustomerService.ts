@@ -234,7 +234,7 @@ module.exports = {
           { user_id: { [Op.or]: [user.uuid, user.id] } },
           { company_name: user.company_name },
         ],
-        status: "pending",
+        status: "upcoming",
       },
 
       order: [["id", "DESC"]],

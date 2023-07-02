@@ -44,6 +44,12 @@ const addJob = async (data: any) => {
   // if (arr.length === 1) {
   //   if (Date.parse(arr[0]) - Date.parse(date) <= 7200000) {
   //     item.status = "In progress";
+
+  console.log({
+    talk: Date.parse(arr[0] + " " + item.stod) - Date.now(),
+    arr: arr[0],
+    stod: item.stod,
+  });
   //     await item.save();
   //   }
   //   return;

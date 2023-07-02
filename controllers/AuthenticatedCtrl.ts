@@ -397,10 +397,10 @@ module.exports = {
     }
 
     let user = await db.dbs.Users.findOne({ where: { uuid: req.user.uuid } });
-    
-     if (!user) {
-       return res.status(400).json(util.helpers.sendError("User not found"));
-     }
+
+    if (!user) {
+      return res.status(400).json(util.helpers.sendError("User not found"));
+    }
 
     const {
       items,
@@ -1054,7 +1054,7 @@ module.exports = {
       where: {
         user_id: { [Op.or]: [req.user.uuid, req.user.id] },
         status: "upcoming",
-        payment_status: "SUCCESS",
+        payment_status: "success",
       },
       order: [["id", "DESC"]],
     });
@@ -1308,7 +1308,7 @@ module.exports = {
       where: {
         agent_id: { [Op.or]: [req.user.uuid, req.user.id] },
         status: "upcoming",
-        payment_status: "SUCCESS",
+        payment_status: "success",
       },
       order: [["id", "DESC"]],
     });
