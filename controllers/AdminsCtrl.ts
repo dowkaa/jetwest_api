@@ -1433,6 +1433,7 @@ module.exports = {
 
     flight.atd = atd;
     flight.status = "Almost completed";
+    flight.progress = "in-transit";
     await flight.save();
 
     utill.helpers.updateShipment(flight);
