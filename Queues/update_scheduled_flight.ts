@@ -97,6 +97,9 @@ const addJob = async (data: any) => {
             email: item.email,
             phone_number: item.phone_number,
           });
+        } else {
+          checker.status = "In progress";
+          await checker.save();
         }
       } else {
         arr2.push(arr[i]);

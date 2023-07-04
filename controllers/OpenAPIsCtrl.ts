@@ -146,25 +146,33 @@ module.exports = {
       shipment_num = util.helpers.generateReftId(10);
     }
 
-    let v = await db.dbs.ScheduleFlights.findOne({
-      where: {
-        departure_station: pickup_location,
-        destination_station: destination,
-        stod: stod,
-      },
-    });
+     let schedule = await db.dbs.ScheduleFlights.findOne({
+       where: {
+         departure_station: pickup_location,
+         destination_station: destination,
+         stod: stod,
+       },
+     });
 
-    if (!v) {
-      return res
-        .status(400)
-        .json(
-          util.helpers.sendError(
-            "Flight not available, kindly check up other flights with other stod, or reduce the number of items to be shipped for this flight"
-          )
-        );
-      // if no available flight then save the data to a table for pending luggage and sent mail to admin that will
-    }
+     if (!schedule) {
+       return res
+         .status(400)
+         .json(
+           util.helpers.sendError(
+             "Flight not available, kindly check up other flights with other stod, or reduce the number of items to be shipped for this flight"
+           )
+         );
+       // if no available flight then save the data to a table for pending luggage and sent mail to admin that will
+     }
 
+     let v = await util.helpers.getValue(
+       schedule,
+       user,
+       pickup_location,
+       destination,
+       items
+     );
+    
     if (parseFloat(v.available_capacity) <= 0) {
       return res
         .status(400)

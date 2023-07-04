@@ -572,7 +572,7 @@ module.exports = {
       shipment_num = utill.helpers.generateReftId(10);
     }
 
-    let v = await db.dbs.ScheduleFlights.findOne({
+    let schedule = await db.dbs.ScheduleFlights.findOne({
       where: {
         departure_station: pickup_location,
         destination_station: destination,
@@ -580,16 +580,24 @@ module.exports = {
       },
     });
 
-    if (!v) {
+    if (!schedule) {
       return res
         .status(400)
         .json(
-          utill.helpers.sendError(
+          utility.helpers.sendError(
             "Flight not available, kindly check up other flights with other stod, or reduce the number of items to be shipped for this flight"
           )
         );
       // if no available flight then save the data to a table for pending luggage and sent mail to admin that will
     }
+
+    let v = await utility.helpers.getValue(
+      schedule,
+      user,
+      pickup_location,
+      destination,
+      items
+    );
 
     let arr = JSON.parse(v.departure_date);
 

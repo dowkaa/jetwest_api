@@ -369,6 +369,7 @@ const updateScheduleTotal = async (
     amount: parseFloat(route.air_wayBill_rate),
   });
 };
+
 const parkingListMail = async (shipment_num: string) => {
   let shipments = await db.dbs.ShippingItems.findAll({
     where: { shipment_num: shipment_num },
@@ -1641,17 +1642,40 @@ const addShipmentAndCreditUser = async (
     where: { shipment_num },
   });
 
+
+    let user = await db.dbs.Users.findOne({ where: { uuid: req.user.uuid } });
+
   if (checkShipment) {
     shipment_num = utilities.helpers.generateReftId(10);
   }
 
-  let v = await db.dbs.ScheduleFlights.findOne({
+  let schedule = await db.dbs.ScheduleFlights.findOne({
     where: {
       departure_station: pickup_location,
       destination_station: destination,
       stod: stod,
     },
   });
+
+  if (!schedule) {
+    let resp = {
+      status: 400,
+      message:
+        "Flight not available, kindly check up other flights with other stod, or reduce the number of items to be shipped for this flight",
+    };
+
+    return resp;
+    // if no available flight then save the data to a table for pending luggage and sent mail to admin that will
+  }
+
+  let v = await utilities.helpers.getValue(
+    schedule,
+    user,
+    pickup_location,
+    destination,
+    items
+  );
+
 
   if (!v) {
     let resp = {
@@ -2547,6 +2571,60 @@ const generateReftId = (length: number) => {
   return result;
 };
 
+const getValue = async (
+  schedule: any,
+  user: any,
+  pickup_location: any,
+  destination: any,
+  items: any
+) => {
+  let v;
+  v = await db.dbs.FlightsOngoing.findOne({
+    where: {
+      stod: schedule.stod,
+      departure_station: pickup_location,
+      destination_station: destination,
+      flight_reg: schedule.flight_reg,
+      stoa: schedule.stoa,
+      departure_date: items[0].depature_date,
+    },
+  });
+
+  if (!v) {
+    v = await db.dbs.FlightsOngoing.create({
+      uuid: utilities.uuid(),
+      scheduleFlight_id: schedule.id,
+      user_id: user.id,
+      departure_station: pickup_location,
+      flight_reg: schedule.flight_reg,
+      aircraft_id: schedule.aircraft_id,
+      takeoff_airport: schedule.takeoff_airport,
+      destination_airport: schedule.destination_airport,
+      stod: schedule.stod,
+      stoa: schedule.stoa,
+      logo_url: schedule.logo_url,
+      status: "pending",
+      day: schedule.day,
+      no_of_bags: items.length,
+      duration: schedule.duration,
+      aircraft_owner: schedule.aircraft_owner,
+      scheduled_payload: schedule.scheduled_payload,
+      available_capacity: schedule.available_capacity,
+      arrival_date: schedule.arrival_date,
+      departure_date: items[0].depature_date,
+      all_schedules: schedule.all_schedules,
+      departure_day: schedule.departure_day,
+      destination_station: schedule.destination_station,
+      groundHandler: schedule.groundHandler,
+      schedule_type: schedule.schedule_type,
+      email: schedule.email,
+      phone_number: schedule.phone_number,
+    });
+  }
+
+  return v;
+};
+
 module.exports = {
   sendError,
   checkUserTransaction,
@@ -2563,6 +2641,7 @@ module.exports = {
   logPendingShipment,
   addShipmentAndCreditUser,
   updateInvite,
+  getValue,
   updateShipment,
   logApiTransaction,
   getDatesOnDaysOfWeek,

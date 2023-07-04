@@ -470,7 +470,7 @@ module.exports = {
         );
     }
 
-    let v = await db.dbs.ScheduleFlights.findOne({
+    let schedule = await db.dbs.ScheduleFlights.findOne({
       where: {
         departure_station: pickup_location,
         destination_station: destination,
@@ -478,7 +478,7 @@ module.exports = {
       },
     });
 
-    if (!v) {
+    if (!schedule) {
       return res
         .status(400)
         .json(
@@ -488,6 +488,14 @@ module.exports = {
         );
       // if no available flight then save the data to a table for pending luggage and sent mail to admin that will
     }
+
+    let v = await util.helpers.getValue(
+      schedule,
+      user,
+      pickup_location,
+      destination,
+      items
+    );
 
     if (parseFloat(v.available_capacity) - parseInt(total_weight) < 0) {
       return res
@@ -828,6 +836,7 @@ module.exports = {
       //   }
       // }
     }
+
     util.helpers.updateScheduleTotal(v.uuid, route.uuid, shipment_num);
     v.no_of_bags = parseInt(v.no_of_bags) + items.length;
     await v.save();
