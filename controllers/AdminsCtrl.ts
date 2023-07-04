@@ -4968,7 +4968,7 @@ with note ${note}`,
 
     var completed = await db.dbs.sequelize
       .query(
-        "SELECT schedule_flights.id, schedule_flights.flight_reg, shipping_items.status, shipping_items.createdAt AS shipping_items_createdAt, shipping_items.id AS shipping_items_uuid, schedule_flights.createdAt as schedule_flights_createdAt, schedule_flights.id AS schedule_flights_uuid, shipping_items.depature_date, shipping_items.shipperName, schedule_flights.destination_airport, schedule_flights.takeoff_airport, schedule_flights.departure_station, schedule_flights.destination_station,schedule_flights.stoa, schedule_flights.stod, schedule_flights.taw, shipping_items.no_of_bags FROM `schedule_flights`, shipping_items WHERE schedule_flights.uuid=:uuid AND shipping_items.booking_reference=:shipment_ref AND shipping_items.depature_date=:date;",
+        "SELECT flights_ongoing.id, flights_ongoing.flight_reg, shipping_items.status, shipping_items.createdAt AS shipping_items_createdAt, shipping_items.id AS shipping_items_uuid, flights_ongoing.createdAt as schedule_flights_createdAt, flights_ongoing.id AS schedule_flights_uuid, shipping_items.depature_date, shipping_items.shipperName, flights_ongoing.destination_airport, flights_ongoing.takeoff_airport, flights_ongoing.departure_station, flights_ongoing.destination_station, flights_ongoing.stoa, flights_ongoing.stod, flights_ongoing.taw, shipping_items.no_of_bags FROM `flights_ongoing`, shipping_items WHERE flights_ongoing.uuid=:uuid AND shipping_items.booking_reference=:shipment_ref AND shipping_items.depature_date=:date;",
         {
           replacements: {
             uuid: flight_id,
