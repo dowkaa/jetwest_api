@@ -22,7 +22,7 @@ queue.process(async (job: any) => {
 
 const options = {
   delay: 100,
-  attempts: 1,
+  attempts: 3,
 };
 
 const processJob = async (data: any) => {
@@ -80,6 +80,7 @@ const addJob = async (data: any) => {
             stod: item.stod,
             stoa: item.stoa,
             logo_url: item.logo_url,
+            no_of_bags: item.no_of_bags,
             status: "In progress",
             day: item.day,
             duration: item.duration,
