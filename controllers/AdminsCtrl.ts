@@ -4692,78 +4692,80 @@ with note ${note}`,
 
     let allLogistics: any = [];
 
-    var completed = await db.dbs.sequelize
-      .query(
-        "SELECT schedule_flights.id, schedule_flights.flight_reg, schedule_flights.createdAt as schedule_flights_createdAt, schedule_flights.uuid AS schedule_flights_uuid, schedule_flights.departure_date, schedule_flights.load_count, schedule_flights.all_schedules, schedule_flights.offload_count, schedule_flights.destination_airport, schedule_flights.takeoff_airport, schedule_flights.status, schedule_flights.departure_station, schedule_flights.destination_station,schedule_flights.stoa, schedule_flights.stod, schedule_flights.taw, schedule_flights.no_of_bags FROM `schedule_flights` WHERE schedule_flights.takeoff_airport=:airport  ORDER BY `schedule_flights`.`createdAt` DESC limit :limit offset :offset;",
-        {
-          replacements: {
-            limit: limit,
-            offset: offset,
-            airport: airport,
-          }, // schedule_flights.takeoff_airport=:airport
-          type: QueryTypes.SELECT,
-        }
-      )
-      .then((objs: any) => {
-        objs.forEach((obj: any) => {
-          var id = obj.id;
-          var flight_reg = obj.flight_reg;
-          var destination_airport = obj.destination_airport;
-          var takeoff_airport = obj.takeoff_airport;
-          var schedule_flights_uuid = obj.schedule_flights_uuid;
-          var departure_date = obj.departure_date;
-          var departure_station = obj.departure_station;
-          var destination_station = obj.destination_station;
-          var stoa = obj.stoa;
-          var load_count = obj.load_count;
-          var offload_count = obj.offload_count;
-          var all_schedules = obj.all_schedules;
-          var stod = obj.stod;
-          var taw = obj.taw;
-          var no_of_bags = obj.no_of_bags;
-          var status = obj.status;
-          var schedule_flights_createdAt = obj.schedule_flights_createdAt;
+    // var completed = await db.dbs.sequelize
+    //   .query(
+    //     "SELECT schedule_flights.id, schedule_flights.flight_reg, schedule_flights.createdAt as schedule_flights_createdAt, schedule_flights.uuid AS schedule_flights_uuid, schedule_flights.departure_date, schedule_flights.load_count, schedule_flights.all_schedules, schedule_flights.offload_count, schedule_flights.destination_airport, schedule_flights.takeoff_airport, schedule_flights.status, schedule_flights.departure_station, schedule_flights.destination_station,schedule_flights.stoa, schedule_flights.stod, schedule_flights.taw, schedule_flights.no_of_bags FROM `schedule_flights` WHERE schedule_flights.takeoff_airport=:airport  ORDER BY `schedule_flights`.`createdAt` DESC limit :limit offset :offset;",
+    //     {
+    //       replacements: {
+    //         limit: limit,
+    //         offset: offset,
+    //         airport: airport,
+    //       }, // schedule_flights.takeoff_airport=:airport
+    //       type: QueryTypes.SELECT,
+    //     }
+    //   )
+    //   .then((objs: any) => {
+    //     objs.forEach((obj: any) => {
+    //       var id = obj.id;
+    //       var flight_reg = obj.flight_reg;
+    //       var destination_airport = obj.destination_airport;
+    //       var takeoff_airport = obj.takeoff_airport;
+    //       var schedule_flights_uuid = obj.schedule_flights_uuid;
+    //       var departure_date = obj.departure_date;
+    //       var departure_station = obj.departure_station;
+    //       var destination_station = obj.destination_station;
+    //       var stoa = obj.stoa;
+    //       var load_count = obj.load_count;
+    //       var offload_count = obj.offload_count;
+    //       var all_schedules = obj.all_schedules;
+    //       var stod = obj.stod;
+    //       var taw = obj.taw;
+    //       var no_of_bags = obj.no_of_bags;
+    //       var status = obj.status;
+    //       var schedule_flights_createdAt = obj.schedule_flights_createdAt;
 
-          allLogistics.push({
-            id,
-            flight_reg,
-            schedule_flights_uuid,
-            departure_date: all_schedules,
-            load_count,
-            offload_count,
-            takeoff_airport,
-            destination_airport,
-            departure_station,
-            destination_station,
-            status,
-            stoa,
-            stod,
-            taw,
-            no_of_bags,
-            schedule_flights_createdAt,
-          });
-        });
-      });
+    //       allLogistics.push({
+    //         id,
+    //         flight_reg,
+    //         schedule_flights_uuid,
+    //         departure_date: all_schedules,
+    //         load_count,
+    //         offload_count,
+    //         takeoff_airport,
+    //         destination_airport,
+    //         departure_station,
+    //         destination_station,
+    //         status,
+    //         stoa,
+    //         stod,
+    //         taw,
+    //         no_of_bags,
+    //         schedule_flights_createdAt,
+    //       });
+    //     });
+    //   });
+
+    let allOutgoingLogistics = await db.dbs.FlightsOngoing.findAndCountAll({
+      offset: offset,
+      limit: limit,
+      where: { takeoff_airport: airport },
+      order: [["id", "DESC"]],
+    });
 
     const meta = paginate(
       currentPage,
-      allLogistics.length,
-      allLogistics,
+      allOutgoingLogistics.count,
+      allOutgoingLogistics.rows,
       pageSize
     );
 
-    let data = {
-      count: allLogistics.length,
-      rows: allLogistics,
-    };
-
     return res.status(200).json({
       status: "SUCCESS",
-      data: data,
+      data: allOutgoingLogistics,
       per_page: pageSize,
       current_page: currentPage,
       last_page: meta.pageCount, //transactions.count,
-      first_page_url: `/api/jetwest/admin/all_incoming_logistics?pageNum=1&airport=${airport}`,
+      first_page_url: `/api/jetwest/admin/all_outgoing_logistics?pageNum=1&airport=${airport}`,
       last_page_url: `/api/jetwest/transactions/all_outgoing_logistics?pageNum=${meta.pageCount}&airport=${airport}`, //transactions.count,
       next_page_url: nextP,
       prev_page_url: prevP,
@@ -4819,81 +4821,76 @@ with note ${note}`,
 
     // SELECT schedule_flights.id, schedule_flights.flight_reg, shipping_items.status, shipping_items.createdAt AS shipping_items_createdAt, shipping_items.uuid AS shipping_items_uuid, schedule_flights.createdAt as schedule_flights_createdAt, schedule_flights.uuid AS schedule_flights_uuid, schedule_flights.departure_date, schedule_flights.load_count, schedule_flights.offload_count, schedule_flights.destination_airport, schedule_flights.takeoff_airport, schedule_flights.departure_station, schedule_flights.destination_station,schedule_flights.stoa, schedule_flights.stod, schedule_flights.taw, shipping_items.no_of_bags FROM `schedule_flights`, shipping_items WHERE shipping_items.flight_id = schedule_flights.uuid AND schedule_flights.destination_airport=:airport  ORDER BY `schedule_flights`.`createdAt` DESC limit :limit offset :offset;
 
-    var completed = await db.dbs.sequelize
-      .query(
-        "SELECT schedule_flights.id, schedule_flights.flight_reg, schedule_flights.createdAt as schedule_flights_createdAt, schedule_flights.uuid AS schedule_flights_uuid, schedule_flights.departure_date, schedule_flights.load_count, schedule_flights.all_schedules, schedule_flights.offload_count, schedule_flights.destination_airport, schedule_flights.takeoff_airport, schedule_flights.status, schedule_flights.departure_station, schedule_flights.destination_station,schedule_flights.stoa, schedule_flights.stod, schedule_flights.taw, schedule_flights.no_of_bags FROM `schedule_flights` WHERE schedule_flights.destination_airport=:airport  ORDER BY `schedule_flights`.`createdAt` DESC limit :limit offset :offset;",
-        {
-          replacements: {
-            limit: limit,
-            offset: offset,
-            airport: airport,
-          },
-          type: QueryTypes.SELECT,
-        }
-      )
-      .then((objs: any) => {
-        objs.forEach((obj: any) => {
-          var id = obj.id;
-          var flight_reg = obj.flight_reg;
-          var destination_airport = obj.destination_airport;
-          var takeoff_airport = obj.takeoff_airport;
-          var schedule_flights_uuid = obj.schedule_flights_uuid;
-          var all_schedules = obj.all_schedules;
-          var departure_date = obj.departure_date;
-          var departure_station = obj.departure_station;
-          var destination_station = obj.destination_station;
-          var stoa = obj.stoa;
-          var load_count = obj.load_count;
-          var offload_count = obj.offload_count;
-          var stod = obj.stod;
-          var taw = obj.taw;
-          var no_of_bags = obj.no_of_bags;
-          var status = obj.status;
-          var schedule_flights_createdAt = obj.schedule_flights_createdAt;
+    // var completed = await db.dbs.sequelize
+    //   .query(
+    //     "SELECT schedule_flights.id, schedule_flights.flight_reg, schedule_flights.createdAt as schedule_flights_createdAt, schedule_flights.uuid AS schedule_flights_uuid, schedule_flights.departure_date, schedule_flights.load_count, schedule_flights.all_schedules, schedule_flights.offload_count, schedule_flights.destination_airport, schedule_flights.takeoff_airport, schedule_flights.status, schedule_flights.departure_station, schedule_flights.destination_station,schedule_flights.stoa, schedule_flights.stod, schedule_flights.taw, schedule_flights.no_of_bags FROM `schedule_flights` WHERE schedule_flights.destination_airport=:airport  ORDER BY `schedule_flights`.`createdAt` DESC limit :limit offset :offset;",
+    //     {
+    //       replacements: {
+    //         limit: limit,
+    //         offset: offset,
+    //         airport: airport,
+    //       },
+    //       type: QueryTypes.SELECT,
+    //     }
+    //   )
+    //   .then((objs: any) => {
+    //     objs.forEach((obj: any) => {
+    //       var id = obj.id;
+    //       var flight_reg = obj.flight_reg;
+    //       var destination_airport = obj.destination_airport;
+    //       var takeoff_airport = obj.takeoff_airport;
+    //       var schedule_flights_uuid = obj.schedule_flights_uuid;
+    //       var all_schedules = obj.all_schedules;
+    //       var departure_date = obj.departure_date;
+    //       var departure_station = obj.departure_station;
+    //       var destination_station = obj.destination_station;
+    //       var stoa = obj.stoa;
+    //       var load_count = obj.load_count;
+    //       var offload_count = obj.offload_count;
+    //       var stod = obj.stod;
+    //       var taw = obj.taw;
+    //       var no_of_bags = obj.no_of_bags;
+    //       var status = obj.status;
+    //       var schedule_flights_createdAt = obj.schedule_flights_createdAt;
 
-          allLogistics.push({
-            id,
-            flight_reg,
-            schedule_flights_uuid,
-            departure_date: all_schedules,
-            load_count,
-            offload_count,
-            takeoff_airport,
-            destination_airport,
-            departure_station,
-            destination_station,
-            status,
-            stoa,
-            stod,
-            taw,
-            no_of_bags,
-            schedule_flights_createdAt,
-          });
-        });
-      });
+    //       allLogistics.push({
+    //         id,
+    //         flight_reg,
+    //         schedule_flights_uuid,
+    //         departure_date: all_schedules,
+    //         load_count,
+    //         offload_count,
+    //         takeoff_airport,
+    //         destination_airport,
+    //         departure_station,
+    //         destination_station,
+    //         status,
+    //         stoa,
+    //         stod,
+    //         taw,
+    //         no_of_bags,
+    //         schedule_flights_createdAt,
+    //       });
+    //     });
+    //   });
+
+    let allIncomingLogistics = await db.dbs.FlightsOngoing.findAndCountAll({
+      offset: offset,
+      limit: limit,
+      where: { destination_airport: airport },
+      order: [["id", "DESC"]],
+    });
 
     const meta = paginate(
       currentPage,
-      allLogistics.length,
-      allLogistics,
+      allIncomingLogistics.count,
+      allIncomingLogistics.rows,
       pageSize
     );
 
-    // const meta = paginate(
-    //   currentPage,
-    //   allShipments.count,
-    //   allShipments.rows,
-    //   pageSize
-    // );
-
-    let data = {
-      count: allLogistics.length,
-      rows: allLogistics,
-    };
-
     return res.status(200).json({
       status: "SUCCESS",
-      data: data,
+      data: allIncomingLogistics,
       per_page: pageSize,
       current_page: currentPage,
       last_page: meta.pageCount, //transactions.count,
@@ -5058,6 +5055,9 @@ with note ${note}`,
           status.status = "enroute";
           flight_ongoing.status = "enroute";
           flight_ongoing.progress = "loaded";
+          v.status = "enroute";
+          v.progress = "loaded";
+          flight_ongoing.load_count = parseInt(v.load_count) + 1;
           v.load_count = parseInt(v.load_count) + 1;
           await v.save();
           await flight_ongoing.save();
@@ -5118,6 +5118,9 @@ with note ${note}`,
 
           status.progress = "landed";
           flight_ongoing.progress = "landed";
+          v.status = "enroute";
+          v.progress = "loaded";
+          flight_ongoing.load_count = parseInt(v.load_count) + 1;
           v.offload_count = parseInt(v.offload_count) + 1;
           await v.save();
           flight_ongoing.save();
