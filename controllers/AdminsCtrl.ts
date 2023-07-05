@@ -1360,7 +1360,7 @@ module.exports = {
     if (checker) {
       flights = utill.appCache.get("all-pending-flights-pageNum=" + pageNum);
     } else {
-      flights = await db.dbs.ScheduleFlights.findAndCountAll({
+      flights = await db.dbs.FlightsOngoing.findAndCountAll({
         offset: offset,
         limit: limit,
         where: { status: "pending" },
