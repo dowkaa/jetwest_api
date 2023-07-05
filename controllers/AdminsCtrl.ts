@@ -4959,7 +4959,7 @@ with note ${note}`,
         );
     }
 
-    if (v.departure_date === date) {
+    if (flight_ongoing.departure_date !== date) {
       return res
         .status(400)
         .json(utill.helpers.sendError("Departure date not found on schedule"));
