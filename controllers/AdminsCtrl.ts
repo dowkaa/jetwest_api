@@ -5030,7 +5030,7 @@ with note ${note}`,
       });
 
       //  console.log({ departure, destination });
-      if (status.is_scanned === 0) {
+      if (parseInt(status.is_scanned) === 0) {
         if (scan_type === "load") {
           if (parseInt(v.load_count) === parseInt(v.no_of_bags)) {
             return res
@@ -5096,6 +5096,14 @@ with note ${note}`,
               .toString()
               .replace("000Z", ""),
           });
+
+          return res
+            .status(200)
+            .json(
+              utill.helpers.sendSuccess(
+                `successfully loaded bag into aircraft with flight number ${allLogistics[0].flight_reg}`
+              )
+            );
         } else if (scan_type === "offload") {
           if (parseInt(v.offload_count) === parseInt(v.no_of_bags)) {
             return res
