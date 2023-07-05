@@ -649,9 +649,9 @@ module.exports = {
         );
     }
 
-    let arr = JSON.parse(v.departure_date);
+   // let arr = JSON.parse(v.departure_date);
 
-    if (!arr.includes(items[0].depature_date)) {
+    if (v.departure_date !== items[0].depature_date) {
       return res
         .status(400)
         .json(

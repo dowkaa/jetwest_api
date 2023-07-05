@@ -353,7 +353,7 @@ const updateScheduleTotal = async (
     where: { uuid: route_id },
   });
 
-  let v = await db.dbs.ScheduleFlights.findOne({
+  let v = await db.dbs.FlightsOngoing.findOne({
     where: {
       uuid: schedule_uuid,
     },
@@ -1642,8 +1642,7 @@ const addShipmentAndCreditUser = async (
     where: { shipment_num },
   });
 
-
-    let user = await db.dbs.Users.findOne({ where: { uuid: req.user.uuid } });
+  let user = await db.dbs.Users.findOne({ where: { uuid: req.user.uuid } });
 
   if (checkShipment) {
     shipment_num = utilities.helpers.generateReftId(10);
@@ -1676,7 +1675,6 @@ const addShipmentAndCreditUser = async (
     items
   );
 
-
   if (!v) {
     let resp = {
       status: 400,
@@ -1688,9 +1686,9 @@ const addShipmentAndCreditUser = async (
     // if no available flight then save the data to a table for pending luggage and sent mail to admin that will
   }
 
-  let arr = JSON.parse(v.departure_date);
+  // let arr = JSON.parse(v.departure_date);
 
-  if (!arr.includes(items[0].depature_date)) {
+  if (v.departure_date !== items[0].depature_date) {
     let resp = {
       status: 400,
       message: `Scheduled flight not available for the departure date entered kindly reschedule for another departure date`,
@@ -2067,6 +2065,7 @@ const logPendingShipment = async (req: any, res: Response, item: any) => {
       return resp;
     }
   }
+  let user = await db.dbs.Users.findOne({ where: { uuid: req.user.uuid } });
 
   let checkShipment = await db.dbs.ShippingItems.findOne({
     where: { shipment_num },
@@ -2076,7 +2075,7 @@ const logPendingShipment = async (req: any, res: Response, item: any) => {
     shipment_num = utilities.helpers.generateReftId(10);
   }
 
-  let v = await db.dbs.ScheduleFlights.findOne({
+  let schedule = await db.dbs.ScheduleFlights.findOne({
     where: {
       departure_station: pickup_location,
       destination_station: destination,
@@ -2084,19 +2083,28 @@ const logPendingShipment = async (req: any, res: Response, item: any) => {
     },
   });
 
-  if (!v) {
+  if (!schedule) {
     let resp = {
       status: 400,
       message:
         "Flight not available, kindly check up other flights with other stod, or reduce the number of items to be shipped for this flight",
     };
+
     return resp;
     // if no available flight then save the data to a table for pending luggage and sent mail to admin that will
   }
 
-  let arr = JSON.parse(v.departure_date);
+  let v = await utilities.helpers.getValue(
+    schedule,
+    user,
+    pickup_location,
+    destination,
+    items
+  );
 
-  if (!arr.includes(items[0].depature_date)) {
+  // let arr = JSON.parse(v.departure_date);
+
+  if (v.departure_date !== items[0].depature_date) {
     let resp = {
       status: 400,
       message: `Scheduled flight not available for the departure date entered kindly reschedule for another departure date`,
@@ -2578,6 +2586,7 @@ const getValue = async (
   destination: any,
   items: any
 ) => {
+
   let v;
   v = await db.dbs.FlightsOngoing.findOne({
     where: {
@@ -2609,7 +2618,7 @@ const getValue = async (
       duration: schedule.duration,
       aircraft_owner: schedule.aircraft_owner,
       scheduled_payload: schedule.scheduled_payload,
-      available_capacity: schedule.available_capacity,
+      available_capacity: schedule.scheduled_payload,
       arrival_date: schedule.arrival_date,
       departure_date: items[0].depature_date,
       all_schedules: schedule.all_schedules,

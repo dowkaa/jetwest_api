@@ -584,14 +584,14 @@ module.exports = {
       return res
         .status(400)
         .json(
-          utility.helpers.sendError(
+          utill.helpers.sendError(
             "Flight not available, kindly check up other flights with other stod, or reduce the number of items to be shipped for this flight"
           )
         );
       // if no available flight then save the data to a table for pending luggage and sent mail to admin that will
     }
 
-    let v = await utility.helpers.getValue(
+    let v = await utill.helpers.getValue(
       schedule,
       user,
       pickup_location,
@@ -599,9 +599,9 @@ module.exports = {
       items
     );
 
-    let arr = JSON.parse(v.departure_date);
+    // let arr = JSON.parse(v.departure_date);
 
-    if (!arr.includes(items[0].depature_date)) {
+    if (v.departure_date !== items[0].depature_date) {
       return res
         .status(400)
         .json(
