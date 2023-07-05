@@ -4939,16 +4939,16 @@ with note ${note}`,
         .json(utill.helpers.sendError("Shipment not found"));
     }
 
-    let v = await db.dbs.ScheduleFlights.findOne({
-      where: { [Op.or]: { uuid: status.flight_id, id: status.flight_id } },
+    let flight_ongoing = await db.dbs.FlightsOngoing.findOne({
+      where: { uuid: flight_id },
     });
 
-    if (!v) {
+    if (!flight_ongoing) {
       return res.status(400).json(utill.helpers.sendError("flight not found"));
     }
 
-    let flight_ongoing = await db.dbs.FlightsOngoing.findOne({
-      where: { scheduleFlight_id: v.id },
+    let v = await db.dbs.ScheduleFlights.findOne({
+      where: { id: flight_ongoing.scheduleFlight_id },
     });
 
     if (v.status === "Almost completed") {
