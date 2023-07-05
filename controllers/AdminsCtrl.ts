@@ -5032,7 +5032,10 @@ with note ${note}`,
       //  console.log({ departure, destination });
       if (parseInt(status.is_scanned) === 0) {
         if (scan_type === "load") {
-          if (parseInt(v.load_count) === parseInt(v.no_of_bags)) {
+          if (
+            parseInt(flight_ongoing.load_count) ===
+            parseInt(flight_ongoing.no_of_bags)
+          ) {
             return res
               .status(400)
               .json(
@@ -5058,7 +5061,7 @@ with note ${note}`,
           flight_ongoing.progress = "loaded";
           v.status = "enroute";
           v.progress = "loaded";
-          flight_ongoing.load_count = parseInt(v.load_count) + 1;
+          flight_ongoing.load_count = parseInt(flight_ongoing.load_count) + 1;
           v.load_count = parseInt(v.load_count) + 1;
           await v.save();
           await flight_ongoing.save();
@@ -5105,7 +5108,10 @@ with note ${note}`,
               )
             );
         } else if (scan_type === "offload") {
-          if (parseInt(v.offload_count) === parseInt(v.no_of_bags)) {
+          if (
+            parseInt(flight_ongoing.offload_count) ===
+            parseInt(flight_ongoing.no_of_bags)
+          ) {
             return res
               .status(400)
               .json(
@@ -5130,7 +5136,8 @@ with note ${note}`,
           v.status = "enroute";
           v.progress = "loaded";
           status.is_scanned = 2;
-          flight_ongoing.load_count = parseInt(v.load_count) + 1;
+          flight_ongoing.offload_count =
+            parseInt(flight_ongoing.offload_count) + 1;
           v.offload_count = parseInt(v.offload_count) + 1;
           await v.save();
           flight_ongoing.save();
