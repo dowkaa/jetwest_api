@@ -4749,7 +4749,7 @@ with note ${note}`,
       offset: offset,
       limit: limit,
       where: { takeoff_airport: airport },
-      order: [["departure_date", "DESC"]],
+      order: [["departure_date", "ASC"]],
     });
 
     const meta = paginate(
@@ -4878,7 +4878,7 @@ with note ${note}`,
       offset: offset,
       limit: limit,
       where: { destination_airport: airport },
-      order: [["departure_date", "DESC"]],
+      order: [["departure_date", "ASC"]],
     });
 
     const meta = paginate(
