@@ -5030,7 +5030,7 @@ with note ${note}`,
       });
 
       //  console.log({ departure, destination });
-      if (status) {
+      if (status.is_scanned === 0) {
         if (scan_type === "load") {
           if (parseInt(v.load_count) === parseInt(v.no_of_bags)) {
             return res
@@ -5053,6 +5053,7 @@ with note ${note}`,
 
           status.progress = "loaded";
           status.status = "enroute";
+          status.is_scanned = 1;
           flight_ongoing.status = "enroute";
           flight_ongoing.progress = "loaded";
           v.status = "enroute";
@@ -5120,6 +5121,7 @@ with note ${note}`,
           flight_ongoing.progress = "landed";
           v.status = "enroute";
           v.progress = "loaded";
+          status.is_scanned = 2;
           flight_ongoing.load_count = parseInt(v.load_count) + 1;
           v.offload_count = parseInt(v.offload_count) + 1;
           await v.save();
@@ -5259,15 +5261,16 @@ with note ${note}`,
         //       .replace("000Z", ""),
         //   });
         // }
+      } else {
+        utill.appCache.flushAll();
+        return res
+          .status(200)
+          .json(
+            utill.helpers.sendSuccess(
+              `Bag with reference number ${refId} has been loaded on the plane with flight number ${allLogistics[0].flight_reg} successfully`
+            )
+          );
       }
-      utill.appCache.flushAll();
-      return res
-        .status(200)
-        .json(
-          utill.helpers.sendSuccess(
-            `Bag with reference number ${refId} has been loaded on the plane with flight number ${allLogistics[0].flight_reg} successfully`
-          )
-        );
     }
 
     return res
