@@ -5077,11 +5077,8 @@ with note ${note}`,
         status.is_scanned = 1;
         flight_ongoing.status = "enroute";
         flight_ongoing.progress = "loaded";
-        v.status = "enroute";
-        v.progress = "loaded";
+        // v.status = "enroute";
         flight_ongoing.load_count = parseInt(flight_ongoing.load_count) + 1;
-        v.load_count = parseInt(v.load_count) + 1;
-        await v.save();
         await flight_ongoing.save();
         await status.save();
 
@@ -5151,13 +5148,9 @@ with note ${note}`,
 
         status.progress = "landed";
         flight_ongoing.progress = "landed";
-        v.status = "enroute";
-        v.progress = "loaded";
         status.is_scanned = 2;
         flight_ongoing.offload_count =
           parseInt(flight_ongoing.offload_count) + 1;
-        v.offload_count = parseInt(v.offload_count) + 1;
-        await v.save();
         flight_ongoing.save();
         await status.save();
 
