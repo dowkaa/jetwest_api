@@ -73,6 +73,7 @@ const addShipment = async (
     content,
     invoice_url,
   } = item;
+
   if (shipment_model === "direct") {
     if (agent_id) {
       let agent = await db.dbs.Users.findOne({ where: { uuid: agent_id } });
@@ -1998,8 +1999,8 @@ const addShipmentAndCreditUser = async (
     //   status: "success",
     // });
 
-     v.no_of_bags = parseInt(v.no_of_bags) + 1;
-     await v.save();
+    v.no_of_bags = parseInt(v.no_of_bags) + 1;
+    await v.save();
   }
   utilities.helpers.updateScheduleTotal(v.uuid, route.uuid);
   let amount = total_amount;
@@ -2012,8 +2013,6 @@ const addShipmentAndCreditUser = async (
     `On credit Payment for shipment with no ${shipment_num} of the sum of ${total_amount} to be deducted upon next wallet deposit`,
     items
   );
-
- 
 
   // log shipment price to shipper's wallet as amount owed
   let userWallet = await db.dbs.Wallets.findOne({

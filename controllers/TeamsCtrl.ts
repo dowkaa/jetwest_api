@@ -467,11 +467,7 @@ module.exports = {
     return res.status(200).json({ shipment });
   },
 
-  bookShipment: async (
-    req: any,
-    res: Response,
-    next: NextFunction
-  ): Promise<Response> => {
+  bookShipment: async (req: any, res: Response, next: NextFunction) => {
     const itemSchema = utill.Joi.object()
       .keys({
         items: utill.Joi.array().required(),
@@ -761,12 +757,64 @@ module.exports = {
                 "Cannot book shipment aircraft capacity not enough"
               )
             );
+        } else {
+          v.available_capacity =
+            parseFloat(v.available_capacity) - parseFloat(weight);
+          v.totalAmount = parseFloat(v.totalAmount) + price;
+          v.taw = parseFloat(v.taw) + parseFloat(weight);
+          await v.save();
+
+          let shipment_model = "team booking";
+
+          utill.helpers.addShipment(
+            req,
+            price,
+            item,
+            v,
+            route,
+            insurance,
+            chargeable_weight,
+            shipment_num,
+            cargo,
+            scan_code,
+            volumetric_weight,
+            shipment_model,
+            user,
+            null,
+            null,
+            null
+          );
+
+          let Flights = await db.dbs.FlightsOngoing.findOne({
+            where: { id: v.id },
+          });
+          console.log({ Flights, length: items.length });
+          Flights.no_of_bags = parseInt(Flights.no_of_bags) + items.length;
+          await Flights.save();
+          utill.helpers.updateScheduleTotal(v.uuid, route.uuid, shipment_num);
+          // v.no_of_bags = parseInt(v.no_of_bags) + items.length;
+          // await v.save();
+
+          const option = {
+            reference: payment_ref,
+            shipment_num,
+            id: req.user.id,
+            company_name: req.user.company_name,
+            customer_id: req.user.customer_id,
+            route_id: route.uuid,
+          };
+
+          utill.helpers.validateTransaction(option, "team");
+
+          // if (status) {
+          return res
+            .status(200)
+            .json(
+              utill.helpers.sendSuccess(
+                "Shipment booked successfully, the Dowkaa team would reach out to you soon."
+              )
+            );
         }
-        v.available_capacity =
-          parseFloat(v.available_capacity) - parseFloat(weight);
-        v.totalAmount = parseFloat(v.totalAmount) + price;
-        v.taw = parseFloat(v.taw) + parseFloat(weight);
-        await v.save();
       } else {
         if (parseFloat(v.available_capacity) - volumetric_weight < 0) {
           return res
@@ -776,59 +824,68 @@ module.exports = {
                 "Cannot book shipment aircraft capacity not enough"
               )
             );
+        } else {
+          v.available_capacity =
+            parseFloat(v.available_capacity) - parseFloat(weight);
+          v.taw = parseFloat(v.taw) + parseFloat(weight);
+          v.totalAmount = parseFloat(v.totalAmount) + price;
+          await v.save();
+
+          let shipment_model = "team booking";
+
+          utill.helpers.addShipment(
+            req,
+            price,
+            item,
+            v,
+            route,
+            insurance,
+            chargeable_weight,
+            shipment_num,
+            cargo,
+            scan_code,
+            volumetric_weight,
+            shipment_model,
+            user,
+            null,
+            null,
+            null
+          );
+
+          let Flights = await db.dbs.FlightsOngoing.findOne({
+            where: { id: v.id },
+          });
+          console.log({ Flights, length: items.length });
+          Flights.no_of_bags = parseInt(Flights.no_of_bags) + items.length;
+          await Flights.save();
+          utill.helpers.updateScheduleTotal(v.uuid, route.uuid, shipment_num);
+          // v.no_of_bags = parseInt(v.no_of_bags) + items.length;
+          // await v.save();
+
+          const option = {
+            reference: payment_ref,
+            shipment_num,
+            id: req.user.id,
+            company_name: req.user.company_name,
+            customer_id: req.user.customer_id,
+            route_id: route.uuid,
+          };
+
+          utill.helpers.validateTransaction(option, "team");
+
+          // if (status) {
+          return res
+            .status(200)
+            .json(
+              utill.helpers.sendSuccess(
+                "Shipment booked successfully, the Dowkaa team would reach out to you soon."
+              )
+            );
         }
-        v.available_capacity =
-          parseFloat(v.available_capacity) - parseFloat(weight);
-        v.taw = parseFloat(v.taw) + parseFloat(weight);
-        v.totalAmount = parseFloat(v.totalAmount) + price;
-        await v.save();
       }
-      let shipment_model = "team booking";
 
-      utill.helpers.addShipment(
-        req,
-        price,
-        item,
-        v,
-        route,
-        insurance,
-        chargeable_weight,
-        shipment_num,
-        cargo,
-        scan_code,
-        volumetric_weight,
-        shipment_model,
-        user,
-        null,
-        null,
-        null
-      );
-
-     v.no_of_bags = parseInt(v.no_of_bags) + 1;
-     await v.save();
+      //  v.no_of_bags = parseInt(v.no_of_bags) + 1;
+      //  await v.save();
     }
-    utill.helpers.updateScheduleTotal(v.uuid, route.uuid, shipment_num);
-    // v.no_of_bags = parseInt(v.no_of_bags) + items.length;
-    // await v.save();
-
-    const option = {
-      reference: payment_ref,
-      shipment_num,
-      id: req.user.id,
-      company_name: req.user.company_name,
-      customer_id: req.user.customer_id,
-      route_id: route.uuid,
-    };
-
-    utill.helpers.validateTransaction(option, "team");
-
-    // if (status) {
-    return res
-      .status(200)
-      .json(
-        utill.helpers.sendSuccess(
-          "Shipment booked successfully, the Dowkaa team would reach out to you soon."
-        )
-      );
   },
 };

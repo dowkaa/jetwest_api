@@ -377,12 +377,60 @@ module.exports = {
                 "Cannot book shipment aircraft capacity not enough"
               )
             );
+        } else {
+          v.available_capacity =
+            parseFloat(v.available_capacity) - parseFloat(weight);
+          v.totalAmount = parseFloat(v.totalAmount) + price;
+          v.taw = parseFloat(v.taw) + parseFloat(weight);
+          await v.save();
+
+          let shipment_model = "direct";
+
+          util.helpers.addShipment(
+            req,
+            price,
+            item,
+            v,
+            route,
+            insurance,
+            chargeable_weight,
+            shipment_num,
+            cargo,
+            scan_code,
+            volumetric_weight,
+            shipment_model,
+            user,
+            address,
+            country,
+            sender_organisation
+          );
+
+          let Flights = await db.dbs.FlightsOngoing.findOne({
+            where: { id: v.id },
+          });
+          console.log({ Flights, length: items.length });
+          Flights.no_of_bags = parseInt(Flights.no_of_bags) + items.length;
+          await Flights.save();
+          util.helpers.updateScheduleTotal(v.uuid, route.uuid, shipment_num);
+
+          // v.no_of_bags = parseInt(v.no_of_bags) + items.length;
+          // await v.save();
+
+          const option = {
+            shipment_num,
+          };
+
+          util.helpers.bookingExpiry(option);
+
+          // if (status) {
+          return res.status(200).json(
+            util.helpers.sendSuccess({
+              message:
+                "Shipment booked successfully, kindly proceed to make payment as booked shipment would expire after 30 minutes.",
+              shipment_num,
+            })
+          );
         }
-        v.available_capacity =
-          parseFloat(v.available_capacity) - parseFloat(weight);
-        v.totalAmount = parseFloat(v.totalAmount) + price;
-        v.taw = parseFloat(v.taw) + parseFloat(weight);
-        await v.save();
       } else {
         if (parseFloat(v.available_capacity) - volumetric_weight < 0) {
           return res
@@ -392,58 +440,63 @@ module.exports = {
                 "Cannot book shipment aircraft capacity not enough"
               )
             );
+        } else {
+          v.available_capacity =
+            parseFloat(v.available_capacity) - parseFloat(weight);
+          v.taw = parseFloat(v.taw) + parseFloat(weight);
+          v.totalAmount = parseFloat(v.totalAmount) + price;
+          await v.save();
+
+          let shipment_model = "direct";
+
+          util.helpers.addShipment(
+            req,
+            price,
+            item,
+            v,
+            route,
+            insurance,
+            chargeable_weight,
+            shipment_num,
+            cargo,
+            scan_code,
+            volumetric_weight,
+            shipment_model,
+            user,
+            address,
+            country,
+            sender_organisation
+          );
+
+          let Flights = await db.dbs.FlightsOngoing.findOne({
+            where: { id: v.id },
+          });
+          console.log({ Flights, length: items.length });
+          Flights.no_of_bags = parseInt(Flights.no_of_bags) + items.length;
+          await Flights.save();
+          util.helpers.updateScheduleTotal(v.uuid, route.uuid, shipment_num);
+
+          // v.no_of_bags = parseInt(v.no_of_bags) + items.length;
+          // await v.save();
+
+          const option = {
+            shipment_num,
+          };
+
+          util.helpers.bookingExpiry(option);
+
+          // if (status) {
+          return res.status(200).json(
+            util.helpers.sendSuccess({
+              message:
+                "Shipment booked successfully, kindly proceed to make payment as booked shipment would expire after 30 minutes.",
+              shipment_num,
+            })
+          );
         }
-
-        v.available_capacity =
-          parseFloat(v.available_capacity) - parseFloat(weight);
-        v.taw = parseFloat(v.taw) + parseFloat(weight);
-        v.totalAmount = parseFloat(v.totalAmount) + price;
-        await v.save();
       }
-
-      let shipment_model = "direct";
-
-      util.helpers.addShipment(
-        req,
-        price,
-        item,
-        v,
-        route,
-        insurance,
-        chargeable_weight,
-        shipment_num,
-        cargo,
-        scan_code,
-        volumetric_weight,
-        shipment_model,
-        user,
-        address,
-        country,
-        sender_organisation
-      );
-
-      v.no_of_bags = parseInt(v.no_of_bags) + 1;
-      await v.save();
     }
-    util.helpers.updateScheduleTotal(v.uuid, route.uuid, shipment_num);
 
-    // v.no_of_bags = parseInt(v.no_of_bags) + items.length;
-    // await v.save();
-
-    const option = {
-      shipment_num,
-    };
-
-    util.helpers.bookingExpiry(option);
-
-    // if (status) {
-    return res.status(200).json(
-      util.helpers.sendSuccess({
-        message:
-          "Shipment booked successfully, kindly proceed to make payment as booked shipment would expire after 30 minutes.",
-        shipment_num,
-      })
-    );
     // }
   },
 

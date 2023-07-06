@@ -500,11 +500,7 @@ module.exports = {
   },
 
   // this should be held for 30 minutes after which the payment_status is updated to failed
-  bookCustomerShipment: async (
-    req: any,
-    res: Response,
-    next: NextFunction
-  ): Promise<Response> => {
+  bookCustomerShipment: async (req: any, res: Response, next: NextFunction) => {
     const itemSchema = util.Joi.object()
       .keys({
         items: util.Joi.array().required(),
@@ -788,12 +784,115 @@ module.exports = {
                 "Cannot book shipment aircraft capacity not enough"
               )
             );
+        } else {
+          v.available_capacity =
+            parseFloat(v.available_capacity) - parseFloat(weight);
+          v.totalAmount = parseFloat(v.totalAmount) + price;
+          v.taw = parseFloat(v.taw) + parseFloat(weight);
+          await v.save();
+
+          let shipment_model = "assisted booking";
+
+          util.helpers.addShipment(
+            req,
+            price,
+            item,
+            v,
+            route,
+            insurance,
+            chargeable_weight,
+            shipment_num,
+            cargo,
+            scan_code,
+            volumetric_weight,
+            shipment_model,
+            user,
+            null,
+            null,
+            null
+          );
+
+          let Flights = await db.dbs.FlightsOngoing.findOne({
+            where: { id: v.id },
+          });
+          console.log({ Flights, length: items.length });
+          Flights.no_of_bags = parseInt(Flights.no_of_bags) + items.length;
+          await Flights.save();
+          util.helpers.updateScheduleTotal(v.uuid, route.uuid, shipment_num);
+
+          await db.dbs.AuditLogs.create({
+            uuid: util.uuid(),
+            user_id: req.user.uuid,
+            description: `Admin ${req.user.first_name} ${req.user.last_name} booked ${items.length} shipments for user with id ${user.customer_id}`,
+            data: JSON.stringify(req.body),
+          });
+
+          const option = {
+            email: user.email,
+            name: user.first_name + " " + user.last_name,
+          };
+
+          util.adminBook.sendMail(option);
+
+          let amount = await db.dbs.ShippingItems.sum("price", {
+            where: { shipment_num: shipment_num },
+          });
+
+          // checkBalance.amount = parseFloat(checkBalance.amount) - amount;
+          // checkBalance.amount_deducted = amount;
+          // await checkBalance.save();
+
+          let bag = await db.dbs.ShippingItems.findOne({
+            where: { shipment_num: shipment_num },
+          });
+
+          await db.dbs.Transactions.create({
+            uuid: util.uuid(),
+            user_id: user.id,
+            reference: "nil",
+            rate: parseFloat(route.dailyExchangeRate),
+            amount_in_dollars: amount,
+            amount_in_local_currency:
+              amount * parseFloat(route.dailyExchangeRate),
+            amount_deducted: amount,
+            departure: bag.pickup_location,
+            arrival: bag.destination,
+            cargo_id: bag.cargo_id,
+            departure_date: bag.depature_date.split("/").reverse().join("-"),
+            arrival_date: bag.arrival_date,
+            shipment_no: shipment_num,
+            company_name: user.company_name,
+            booked_by: req.user.first_name + " " + req.user.last_name,
+            weight: bag.weight,
+            reciever_organisation: bag.reciever_organisation,
+            pricePerkeg: bag.pricePerKg,
+            no_of_bags: items.length,
+            type: "credit",
+            method: "wallet",
+            description:
+              "Payment for shipment booked on your behalf by the dowkaa system support.",
+            status: "pending",
+            airwaybill_cost: parseFloat(route.air_wayBill_rate),
+            total_cost: amount,
+          });
+
+          updateShipmentStatus(items);
+
+          await db.dbs.AuditLogs.create({
+            uuid: util.uuid(),
+            user_id: req.user.id,
+            description: `Admin ${req.user.first_name} ${req.user.last_name} booked a shipment for a customer with customer id ${user.customer_id}`,
+            data: JSON.stringify(req.body),
+          });
+          // if (status) {
+          return res
+            .status(200)
+            .json(
+              util.helpers.sendSuccess(
+                "Shipment booked successfully, a notification email would be sent to the shipper with details of the shipment. Thanks"
+              )
+            );
         }
-        v.available_capacity =
-          parseFloat(v.available_capacity) - parseFloat(weight);
-        v.totalAmount = parseFloat(v.totalAmount) + price;
-        v.taw = parseFloat(v.taw) + parseFloat(weight);
-        await v.save();
       } else {
         if (parseFloat(v.available_capacity) - volumetric_weight < 0) {
           return res
@@ -803,111 +902,118 @@ module.exports = {
                 "Cannot book shipment aircraft capacity not enough"
               )
             );
+        } else {
+          v.available_capacity =
+            parseFloat(v.available_capacity) - parseFloat(weight);
+          v.taw = parseFloat(v.taw) + parseFloat(weight);
+          v.totalAmount = parseFloat(v.totalAmount) + price;
+          await v.save();
+
+          let shipment_model = "assisted booking";
+
+          util.helpers.addShipment(
+            req,
+            price,
+            item,
+            v,
+            route,
+            insurance,
+            chargeable_weight,
+            shipment_num,
+            cargo,
+            scan_code,
+            volumetric_weight,
+            shipment_model,
+            user,
+            null,
+            null,
+            null
+          );
+
+          let Flights = await db.dbs.FlightsOngoing.findOne({
+            where: { id: v.id },
+          });
+          console.log({ Flights, length: items.length });
+          Flights.no_of_bags = parseInt(Flights.no_of_bags) + items.length;
+          await Flights.save();
+          util.helpers.updateScheduleTotal(v.uuid, route.uuid, shipment_num);
+
+          await db.dbs.AuditLogs.create({
+            uuid: util.uuid(),
+            user_id: req.user.uuid,
+            description: `Admin ${req.user.first_name} ${req.user.last_name} booked ${items.length} shipments for user with id ${user.customer_id}`,
+            data: JSON.stringify(req.body),
+          });
+
+          const option = {
+            email: user.email,
+            name: user.first_name + " " + user.last_name,
+          };
+
+          util.adminBook.sendMail(option);
+
+          let amount = await db.dbs.ShippingItems.sum("price", {
+            where: { shipment_num: shipment_num },
+          });
+
+          // checkBalance.amount = parseFloat(checkBalance.amount) - amount;
+          // checkBalance.amount_deducted = amount;
+          // await checkBalance.save();
+
+          let bag = await db.dbs.ShippingItems.findOne({
+            where: { shipment_num: shipment_num },
+          });
+
+          await db.dbs.Transactions.create({
+            uuid: util.uuid(),
+            user_id: user.id,
+            reference: "nil",
+            rate: parseFloat(route.dailyExchangeRate),
+            amount_in_dollars: amount,
+            amount_in_local_currency:
+              amount * parseFloat(route.dailyExchangeRate),
+            amount_deducted: amount,
+            departure: bag.pickup_location,
+            arrival: bag.destination,
+            cargo_id: bag.cargo_id,
+            departure_date: bag.depature_date.split("/").reverse().join("-"),
+            arrival_date: bag.arrival_date,
+            shipment_no: shipment_num,
+            company_name: user.company_name,
+            booked_by: req.user.first_name + " " + req.user.last_name,
+            weight: bag.weight,
+            reciever_organisation: bag.reciever_organisation,
+            pricePerkeg: bag.pricePerKg,
+            no_of_bags: items.length,
+            type: "credit",
+            method: "wallet",
+            description:
+              "Payment for shipment booked on your behalf by the dowkaa system support.",
+            status: "pending",
+            airwaybill_cost: parseFloat(route.air_wayBill_rate),
+            total_cost: amount,
+          });
+
+          updateShipmentStatus(items);
+
+          await db.dbs.AuditLogs.create({
+            uuid: util.uuid(),
+            user_id: req.user.id,
+            description: `Admin ${req.user.first_name} ${req.user.last_name} booked a shipment for a customer with customer id ${user.customer_id}`,
+            data: JSON.stringify(req.body),
+          });
+          // if (status) {
+          return res
+            .status(200)
+            .json(
+              util.helpers.sendSuccess(
+                "Shipment booked successfully, a notification email would be sent to the shipper with details of the shipment. Thanks"
+              )
+            );
         }
-        v.available_capacity =
-          parseFloat(v.available_capacity) - parseFloat(weight);
-        v.taw = parseFloat(v.taw) + parseFloat(weight);
-        v.totalAmount = parseFloat(v.totalAmount) + price;
-        await v.save();
       }
-
-      let shipment_model = "assisted booking";
-
-      util.helpers.addShipment(
-        req,
-        price,
-        item,
-        v,
-        route,
-        insurance,
-        chargeable_weight,
-        shipment_num,
-        cargo,
-        scan_code,
-        volumetric_weight,
-        shipment_model,
-        user,
-        null,
-        null,
-        null
-      );
-
-      v.no_of_bags = parseInt(v.no_of_bags) + 1;
-      await v.save();
     }
-    util.helpers.updateScheduleTotal(v.uuid, route.uuid, shipment_num);
 
-    await db.dbs.AuditLogs.create({
-      uuid: util.uuid(),
-      user_id: req.user.uuid,
-      description: `Admin ${req.user.first_name} ${req.user.last_name} booked ${items.length} shipments for user with id ${user.customer_id}`,
-      data: JSON.stringify(req.body),
-    });
-
-    const option = {
-      email: user.email,
-      name: user.first_name + " " + user.last_name,
-    };
-
-    util.adminBook.sendMail(option);
-
-    let amount = await db.dbs.ShippingItems.sum("price", {
-      where: { shipment_num: shipment_num },
-    });
-
-    // checkBalance.amount = parseFloat(checkBalance.amount) - amount;
-    // checkBalance.amount_deducted = amount;
-    // await checkBalance.save();
-
-    let item = await db.dbs.ShippingItems.findOne({
-      where: { shipment_num: shipment_num },
-    });
-
-    await db.dbs.Transactions.create({
-      uuid: util.uuid(),
-      user_id: user.id,
-      reference: "nil",
-      rate: parseFloat(route.dailyExchangeRate),
-      amount_in_dollars: amount,
-      amount_in_local_currency: amount * parseFloat(route.dailyExchangeRate),
-      amount_deducted: amount,
-      departure: item.pickup_location,
-      arrival: item.destination,
-      cargo_id: item.cargo_id,
-      departure_date: item.depature_date.split("/").reverse().join("-"),
-      arrival_date: item.arrival_date,
-      shipment_no: shipment_num,
-      company_name: user.company_name,
-      booked_by: req.user.first_name + " " + req.user.last_name,
-      weight: item.weight,
-      reciever_organisation: item.reciever_organisation,
-      pricePerkeg: item.pricePerKg,
-      no_of_bags: items.length,
-      type: "credit",
-      method: "wallet",
-      description:
-        "Payment for shipment booked on your behalf by the dowkaa system support.",
-      status: "pending",
-      airwaybill_cost: parseFloat(route.air_wayBill_rate),
-      total_cost: amount,
-    });
-
-    updateShipmentStatus(items);
-
-    await db.dbs.AuditLogs.create({
-      uuid: util.uuid(),
-      user_id: req.user.id,
-      description: `Admin ${req.user.first_name} ${req.user.last_name} booked a shipment for a customer with customer id ${user.customer_id}`,
-      data: JSON.stringify(req.body),
-    });
-    // if (status) {
-    return res
-      .status(200)
-      .json(
-        util.helpers.sendSuccess(
-          "Shipment booked successfully, a notification email would be sent to the shipper with details of the shipment. Thanks"
-        )
-      );
     // }
   },
 

@@ -449,8 +449,6 @@ module.exports = {
         null
       );
 
-      v.no_of_bags = parseInt(v.no_of_bags) + 1;
-      await v.save();
     }
     util.helpers.updateScheduleTotal(v.uuid, route.uuid, shipment_num);
     // v.no_of_bags = parseInt(v.no_of_bags) + items.length;

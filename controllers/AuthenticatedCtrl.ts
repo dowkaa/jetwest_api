@@ -656,12 +656,101 @@ module.exports = {
                 "Cannot book shipment aircraft capacity not enough"
               )
             );
+        } else {
+          v.available_capacity =
+            parseFloat(v.available_capacity) - parseFloat(weight);
+          v.totalAmount = parseFloat(v.totalAmount) + price;
+          v.taw = parseFloat(v.taw) + parseFloat(weight);
+          await v.save();
+
+          let shipment_model = "express";
+
+          util.helpers.addShipment(
+            req,
+            price,
+            item,
+            v,
+            route,
+            insurance,
+            chargeable_weight,
+            shipment_num,
+            cargo,
+            scan_code,
+            volumetric_weight,
+            shipment_model,
+            user,
+            null,
+            null,
+            null
+          );
+
+          let Flights = await db.dbs.FlightsOngoing.findOne({
+            where: { id: v.id },
+          });
+          console.log({ Flights, length: items.length });
+          Flights.no_of_bags = parseInt(Flights.no_of_bags) + items.length;
+          await Flights.save();
+
+          util.helpers.updateScheduleTotal(v.uuid, route.uuid, shipment_num);
+
+          const option = {
+            reference: payment_ref,
+            shipment_num,
+            id: req.user.id,
+            company_name: req.user.company_name,
+            amount,
+            payment_doc_url,
+            user: req.user,
+            customer_id: req.user.customer_id,
+            route_id: route.uuid,
+          };
+
+          // util.helpers.parkingListMail(shipment_num);
+          if (payment_type === "paystack") {
+            if (!payment_ref) {
+              return res
+                .status(400)
+                .json(
+                  util.helpers.sendError(
+                    "Kindly add a valid paystack payment reference to validate your payment."
+                  )
+                );
+            }
+            util.helpers.validateTransaction(option, "payment");
+            util.helpers.checkBaggageConfirmation(option);
+
+            return res
+              .status(200)
+              .json(
+                util.helpers.sendSuccess(
+                  "Shipment booked successfully, the Dowkaa team would reach out to you soon."
+                )
+              );
+          } else if (payment_type === "receipt") {
+            if (!(payment_doc_url && amount)) {
+              return res
+                .status(400)
+                .json(
+                  util.helpers.sendError(
+                    "You need to fill the amount and payment_doc_url if you want to make payment via transfer and reciept upload. "
+                  )
+                );
+            }
+            util.helpers.paymentForShipmentBookingByReceipt(option);
+
+            return res
+              .status(200)
+              .json(util.helpers.sendSuccess("Document uploaded successfully"));
+          } else {
+            return res
+              .status(400)
+              .json(
+                util.helpers.sendError(
+                  "Payment method not available, kindly proceed to pending payments to payments to make payment"
+                )
+              );
+          }
         }
-        v.available_capacity =
-          parseFloat(v.available_capacity) - parseFloat(weight);
-        v.totalAmount = parseFloat(v.totalAmount) + price;
-        v.taw = parseFloat(v.taw) + parseFloat(weight);
-        await v.save();
       } else {
         if (parseFloat(v.available_capacity) - volumetric_weight < 0) {
           console.log("1111111111111111111111111111");
@@ -672,97 +761,101 @@ module.exports = {
                 "Cannot book shipment aircraft capacity not enough"
               )
             );
+        } else {
+          v.available_capacity =
+            parseFloat(v.available_capacity) - parseFloat(weight);
+          v.taw = parseFloat(v.taw) + parseFloat(weight);
+          v.totalAmount = parseFloat(v.totalAmount) + price;
+          await v.save();
+          let shipment_model = "express";
+
+          util.helpers.addShipment(
+            req,
+            price,
+            item,
+            v,
+            route,
+            insurance,
+            chargeable_weight,
+            shipment_num,
+            cargo,
+            scan_code,
+            volumetric_weight,
+            shipment_model,
+            user,
+            null,
+            null,
+            null
+          );
+
+          let Flights = await db.dbs.FlightsOngoing.findOne({
+            where: { id: v.id },
+          });
+          console.log({ Flights, length: items.length });
+          Flights.no_of_bags = parseInt(Flights.no_of_bags) + items.length;
+          await Flights.save();
+
+          util.helpers.updateScheduleTotal(v.uuid, route.uuid, shipment_num);
+
+          const option = {
+            reference: payment_ref,
+            shipment_num,
+            id: req.user.id,
+            company_name: req.user.company_name,
+            amount,
+            payment_doc_url,
+            user: req.user,
+            customer_id: req.user.customer_id,
+            route_id: route.uuid,
+          };
+
+          // util.helpers.parkingListMail(shipment_num);
+          if (payment_type === "paystack") {
+            if (!payment_ref) {
+              return res
+                .status(400)
+                .json(
+                  util.helpers.sendError(
+                    "Kindly add a valid paystack payment reference to validate your payment."
+                  )
+                );
+            }
+            util.helpers.validateTransaction(option, "payment");
+            util.helpers.checkBaggageConfirmation(option);
+
+            return res
+              .status(200)
+              .json(
+                util.helpers.sendSuccess(
+                  "Shipment booked successfully, the Dowkaa team would reach out to you soon."
+                )
+              );
+          } else if (payment_type === "receipt") {
+            if (!(payment_doc_url && amount)) {
+              return res
+                .status(400)
+                .json(
+                  util.helpers.sendError(
+                    "You need to fill the amount and payment_doc_url if you want to make payment via transfer and reciept upload. "
+                  )
+                );
+            }
+            util.helpers.paymentForShipmentBookingByReceipt(option);
+
+            return res
+              .status(200)
+              .json(util.helpers.sendSuccess("Document uploaded successfully"));
+          } else {
+            return res
+              .status(400)
+              .json(
+                util.helpers.sendError(
+                  "Payment method not available, kindly proceed to pending payments to payments to make payment"
+                )
+              );
+          }
         }
-
-        v.available_capacity =
-          parseFloat(v.available_capacity) - parseFloat(weight);
-        v.taw = parseFloat(v.taw) + parseFloat(weight);
-        v.totalAmount = parseFloat(v.totalAmount) + price;
-        await v.save();
       }
-
-      let shipment_model = "express";
-
-      util.helpers.addShipment(
-        req,
-        price,
-        item,
-        v,
-        route,
-        insurance,
-        chargeable_weight,
-        shipment_num,
-        cargo,
-        scan_code,
-        volumetric_weight,
-        shipment_model,
-        user,
-        null,
-        null,
-        null
-      );
-      v.no_of_bags = parseInt(v.no_of_bags) + 1;
-      await v.save();
-    }
-
-    util.helpers.updateScheduleTotal(v.uuid, route.uuid, shipment_num);
-
-    const option = {
-      reference: payment_ref,
-      shipment_num,
-      id: req.user.id,
-      company_name: req.user.company_name,
-      amount,
-      payment_doc_url,
-      user: req.user,
-      customer_id: req.user.customer_id,
-      route_id: route.uuid,
-    };
-
-    // util.helpers.parkingListMail(shipment_num);
-    if (payment_type === "paystack") {
-      if (!payment_ref) {
-        return res
-          .status(400)
-          .json(
-            util.helpers.sendError(
-              "Kindly add a valid paystack payment reference to validate your payment."
-            )
-          );
-      }
-      util.helpers.validateTransaction(option, "payment");
-      util.helpers.checkBaggageConfirmation(option);
-
-      return res
-        .status(200)
-        .json(
-          util.helpers.sendSuccess(
-            "Shipment booked successfully, the Dowkaa team would reach out to you soon."
-          )
-        );
-    } else if (payment_type === "receipt") {
-      if (!(payment_doc_url && amount)) {
-        return res
-          .status(400)
-          .json(
-            util.helpers.sendError(
-              "You need to fill the amount and payment_doc_url if you want to make payment via transfer and reciept upload. "
-            )
-          );
-      }
-      util.helpers.paymentForShipmentBookingByReceipt(option);
-
-      return res
-        .status(200)
-        .json(util.helpers.sendSuccess("Document uploaded successfully"));
-    } else {
-      return res
-        .status(400)
-        .json(
-          util.helpers.sendError(
-            "Payment method not available, kindly proceed to pending payments to payments to make payment"
-          )
-        );
     }
   },
 
