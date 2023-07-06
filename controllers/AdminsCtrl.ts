@@ -1441,6 +1441,15 @@ module.exports = {
 
     utill.helpers.updateShipment(flight);
 
+    await db.dbs.ShippingItems.update(
+      { progress: "in-transit" },
+      {
+        where: {
+          flight_id: flight.id,
+        },
+      }
+    );
+
     return res
       .status(200)
       .json(utill.helpers.sendSuccess("Flight ATD updated successfully"));
@@ -1486,6 +1495,15 @@ module.exports = {
     flight.tat = tat;
     flight.status = "completed";
     await flight.save();
+
+    await db.dbs.ShippingItems.update(
+      { progress: "completed" },
+      {
+        where: {
+          flight_id: flight.id,
+        },
+      }
+    );
 
     let shipment = await db.dbs.ShippingItems.findOne({
       where: { flight_id: flight.id },
