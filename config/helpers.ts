@@ -2586,7 +2586,6 @@ const getValue = async (
   destination: any,
   items: any
 ) => {
-
   let v;
   v = await db.dbs.FlightsOngoing.findOne({
     where: {
@@ -2614,7 +2613,7 @@ const getValue = async (
       logo_url: schedule.logo_url,
       status: "pending",
       day: schedule.day,
-      no_of_bags: items.length,
+      // no_of_bags: items.length,
       duration: schedule.duration,
       aircraft_owner: schedule.aircraft_owner,
       scheduled_payload: schedule.scheduled_payload,
