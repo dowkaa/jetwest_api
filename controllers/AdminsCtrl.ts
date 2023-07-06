@@ -5138,7 +5138,7 @@ with note ${note}`,
               )
             );
         }
-        if (v.status != "completed") {
+        if (flight_ongoing.status != "completed") {
           return res
             .status(400)
             .json(utill.helpers.sendError("Flight not landed"));
