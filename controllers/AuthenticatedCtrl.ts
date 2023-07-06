@@ -647,10 +647,8 @@ module.exports = {
         price = totalPrice;
       }
 
-
       if (parseInt(weight) > volumetric_weight) {
         if (parseFloat(v.available_capacity) - parseFloat(weight) < 0) {
-          console.log("222222222222222222222222");
           return res
             .status(400)
             .json(
@@ -703,11 +701,11 @@ module.exports = {
         null,
         null
       );
+      v.no_of_bags = parseInt(v.no_of_bags) + 1;
+      await v.save();
     }
 
     util.helpers.updateScheduleTotal(v.uuid, route.uuid, shipment_num);
-    v.no_of_bags = parseInt(v.no_of_bags) + items.length;
-    await v.save();
 
     const option = {
       reference: payment_ref,

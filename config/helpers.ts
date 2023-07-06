@@ -1997,6 +1997,9 @@ const addShipmentAndCreditUser = async (
     //   description: `On credit Payment for shipment with no ${shipment_num} of the sum of ${price} to be deducted upon next wallet deposit`,
     //   status: "success",
     // });
+
+     v.no_of_bags = parseInt(v.no_of_bags) + 1;
+     await v.save();
   }
   utilities.helpers.updateScheduleTotal(v.uuid, route.uuid);
   let amount = total_amount;
@@ -2010,8 +2013,7 @@ const addShipmentAndCreditUser = async (
     items
   );
 
-  v.no_of_bags = parseInt(v.no_of_bags) + items.length;
-  await v.save();
+ 
 
   // log shipment price to shipper's wallet as amount owed
   let userWallet = await db.dbs.Wallets.findOne({

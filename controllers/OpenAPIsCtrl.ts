@@ -146,33 +146,33 @@ module.exports = {
       shipment_num = util.helpers.generateReftId(10);
     }
 
-     let schedule = await db.dbs.ScheduleFlights.findOne({
-       where: {
-         departure_station: pickup_location,
-         destination_station: destination,
-         stod: stod,
-       },
-     });
+    let schedule = await db.dbs.ScheduleFlights.findOne({
+      where: {
+        departure_station: pickup_location,
+        destination_station: destination,
+        stod: stod,
+      },
+    });
 
-     if (!schedule) {
-       return res
-         .status(400)
-         .json(
-           util.helpers.sendError(
-             "Flight not available, kindly check up other flights with other stod, or reduce the number of items to be shipped for this flight"
-           )
-         );
-       // if no available flight then save the data to a table for pending luggage and sent mail to admin that will
-     }
+    if (!schedule) {
+      return res
+        .status(400)
+        .json(
+          util.helpers.sendError(
+            "Flight not available, kindly check up other flights with other stod, or reduce the number of items to be shipped for this flight"
+          )
+        );
+      // if no available flight then save the data to a table for pending luggage and sent mail to admin that will
+    }
 
-     let v = await util.helpers.getValue(
-       schedule,
-       user,
-       pickup_location,
-       destination,
-       items
-     );
-    
+    let v = await util.helpers.getValue(
+      schedule,
+      user,
+      pickup_location,
+      destination,
+      items
+    );
+
     if (parseFloat(v.available_capacity) <= 0) {
       return res
         .status(400)
@@ -193,7 +193,7 @@ module.exports = {
         );
     }
 
-  //  let arr = JSON.parse(v.departure_date);
+    //  let arr = JSON.parse(v.departure_date);
 
     if (v.departure_date !== items[0].depature_date) {
       return res
@@ -449,121 +449,12 @@ module.exports = {
         null
       );
 
-      // if (agent_id) {
-      //   let agent = await db.dbs.Users.findOne({
-      //     where: { uuid: agent_id },
-      //   });
-      //   let status = await db.dbs.ShippingItems.create({
-      //     uuid: util.uuid(),
-      //     flight_id: v.id,
-      //     type,
-      //     user_id: req.user.id,
-      //     agent_id: agent.id,
-      //     shipment_num,
-      //     route_id: route.id,
-      //     reference: payment_ref,
-      //     value,
-      //     pickup_location,
-      //     chargeable_weight,
-      //     cargo_id: cargo.id,
-      //     destination,
-      //     depature_date: depature_date.split("/").reverse().join("-"),
-      //     width,
-      //     length: length,
-      //     address: req.user?.company_address,
-      //     country: req.user?.country,
-      //     height,
-      //     insurance,
-      //     sur_charge: price * (parseFloat(route.sur_charge) / 100),
-      //     taxes: price * (parseFloat(route.tax) / 100),
-      //     book_type: "Personal",
-      //     status: "pending",
-      //     shipment_routeId: route.id,
-      //     scan_code,
-      //     cargo_index: cargo_type,
-      //     weight,
-      //     ratePerKg: route.ratePerKg,
-      //     logo_url: v.logo_url,
-      //     arrival_date: v.arrival_date,
-      //     booking_reference: shipment_ref,
-      //     volumetric_weight,
-      //     company_name: req.user.company_name,
-      //     payment_status: "pending",
-      //     price: price,
-      //     category,
-      //     shipment_model: schedule_type,
-      //     ba_code_url,
-      //     promo_code: promo_code ? promo_code : null,
-      //     shipperName: req.user.first_name + " " + req.user.last_name,
-      //     organisation: req.user.organisation,
-      //     shipperNum: req.user.customer_id,
-      //     no_of_bags: items.length,
-      //     content,
-      //     reciever_firstname,
-      //     reciever_lastname,
-      //     reciever_email,
-      //     reciever_organisation,
-      //     reciever_primaryMobile,
-      //     reciever_secMobile,
-      //   });
-      // } else {
-      //   let status = await db.dbs.ShippingItems.create({
-      //     uuid: util.uuid(),
-      //     flight_id: v.id,
-      //     type,
-      //     user_id: req.user.id,
-      //     shipment_num,
-      //     reference: payment_ref,
-      //     route_id: route.id,
-      //     value,
-      //     pickup_location,
-      //     chargeable_weight,
-      //     cargo_id: cargo.id,
-      //     destination,
-      //     depature_date: depature_date.split("/").reverse().join("-"),
-      //     width,
-      //     length: length,
-      //     height,
-      //     insurance,
-      //     address: req.user?.company_address,
-      //     country: req.user?.country,
-      //     shipment_model: schedule_type,
-      //     cargo_index: cargo_type,
-      //     sur_charge: price * (parseFloat(route.sur_charge) / 100),
-      //     taxes: price * (parseFloat(route.tax) / 100),
-      //     book_type: "Personal",
-      //     status: "pending",
-      //     shipment_routeId: route.id,
-      //     scan_code,
-      //     weight,
-      //     ratePerKg: route.ratePerKg,
-      //     logo_url: v.logo_url,
-      //     arrival_date: v.arrival_date,
-      //     booking_reference: shipment_ref,
-      //     volumetric_weight,
-      //     company_name: req.user.company_name,
-      //     payment_status: "pending",
-      //     price: price,
-      //     category,
-      //     ba_code_url,
-      //     promo_code: promo_code ? promo_code : null,
-      //     shipperName: req.user.first_name + " " + req.user.last_name,
-      //     organisation: req.user.organisation,
-      //     shipperNum: req.user.customer_id,
-      //     no_of_bags: items.length,
-      //     content,
-      //     reciever_firstname,
-      //     reciever_lastname,
-      //     reciever_email,
-      //     reciever_organisation,
-      //     reciever_primaryMobile,
-      //     reciever_secMobile,
-      //   });
-      // }
+      v.no_of_bags = parseInt(v.no_of_bags) + 1;
+      await v.save();
     }
     util.helpers.updateScheduleTotal(v.uuid, route.uuid, shipment_num);
-    v.no_of_bags = parseInt(v.no_of_bags) + items.length;
-    await v.save();
+    // v.no_of_bags = parseInt(v.no_of_bags) + items.length;
+    // await v.save();
 
     const option = {
       reference: payment_ref,
