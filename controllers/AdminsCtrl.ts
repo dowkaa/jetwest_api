@@ -5048,262 +5048,262 @@ with note ${note}`,
       });
 
       //  console.log({ departure, destination });
-      if (parseInt(status.is_scanned) === 0) {
-        if (scan_type === "load") {
-          if (
-            parseInt(flight_ongoing.load_count) ===
-            parseInt(flight_ongoing.no_of_bags)
-          ) {
-            return res
-              .status(400)
-              .json(
-                utill.helpers.sendError(
-                  `Bags with reference ${refId} already scanned into flight with number ${allLogistics[0].flight_reg}`
-                )
-              );
-          }
-          if (status.progress === "loaded") {
-            return res
-              .status(200)
-              .json(
-                utill.helpers.sendSuccess(
-                  `Shipment already loaded into aircraft with flight number ${allLogistics[0].flight_reg}`
-                )
-              );
-          }
-
-          status.progress = "loaded";
-          status.status = "enroute";
-          status.is_scanned = 1;
-          flight_ongoing.status = "enroute";
-          flight_ongoing.progress = "loaded";
-          v.status = "enroute";
-          v.progress = "loaded";
-          flight_ongoing.load_count = parseInt(flight_ongoing.load_count) + 1;
-          v.load_count = parseInt(v.load_count) + 1;
-          await v.save();
-          await flight_ongoing.save();
-          await status.save();
-
-          await db.dbs.LoadedBags.create({
-            uuid: utill.uuid(),
-            flight_reg: allLogistics[0].flight_reg,
-            shipping_items_uuid: allLogistics[0].shipping_items_uuid,
-            schedule_flights_uuid: allLogistics[0].schedule_flights_uuid,
-            departure_date: date,
-            takeoff_airport: departure.name_of_airport,
-            shipperName: allLogistics[0].shipperName,
-            destination_airport: destination.name_of_airport,
-            departure_station: allLogistics[0].departure_station,
-            destination_station: allLogistics[0].destination_station,
-            status: allLogistics[0].status,
-            stoa: allLogistics[0].stoa,
-            stod: allLogistics[0].stod,
-            load_time: utill.moment().format("YYYY-MM-DD hh:mm:ss"),
-            taw: allLogistics[0].taw,
-            no_of_bags: allLogistics[0].no_of_bags,
-            shipping_items_createdAt: new Date(
-              allLogistics[0].shipping_items_createdAt
-            )
-              .toISOString()
-              .split("T")
-              .toString()
-              .replace("000Z", ""),
-            schedule_flights_createdAt: new Date(
-              allLogistics[0].schedule_flights_createdAt
-            )
-              .toISOString()
-              .split("T")
-              .toString()
-              .replace("000Z", ""),
-          });
-
-          return res
-            .status(200)
-            .json(
-              utill.helpers.sendSuccess(
-                `successfully loaded bag into aircraft with flight number ${allLogistics[0].flight_reg}`
-              )
-            );
-        } else if (scan_type === "offload") {
-          if (
-            parseInt(flight_ongoing.offload_count) ===
-            parseInt(flight_ongoing.no_of_bags)
-          ) {
-            return res
-              .status(400)
-              .json(
-                utill.helpers.sendError(
-                  "Already offloaded successfully all bags from flight "
-                )
-              );
-          }
-          if (v.status != "completed") {
-            return res
-              .status(400)
-              .json(utill.helpers.sendError("Flight not landed"));
-          }
-          if (status.progress === "landed") {
-            return res
-              .status(400)
-              .json(utill.helpers.sendError("Shipment already offloaded"));
-          }
-
-          status.progress = "landed";
-          flight_ongoing.progress = "landed";
-          v.status = "enroute";
-          v.progress = "loaded";
-          status.is_scanned = 2;
-          flight_ongoing.offload_count =
-            parseInt(flight_ongoing.offload_count) + 1;
-          v.offload_count = parseInt(v.offload_count) + 1;
-          await v.save();
-          flight_ongoing.save();
-          await status.save();
-
-          await db.dbs.OffLoadedBags.create({
-            uuid: utill.uuid(),
-            flight_reg: allLogistics[0].flight_reg,
-            shipping_items_uuid: allLogistics[0].shipping_items_uuid,
-            schedule_flights_uuid: allLogistics[0].schedule_flights_uuid,
-            departure_date: date,
-            takeoff_airport: departure.name_of_airport,
-            shipperName: allLogistics[0].shipperName,
-            destination_airport: destination.name_of_airport,
-            departure_station: allLogistics[0].departure_station,
-            destination_station: allLogistics[0].destination_station,
-            status: allLogistics[0].status,
-            offload_time: utill.moment().format("YYYY-MM-DD hh:mm:ss"),
-            stoa: allLogistics[0].stoa,
-            stod: allLogistics[0].stod,
-            taw: allLogistics[0].taw,
-            no_of_bags: allLogistics[0].no_of_bags,
-            shipping_items_createdAt: new Date(
-              allLogistics[0].shipping_items_createdAt
-            )
-              .toISOString()
-              .split("T")
-              .toString()
-              .replace("000Z", ""),
-            schedule_flights_createdAt: new Date(
-              allLogistics[0].schedule_flights_createdAt
-            )
-              .toISOString()
-              .split("T")
-              .toString()
-              .replace("000Z", ""),
-          });
-
-          return res
-            .status(200)
-            .json(
-              utill.helpers.sendSuccess(
-                `successfully off-loaded from aircraft with flight number ${allLogistics[0].flight_reg}`
-              )
-            );
-        } else {
+      // if (parseInt(status.is_scanned) === 0) {
+      if (scan_type === "load") {
+        if (
+          parseInt(flight_ongoing.load_count) ===
+          parseInt(flight_ongoing.no_of_bags)
+        ) {
           return res
             .status(400)
             .json(
-              utill.helpers.sendSuccess(
-                `Kindly add a valid scan precedure; load or offload`
+              utill.helpers.sendError(
+                `Bags with reference ${refId} already scanned into flight with number ${allLogistics[0].flight_reg}`
               )
             );
         }
-        // if (status.progress === "completed") {
-        //   return res
-        //     .status(400)
-        //     .json(utill.helpers.sendError("Shipment already completed"));
-        // } else if (status.progress === "in-transit") {
-        //   status.progress = "completed";
-        //   await status.save();
+        if (status.progress === "loaded") {
+          return res
+            .status(200)
+            .json(
+              utill.helpers.sendSuccess(
+                `Shipment already loaded into aircraft with flight number ${allLogistics[0].flight_reg}`
+              )
+            );
+        }
 
-        //   await db.dbs.OffLoadedBags.create({
-        //     uuid: utill.uuid(),
-        //     flight_reg: allLogistics[0].flight_reg,
-        //     shipping_items_uuid: allLogistics[0].shipping_items_uuid,
-        //     schedule_flights_uuid: allLogistics[0].schedule_flights_uuid,
-        //     departure_date: allLogistics[0].departure_date,
-        //     takeoff_airport: allLogistics[0].takeoff_airport,
-        //     shipperName: allLogistics[0].shipperName,
-        //     destination_airport: allLogistics[0].destination_airport,
-        //     departure_station: allLogistics[0].departure_station,
-        //     destination_station: allLogistics[0].destination_station,
-        //     status: allLogistics[0].status,
-        //     stoa: allLogistics[0].stoa,
-        //     stod: allLogistics[0].stod,
-        //     taw: allLogistics[0].taw,
-        //     no_of_bags: allLogistics[0].no_of_bags,
-        //     shipping_items_createdAt: new Date(
-        //       allLogistics[0].shipping_items_createdAt
-        //     )
-        //       .toISOString()
-        //       .split("T")
-        //       .toString()
-        //       .replace("000Z", ""),
-        //     schedule_flights_createdAt: new Date(
-        //       allLogistics[0].schedule_flights_createdAt
-        //     )
-        //       .toISOString()
-        //       .split("T")
-        //       .toString()
-        //       .replace("000Z", ""),
-        //   });
+        status.progress = "loaded";
+        status.status = "enroute";
+        status.is_scanned = 1;
+        flight_ongoing.status = "enroute";
+        flight_ongoing.progress = "loaded";
+        v.status = "enroute";
+        v.progress = "loaded";
+        flight_ongoing.load_count = parseInt(flight_ongoing.load_count) + 1;
+        v.load_count = parseInt(v.load_count) + 1;
+        await v.save();
+        await flight_ongoing.save();
+        await status.save();
 
-        //   return res
-        //     .status(200)
-        //     .json(
-        //       utill.helpers.sendSuccess(
-        //         `successfully off-loaded from aircraft with flight number ${allLogistics[0].flight_reg}`
-        //       )
-        //     );
-        // } else {
-        //   status.progress = "loaded";
-        //   status.status = "enroute";
-        //   await status.save();
+        await db.dbs.LoadedBags.create({
+          uuid: utill.uuid(),
+          flight_reg: allLogistics[0].flight_reg,
+          shipping_items_uuid: allLogistics[0].shipping_items_uuid,
+          schedule_flights_uuid: allLogistics[0].schedule_flights_uuid,
+          departure_date: date,
+          takeoff_airport: departure.name_of_airport,
+          shipperName: allLogistics[0].shipperName,
+          destination_airport: destination.name_of_airport,
+          departure_station: allLogistics[0].departure_station,
+          destination_station: allLogistics[0].destination_station,
+          status: allLogistics[0].status,
+          stoa: allLogistics[0].stoa,
+          stod: allLogistics[0].stod,
+          load_time: utill.moment().format("YYYY-MM-DD hh:mm:ss"),
+          taw: allLogistics[0].taw,
+          no_of_bags: allLogistics[0].no_of_bags,
+          shipping_items_createdAt: new Date(
+            allLogistics[0].shipping_items_createdAt
+          )
+            .toISOString()
+            .split("T")
+            .toString()
+            .replace("000Z", ""),
+          schedule_flights_createdAt: new Date(
+            allLogistics[0].schedule_flights_createdAt
+          )
+            .toISOString()
+            .split("T")
+            .toString()
+            .replace("000Z", ""),
+        });
 
-        //   await db.dbs.LoadedBags.create({
-        //     uuid: utill.uuid(),
-        //     flight_reg: allLogistics[0].flight_reg,
-        //     shipping_items_uuid: allLogistics[0].shipping_items_uuid,
-        //     schedule_flights_uuid: allLogistics[0].schedule_flights_uuid,
-        //     departure_date: allLogistics[0].departure_date,
-        //     takeoff_airport: allLogistics[0].takeoff_airport,
-        //     shipperName: allLogistics[0].shipperName,
-        //     destination_airport: allLogistics[0].destination_airport,
-        //     departure_station: allLogistics[0].departure_station,
-        //     destination_station: allLogistics[0].destination_station,
-        //     status: allLogistics[0].status,
-        //     stoa: allLogistics[0].stoa,
-        //     stod: allLogistics[0].stod,
-        //     taw: allLogistics[0].taw,
-        //     no_of_bags: allLogistics[0].no_of_bags,
-        //     shipping_items_createdAt: new Date(
-        //       allLogistics[0].shipping_items_createdAt
-        //     )
-        //       .toISOString()
-        //       .split("T")
-        //       .toString()
-        //       .replace("000Z", ""),
-        //     schedule_flights_createdAt: new Date(
-        //       allLogistics[0].schedule_flights_createdAt
-        //     )
-        //       .toISOString()
-        //       .split("T")
-        //       .toString()
-        //       .replace("000Z", ""),
-        //   });
-        // }
-      } else {
-        utill.appCache.flushAll();
         return res
           .status(200)
           .json(
             utill.helpers.sendSuccess(
-              `Bag with reference number ${refId} has been loaded on the plane with flight number ${allLogistics[0].flight_reg} successfully`
+              `successfully loaded bag into aircraft with flight number ${allLogistics[0].flight_reg}`
+            )
+          );
+      } else if (scan_type === "offload") {
+        if (
+          parseInt(flight_ongoing.offload_count) ===
+          parseInt(flight_ongoing.no_of_bags)
+        ) {
+          return res
+            .status(400)
+            .json(
+              utill.helpers.sendError(
+                "Already offloaded successfully all bags from flight "
+              )
+            );
+        }
+        if (v.status != "completed") {
+          return res
+            .status(400)
+            .json(utill.helpers.sendError("Flight not landed"));
+        }
+        if (status.progress === "landed") {
+          return res
+            .status(400)
+            .json(utill.helpers.sendError("Shipment already offloaded"));
+        }
+
+        status.progress = "landed";
+        flight_ongoing.progress = "landed";
+        v.status = "enroute";
+        v.progress = "loaded";
+        status.is_scanned = 2;
+        flight_ongoing.offload_count =
+          parseInt(flight_ongoing.offload_count) + 1;
+        v.offload_count = parseInt(v.offload_count) + 1;
+        await v.save();
+        flight_ongoing.save();
+        await status.save();
+
+        await db.dbs.OffLoadedBags.create({
+          uuid: utill.uuid(),
+          flight_reg: allLogistics[0].flight_reg,
+          shipping_items_uuid: allLogistics[0].shipping_items_uuid,
+          schedule_flights_uuid: allLogistics[0].schedule_flights_uuid,
+          departure_date: date,
+          takeoff_airport: departure.name_of_airport,
+          shipperName: allLogistics[0].shipperName,
+          destination_airport: destination.name_of_airport,
+          departure_station: allLogistics[0].departure_station,
+          destination_station: allLogistics[0].destination_station,
+          status: allLogistics[0].status,
+          offload_time: utill.moment().format("YYYY-MM-DD hh:mm:ss"),
+          stoa: allLogistics[0].stoa,
+          stod: allLogistics[0].stod,
+          taw: allLogistics[0].taw,
+          no_of_bags: allLogistics[0].no_of_bags,
+          shipping_items_createdAt: new Date(
+            allLogistics[0].shipping_items_createdAt
+          )
+            .toISOString()
+            .split("T")
+            .toString()
+            .replace("000Z", ""),
+          schedule_flights_createdAt: new Date(
+            allLogistics[0].schedule_flights_createdAt
+          )
+            .toISOString()
+            .split("T")
+            .toString()
+            .replace("000Z", ""),
+        });
+
+        return res
+          .status(200)
+          .json(
+            utill.helpers.sendSuccess(
+              `successfully off-loaded from aircraft with flight number ${allLogistics[0].flight_reg}`
+            )
+          );
+      } else {
+        return res
+          .status(400)
+          .json(
+            utill.helpers.sendSuccess(
+              `Kindly add a valid scan precedure; load or offload`
             )
           );
       }
+      // if (status.progress === "completed") {
+      //   return res
+      //     .status(400)
+      //     .json(utill.helpers.sendError("Shipment already completed"));
+      // } else if (status.progress === "in-transit") {
+      //   status.progress = "completed";
+      //   await status.save();
+
+      //   await db.dbs.OffLoadedBags.create({
+      //     uuid: utill.uuid(),
+      //     flight_reg: allLogistics[0].flight_reg,
+      //     shipping_items_uuid: allLogistics[0].shipping_items_uuid,
+      //     schedule_flights_uuid: allLogistics[0].schedule_flights_uuid,
+      //     departure_date: allLogistics[0].departure_date,
+      //     takeoff_airport: allLogistics[0].takeoff_airport,
+      //     shipperName: allLogistics[0].shipperName,
+      //     destination_airport: allLogistics[0].destination_airport,
+      //     departure_station: allLogistics[0].departure_station,
+      //     destination_station: allLogistics[0].destination_station,
+      //     status: allLogistics[0].status,
+      //     stoa: allLogistics[0].stoa,
+      //     stod: allLogistics[0].stod,
+      //     taw: allLogistics[0].taw,
+      //     no_of_bags: allLogistics[0].no_of_bags,
+      //     shipping_items_createdAt: new Date(
+      //       allLogistics[0].shipping_items_createdAt
+      //     )
+      //       .toISOString()
+      //       .split("T")
+      //       .toString()
+      //       .replace("000Z", ""),
+      //     schedule_flights_createdAt: new Date(
+      //       allLogistics[0].schedule_flights_createdAt
+      //     )
+      //       .toISOString()
+      //       .split("T")
+      //       .toString()
+      //       .replace("000Z", ""),
+      //   });
+
+      //   return res
+      //     .status(200)
+      //     .json(
+      //       utill.helpers.sendSuccess(
+      //         `successfully off-loaded from aircraft with flight number ${allLogistics[0].flight_reg}`
+      //       )
+      //     );
+      // } else {
+      //   status.progress = "loaded";
+      //   status.status = "enroute";
+      //   await status.save();
+
+      //   await db.dbs.LoadedBags.create({
+      //     uuid: utill.uuid(),
+      //     flight_reg: allLogistics[0].flight_reg,
+      //     shipping_items_uuid: allLogistics[0].shipping_items_uuid,
+      //     schedule_flights_uuid: allLogistics[0].schedule_flights_uuid,
+      //     departure_date: allLogistics[0].departure_date,
+      //     takeoff_airport: allLogistics[0].takeoff_airport,
+      //     shipperName: allLogistics[0].shipperName,
+      //     destination_airport: allLogistics[0].destination_airport,
+      //     departure_station: allLogistics[0].departure_station,
+      //     destination_station: allLogistics[0].destination_station,
+      //     status: allLogistics[0].status,
+      //     stoa: allLogistics[0].stoa,
+      //     stod: allLogistics[0].stod,
+      //     taw: allLogistics[0].taw,
+      //     no_of_bags: allLogistics[0].no_of_bags,
+      //     shipping_items_createdAt: new Date(
+      //       allLogistics[0].shipping_items_createdAt
+      //     )
+      //       .toISOString()
+      //       .split("T")
+      //       .toString()
+      //       .replace("000Z", ""),
+      //     schedule_flights_createdAt: new Date(
+      //       allLogistics[0].schedule_flights_createdAt
+      //     )
+      //       .toISOString()
+      //       .split("T")
+      //       .toString()
+      //       .replace("000Z", ""),
+      //   });
+      // }
+      // } else {
+      //   utill.appCache.flushAll();
+      //   return res
+      //     .status(200)
+      //     .json(
+      //       utill.helpers.sendSuccess(
+      //         `Bag with reference number ${refId} has been loaded on the plane with flight number ${allLogistics[0].flight_reg} successfully`
+      //       )
+      //     );
+      // }
     }
 
     return res
