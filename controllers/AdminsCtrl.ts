@@ -95,7 +95,7 @@ module.exports = {
       data: JSON.stringify(req.body),
     });
 
-    utill.welcome.sendMail(option);
+    utill.welcome_admin.sendMail(option);
 
     return res
       .status(200)

@@ -122,9 +122,9 @@ module.exports = {
         email: user.email,
       };
 
-      if (parseInt(user.login_count) === 0) {
-        utill.introduction.sendMail(opt);
-      }
+      // if (parseInt(user.login_count) === 0) {
+      //   utill.introduction.sendMail(opt);
+      // }
       user.login_count = parseInt(user.login_count) + 1;
       user.last_login_time = utill.moment().format("YYYY-MM-DD HH:mm:ss");
       await user.save();

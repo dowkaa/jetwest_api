@@ -81,6 +81,7 @@ exports.tag = require("../Mail/tag");
 exports.shipperAPI = require("../Mail/shipperAPI");
 exports.SuperShipperAPIMail = require("../Mail/SuperShipperAPI");
 exports.agent = require("../Mail/agent");
+exports.airwaybill = require("../Mail/airwaybill");
 exports.reciever = require("../Mail/receiver");
 exports.aircraftUpdate = require("../Mail/aircraftUpdate");
 exports.introduction = require("../Mail/Introduction");

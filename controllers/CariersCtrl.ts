@@ -798,6 +798,18 @@ module.exports = {
         agent_id: shipment.agent_id,
       });
 
+      let shipper = await db.dbs.Users.findOne({
+        where: { id: shipment.user_id },
+      });
+
+      const option = {
+        email: shipper.email,
+        url: doc_url,
+        name: shipper.first_name + " " + shipper.last_name,
+      };
+
+      util.airwaybill.sendMail(option);
+
       return res
         .status(200)
         .json(util.helpers.sendSuccess("Airway-bill uploaded successfully"));
